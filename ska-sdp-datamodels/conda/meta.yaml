@@ -1,0 +1,55 @@
+{% set name = "ska-sdp-datamodels" %}
+{% set uName = name|replace("-", "_") %}
+{% set uNameAndVers = uName + "-" + VERSION %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ VERSION }}
+
+source:
+   url: https://artefact.skao.int/repository/pypi-internal/packages/{{ name }}/{{ VERSION }}/{{ uNameAndVers }}.tar.gz
+   sha256: 025267b9c3093f9f82c83a5d9968731c8591347da0e928bcac69f0767e0a153a
+
+build:
+  noarch: python
+  number: 0
+  script_env:
+   - INTERNAL_FOLDER_NAME= {{ uNameAndVers }}
+  
+requirements:
+  build:
+    - python
+    - pip 
+
+  host:
+    - python
+    - pip
+    
+  run:
+    - python
+    - pip
+    - astroplan >=0.8,<0.9
+    - astropy >=5.1,<6.0 
+    - h5py >=3.7.0,<4.0.0 
+    - numpy >=1.23.4,<2.0.0
+    - pandas >=1.5.0,<2.0.0
+    - xarray >=2022.10.0,<2023.0.0
+    
+#test:
+#  imports:
+  
+
+about:
+  home: https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels
+  license: Apache 2.0
+  license_file: {{ uNameAndVers }}/LICENSE
+  summary: 'SKA SDP Datamodels'
+  description: |
+   SKA SDP Datamodels
+  doc_url: https://developer.skao.int/projects/ska-sdp-datamodels/en/latest/
+  dev_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch 
+    
