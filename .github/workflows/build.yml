@@ -17,19 +17,18 @@ jobs:
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          auto-update-conda: true
-      - name: Install Conda Build
+          auto-update-conda: true     
+      - name: Install Conda-Build and create target
         run: |
           conda install conda-build
-          conda install anaconda
-      - name: Build conda
-        run: |
           cd ska-sdp-datamodels/conda
           conda build -c i4ds -c conda-forge .
-      - name: Publish to Conda
+      - name: Install and publish to Conda
         shell: bash -l {0}
         run: |
           conda activate base
+          conda install anaconda
+          conda list
           anaconda -t ${{ secrets.ANACONDA_SECRET }} upload /usr/share/miniconda/conda-bld/noarch/ska-sdp-datamodels-*.tar.bz2 --label $LABEL --force
 
   test_SKA_SDP_Datamodel:
