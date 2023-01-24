@@ -48,11 +48,11 @@ jobs:
         run: |
           conda create -y -n testpy39 python=3.9
           conda activate testpy39
-          conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ska_sdp_datamodels="$SKA_SDP_DTMDL_VERSION" --experimental-solver=libmamba
+          conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ska-sdp-datamodels="$SKA_SDP_DTMDL_VERSION" --experimental-solver=libmamba
           python -c "import ska_sdp_datamodels"
           
           conda create -y -n testpy310 python=3.10
           conda activate testpy310
-          conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ska_sdp_datamodels="$SKA_SDP_DTMDL_VERSION" --experimental-solver=libmamba
+          conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ska-sdp-datamodels="$SKA_SDP_DTMDL_VERSION" --experimental-solver=libmamba
           python -c "import ska_sdp_datamodels"
           
