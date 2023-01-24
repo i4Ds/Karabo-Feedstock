@@ -1,13 +1,13 @@
 {% set name = "ska-sdp-datamodels" %}
 {% set uName = name|replace("-", "_") %}
-{% set uNameAndVers = uName + "-" + VERSION %}
+{% set uNameAndVers = uName + "-" + SKA_SDP_DTMDL_VERSION %}
 
 package:
   name: {{ name|lower }}
-  version: {{ VERSION }}
+  version: {{ SKA_SDP_DTMDL_VERSION }}
 
 source:
-   url: https://artefact.skao.int/repository/pypi-internal/packages/{{ name }}/{{ VERSION }}/{{ uNameAndVers }}.tar.gz
+   url: https://artefact.skao.int/repository/pypi-internal/packages/{{ name }}/{{ SKA_SDP_DTMDL_VERSION }}/{{ uNameAndVers }}.tar.gz
    sha256: 025267b9c3093f9f82c83a5d9968731c8591347da0e928bcac69f0767e0a153a
 
 build:
