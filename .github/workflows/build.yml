@@ -2,8 +2,6 @@ name: Karabo Feedstock Workflow
 
 env:
   SKA_SDP_DTMDL_VERSION: 0.1.2
-  VERSION: 0.7.0
-  #VERSION: 0.7.dev0
   LABEL: main
   #LABEL: dev
 
@@ -26,8 +24,8 @@ jobs:
           conda install anaconda
       - name: Build conda
         run: |
-          cd conda/
-          conda build -c i4ds -c conda-forge ./ska-sdp-datamodels/.
+          cd ska-sdp-datamodels/conda
+          conda build -c i4ds -c conda-forge .
       - name: Publish to Conda
         shell: bash -l {0}
         run: |
