@@ -25,10 +25,8 @@ jobs:
       - name: Install and publish to Conda
         shell: bash -l {0}
         run: |
-          set -eux
           conda activate base
           conda install anaconda-client
-          conda list
           anaconda -t ${{ secrets.ANACONDA_SECRET }} upload /usr/share/miniconda/conda-bld/noarch/ska-sdp-datamodels-*.tar.bz2 --label $LABEL --force
 
   test_SKA_SDP_Datamodel:
