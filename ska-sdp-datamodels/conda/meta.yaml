@@ -11,7 +11,6 @@ source:
    sha256: 025267b9c3093f9f82c83a5d9968731c8591347da0e928bcac69f0767e0a153a
 
 build:
-  noarch: python
   number: 0
   script_env:
    - INTERNAL_FOLDER_NAME= {{ uNameAndVers }}
