@@ -1,0 +1,65 @@
+{% set name = "ska-sdp-func-python" %}
+{% set fileName = name|replace("-", "_") %}
+{% set uNameAndVers = fileName + "-" + SKA_SDP_FUNC_VERSION %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ SKA_SDP_FUNC_VERSION }}
+
+source:
+   url: https://artefact.skao.int/repository/pypi-internal/packages/{{ name }}/{{ SKA_SDP_FUNC_VERSION }}/{{ uNameAndVers }}.tar.gz
+   sha256: caee75113d7f80fd6488b641af389a3ada307567731240f6bc4c94735962e8cc
+
+build:
+  noarch: python
+  number: 0
+  script_env:
+   - INTERNAL_FOLDER_NAME= {{ uNameAndVers }}
+  
+requirements:
+  build:
+    - python >=3.9
+    - pip 
+    - astroplan >=0.8
+    - ducc0 >=0.27.0
+    - photutils >=1.5
+    - ska-sdp-datamodels >=0.1.2
+
+  host:
+    - python >=3.9
+    - pip
+    - astroplan >=0.8
+    - ducc0 >=0.27.0
+    - photutils >=1.5
+    - ska-sdp-datamodels >=0.1.2
+    
+  run:
+    - python >=3.9
+    - pip
+    - astroplan >=0.8
+    - astropy >=5.1
+    - ducc0 >=0.27.0
+    - numpy >=1.23.4
+    - photutils >=1.5
+    - scipy >=1.9.3
+    - ska-sdp-datamodels >=0.1.2
+    - xarray >=2022.11.0
+    
+#test:
+#  imports:
+  
+
+about:
+  home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func-python/
+  license: Apache 2.0
+  license_file: {{ uNameAndVers }}/LICENSE
+  summary: 'SKA SDP Python Processing Functions'
+  description: |
+   SKA SDP Datamodels
+  doc_url: https://developer.skao.int/projects/ska-sdp-func-python/en/latest/
+  dev_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-func-python
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch 
+    
