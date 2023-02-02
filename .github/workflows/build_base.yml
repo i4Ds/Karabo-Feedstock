@@ -19,13 +19,12 @@ on:
         required: true
         type: string
 
-jobs:
-  loadVersionFile:
-    uses: ./.github/workflows/versions.yml 
-    
+jobs:   
   build_base:
     runs-on: ubuntu-latest
     steps:
+      - name: Load Versions
+        uses: ./.github/workflows/versions.yml 
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Install Conda
@@ -47,6 +46,8 @@ jobs:
     needs: build_base
     runs-on: ubuntu-latest
     steps:
+      - name: Load Versions
+        uses: ./.github/workflows/versions.yml 
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Install Conda
