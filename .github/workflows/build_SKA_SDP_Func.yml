@@ -1,4 +1,4 @@
-name: Workflow: SKA SDP Func
+name: SKA SDP Func
 
 on:
   workflow_dispatch:
