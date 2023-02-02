@@ -10,8 +10,8 @@ on:
   workflow_call:
 
 jobs:
-
   loadVersionsDoesNothing:
-  steps:
-    - name: Export Versions
-      run: echo "Export Versions"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Export
+        run: echo "Export Versions"
