@@ -1,0 +1,10 @@
+name: Karabo Feedstock Versions File
+
+on:
+  workflow_call:
+
+env:
+  SKA_SDP_DTMDL_VERSION: 0.1.2
+  SKA_SDP_FUNC_VERSION: 0.1.3
+  LABEL: main
+  #LABEL: dev

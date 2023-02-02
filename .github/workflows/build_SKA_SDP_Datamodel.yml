@@ -1,0 +1,15 @@
+name: Karabo Feedstock Workflow for the SKA SDP Datamodel
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  SKA_SDP_Datamodel:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      recipe_path: ska-sdp-datamodels/conda/.
+      upload_filePath: /usr/share/miniconda/conda-bld/noarch/ska-sdp-datamodels-*.tar.bz2
+      package_name: ska-sdp-datamodels
+      package_version: $SKA_SDP_DTMDL_VERSION
+      python_call: ska_sdp_datamodels

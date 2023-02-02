@@ -1,0 +1,71 @@
+name: Karabo Feedstock build base
+
+on:
+  workflow_call:
+    inputs:
+      recipe_path:
+        required: true
+        type: string
+      upload_filePath:
+        required: true
+        type: string
+      package_name:
+        required: true
+        type: string
+      package_version:
+        required: true
+        type: string
+      python_call:
+        required: true
+        type: string
+
+jobs:
+  loadVersionFile:
+    uses: ./.github/workflows/versions.yml 
+    
+  build_base:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true     
+      - name: Install Conda-Build and create target
+        run: |
+          conda install conda-build
+          conda build -c i4ds -c conda-forge ${{ inputs.recipe_path }}
+      - name: Install and publish to Conda
+        shell: bash -l {0}
+        run: |
+          conda activate base
+          conda install anaconda-client
+          anaconda -t ${{ secrets.ANACONDA_SECRET }} upload ${{ inputs.upload_filePath }} --label $LABEL --force
+
+  test_base:
+    needs: build_base
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+      - name: Install Mamba Solver
+        run: |
+          conda update -y -n base conda
+          conda install -y -n base conda-libmamba-solver
+      - name: Install Package
+        shell: bash -l {0}
+        run: |
+          conda create -y -n testpy39 python=3.9
+          conda activate testpy39
+          conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
+          python -c "import ${{ inputs.python_call }}"
+          
+          conda create -y -n testpy310 python=3.10
+          conda activate testpy310
+          conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
+          python -c "import ${{ inputs.python_call }}"
