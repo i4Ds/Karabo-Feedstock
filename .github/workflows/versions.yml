@@ -11,4 +11,7 @@ on:
 
 jobs:
   loadVersionsDoesNothing:
-    
+  steps:
+    - name: Export Versions
+      run: |
+        echo "Export Versions"
