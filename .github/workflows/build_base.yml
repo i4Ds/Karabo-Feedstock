@@ -23,10 +23,10 @@ jobs:
   build_base:
     runs-on: ubuntu-latest
     steps:
-      - name: Load Versions
-        uses: ./.github/workflows/versions.yml 
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Load Versions
+        uses: ./.github/workflows/versions.yml 
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -46,10 +46,10 @@ jobs:
     needs: build_base
     runs-on: ubuntu-latest
     steps:
-      - name: Load Versions
-        uses: ./.github/workflows/versions.yml 
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Load Versions
+        uses: ./.github/workflows/versions.yml 
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
