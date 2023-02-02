@@ -1,4 +1,4 @@
-name: Karabo Feedstock Workflow for the SKA SDP Func
+name: Workflow: SKA SDP Func
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: Karabo Feedstock build base
+name: Build Base
 
 on:
   workflow_call:

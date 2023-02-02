@@ -1,4 +1,4 @@
-name: Karabo Feedstock Workflow for the SKA SDP Datamodel
+name: Workflow: SKA SDP Datamodel
 
 on:
   workflow_dispatch:

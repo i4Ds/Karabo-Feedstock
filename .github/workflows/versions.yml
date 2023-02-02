@@ -1,4 +1,4 @@
-name: Karabo Feedstock Versions File
+name: Versions File
 
 on:
   workflow_call:
