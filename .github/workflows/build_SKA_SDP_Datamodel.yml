@@ -13,3 +13,5 @@ jobs:
       package_name: ska-sdp-datamodels
       package_version: $SKA_SDP_DTMDL_VERSION
       python_call: ska_sdp_datamodels
+    secrets:
+      condaSecret: ${{ secrets.ANACONDA_SECRET }}
