@@ -47,7 +47,7 @@ jobs:
         run: |
           conda activate base
           conda install anaconda-client
-          anaconda -t ${{ secrets.ANACONDA_SECRET }} upload ${{ inputs.upload_filePath }} --label $LABEL --force
+          anaconda -t ${{ secrets.condaSecret }} upload ${{ inputs.upload_filePath }} --label $LABEL --force
 
 
   test_base:
