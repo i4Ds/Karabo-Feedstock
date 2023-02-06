@@ -62,7 +62,7 @@ jobs:
           auto-update-conda: true
       - name: Install Mamba Solver
         run: |
-          conda update -y -n base conda
+          #conda update -y -n base conda # conda update breaks libmamba currently
           conda install -y -n base conda-libmamba-solver
       - name: Install Package
         shell: bash -l {0}
