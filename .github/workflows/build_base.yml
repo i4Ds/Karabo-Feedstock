@@ -2,7 +2,8 @@ name: Build Base
 
 env:
   SKA_SDP_DTMDL_VERSION: 0.1.2
-  SKA_SDP_FUNC_VERSION: 0.1.3
+  #SKA_SDP_FUNC_VERSION: 0.0.6
+  SKA_SDP_FUNC_PY_VERSION: 0.1.3
   LABEL: main
   #LABEL: dev
 
@@ -70,9 +71,9 @@ jobs:
           conda create -y -n testpy39 python=3.9
           conda activate testpy39
           conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
-          python -c "import ${{ inputs.python_call }}"
+          python -c "${{ inputs.python_call }}"
           
           conda create -y -n testpy310 python=3.10
           conda activate testpy310
           conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
-          python -c "import ${{ inputs.python_call }}"
+          python -c "${{ inputs.python_call }}"
