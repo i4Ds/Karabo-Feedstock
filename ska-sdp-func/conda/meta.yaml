@@ -1,0 +1,51 @@
+{% set name = "ska-sdp-func" %}
+{% set fileName = name|replace("-", "_") %}
+{% set uNameAndVers = fileName + "-" + SKA_SDP_FUNC_VERSION %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ SKA_SDP_FUNC_VERSION }}
+
+source:
+  git_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-func.git
+
+build:
+  noarch: python
+  number: 0
+  script_env:
+   - INTERNAL_FOLDER_NAME= {{ uNameAndVers }}
+  
+requirements:
+  build:
+    - cmake
+    - python >=3.9
+    - pip 
+
+  host:
+    
+  run:
+    - python >=3.9
+    - pip
+    - numpy >=1.23.4
+    
+test:
+  requires:
+    - pytest
+  commands:
+    - pytest
+
+
+about:
+  home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func/
+  license: Apache 2.0
+  license_file: {{ uNameAndVers }}/LICENSE
+  summary: 'SKA SDP Processing Functions'
+  description: |
+   SKA SDP Functions
+  doc_url: https://developer.skao.int/projects/ska-sdp-func/en/latest/
+  dev_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-func
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch 
+    
