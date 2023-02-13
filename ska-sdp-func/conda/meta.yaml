@@ -37,8 +37,8 @@ test:
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func/
-  license: Apache 2.0
-  license_file: {{ uNameAndVers }}/LICENSE
+  license: BSD
+  license_file: LICENSE
   summary: 'SKA SDP Processing Functions'
   description: |
    SKA SDP Functions
