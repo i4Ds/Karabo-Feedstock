@@ -25,6 +25,11 @@ on:
       python_call:
         required: true
         type: string
+      useCuda:
+        required: false
+        default: false
+        type: boolean
+        
     secrets:
       condaSecret:
         required: true
@@ -38,7 +43,13 @@ jobs:
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          auto-update-conda: true     
+          auto-update-conda: true
+      - name: install Cuda Toolkit
+        if: ${{ inputs.useCuda }}
+        uses: Jimver/cuda-toolkit@v0.2.8
+        id: cuda-toolkit
+        with:
+          cuda: '11.7.0'
       - name: Install Conda-Build and create target
         run: |
           conda install conda-build
