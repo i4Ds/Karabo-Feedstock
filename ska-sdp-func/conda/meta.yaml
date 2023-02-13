@@ -1,6 +1,5 @@
 {% set name = "ska-sdp-func" %}
 {% set fileName = name|replace("-", "_") %}
-{% set uNameAndVers = fileName + "-" + SKA_SDP_FUNC_VERSION %}
 
 package:
   name: {{ name|lower }}
@@ -11,28 +10,26 @@ source:
 
 build:
   number: 0
-  script_env:
-   - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
   
 requirements:
   build:
     - libgcc-ng=11.3 # will fail with compiler version above
     - cmake
     - make
-    - python >=3.9
+    - python {{ python }}
     - pip 
 
   host:
     - libgcc-ng=11.3 # will fail with compiler version above
     - cmake
     - make
-    - python >=3.9
+    - python {{ python }}
     - pip
     
   run:
-    - python >=3.9
+    - python {{ python }}
     - pip
-    - numpy >=1.23.4
+    - numpy {{ numpy }}
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func/
