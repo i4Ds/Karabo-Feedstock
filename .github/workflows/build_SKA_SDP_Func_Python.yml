@@ -1,0 +1,17 @@
+name: SKA SDP Func Python Wrapper
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  SKA_SDP_Func:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      recipe_path: ska-sdp-func-python/conda/.
+      upload_filePath: /usr/share/miniconda/conda-bld/noarch/ska-sdp-func-python*.tar.bz2
+      package_name: ska-sdp-func-python
+      package_version: $SKA_SDP_FUNC_PY_VERSION
+      python_call: from ska_sdp_func_python import *
+    secrets:
+      condaSecret: ${{ secrets.ANACONDA_SECRET }}

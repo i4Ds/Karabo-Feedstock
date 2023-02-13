@@ -21,7 +21,7 @@ requirements:
     - python >=3.9
     - pip 
     - astroplan >=0.8
-    - ducc0 >=0.27.0
+    - ducc0 >=0.27.0,<0.28
     - photutils >=1.5
     - ska-sdp-datamodels >=0.1.2
 
@@ -29,7 +29,7 @@ requirements:
     - python >=3.9
     - pip
     - astroplan >=0.8
-    - ducc0 >=0.27.0
+    - ducc0 >=0.27.0,<0.28
     - photutils >=1.5
     - ska-sdp-datamodels >=0.1.2
     
@@ -38,7 +38,7 @@ requirements:
     - pip
     - astroplan >=0.8
     - astropy >=5.1
-    - ducc0 >=0.27.0
+    - ducc0 >=0.27.0,<0.28
     - numpy >=1.23.4
     - photutils >=1.5
     - scipy >=1.9.3
@@ -55,7 +55,7 @@ about:
   license_file: {{ uNameAndVers }}/LICENSE
   summary: 'SKA SDP Python Processing Functions'
   description: |
-   SKA SDP Datamodels
+   SKA SDP Function Python Wrapper
   doc_url: https://developer.skao.int/projects/ska-sdp-func-python/en/latest/
   dev_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-func-python
 
