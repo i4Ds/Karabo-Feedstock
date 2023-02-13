@@ -50,6 +50,9 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
+        if: ${{ !inputs.useCuda }}
+        run: |
+          echo "no need for cuda" 
       - name: Install Conda-Build and create target
         run: |
           conda install conda-build
