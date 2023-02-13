@@ -27,13 +27,6 @@ requirements:
     - python >=3.9
     - pip
     - numpy >=1.23.4
-    
-test:
-  requires:
-    - pytest
-  commands:
-    - pytest
-
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func/
