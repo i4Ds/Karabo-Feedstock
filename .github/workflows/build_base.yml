@@ -60,7 +60,7 @@ jobs:
         run: |
           conda activate base
           conda install anaconda-client
-          anaconda -t ${{ secrets.condaSecret }} upload /usr/share/miniconda/conda-bld/${{ inputs.arch }}/${{ package_name }}*.tar.bz2 --label $LABEL --force
+          anaconda -t ${{ secrets.condaSecret }} upload /usr/share/miniconda/conda-bld/${{ inputs.arch }}/${{ inputs.package_name }}*.tar.bz2 --label $LABEL --force
 
 
   test_base:
