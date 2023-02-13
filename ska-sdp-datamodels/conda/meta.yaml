@@ -14,7 +14,7 @@ build:
   noarch: python
   number: 0
   script_env:
-   - INTERNAL_FOLDER_NAME= {{ uNameAndVers }}
+   - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
   
 requirements:
   build:
