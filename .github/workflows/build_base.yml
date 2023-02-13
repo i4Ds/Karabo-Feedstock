@@ -13,9 +13,6 @@ on:
       recipe_path:
         required: true
         type: string
-      upload_filePath:
-        required: true
-        type: string
       package_name:
         required: true
         type: string
@@ -29,6 +26,10 @@ on:
         required: false
         default: false
         type: boolean
+      arch:
+        required: false
+        default: "noarch"
+        type: string
         
     secrets:
       condaSecret:
@@ -59,7 +60,7 @@ jobs:
         run: |
           conda activate base
           conda install anaconda-client
-          anaconda -t ${{ secrets.condaSecret }} upload ${{ inputs.upload_filePath }} --label $LABEL --force
+          anaconda -t ${{ secrets.condaSecret }} upload /usr/share/miniconda/conda-bld/${{ inputs.arch }}/${{ package_name }}*.tar.bz2 --label $LABEL --force
 
 
   test_base:
