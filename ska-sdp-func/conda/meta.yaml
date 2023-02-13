@@ -23,6 +23,11 @@ requirements:
     - pip 
 
   host:
+    - libgcc-ng=11.3 # will fail with compiler version above
+    - cmake
+    - make
+    - python >=3.9
+    - pip
     
   run:
     - python >=3.9
