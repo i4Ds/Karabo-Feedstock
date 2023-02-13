@@ -24,6 +24,7 @@ requirements:
     - ducc0 >=0.27.0,<0.28
     - photutils >=1.5
     - ska-sdp-datamodels >=0.1.2
+    - ska-sdp-func >=0.0.6
 
   host:
     - python >=3.9
@@ -32,6 +33,7 @@ requirements:
     - ducc0 >=0.27.0,<0.28
     - photutils >=1.5
     - ska-sdp-datamodels >=0.1.2
+    - ska-sdp-func >=0.0.6
     
   run:
     - python >=3.9
@@ -43,11 +45,8 @@ requirements:
     - photutils >=1.5
     - scipy >=1.9.3
     - ska-sdp-datamodels >=0.1.2
-    - xarray >=2022.11.0
-    
-#test:
-#  imports:
-  
+    - ska-sdp-func >=0.0.6
+    - xarray >=2022.11.0  
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func-python/
