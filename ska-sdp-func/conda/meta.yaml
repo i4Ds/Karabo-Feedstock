@@ -16,6 +16,7 @@ build:
   
 requirements:
   build:
+    - libgcc-ng=11.3 # will fail with compiler version above
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - cmake
