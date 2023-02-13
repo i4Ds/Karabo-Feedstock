@@ -1,4 +1,4 @@
-name: SKA SDP Func Python Wrapper
+name: SKA SDP Func Native
 
 on:
   workflow_dispatch:
