@@ -1,12 +1,11 @@
-{% set name = "pyBDSF" %}
+{% set name = "BDSF" %}
 
 package:
   name: {{ name|lower }}
   version: {{ PY_BDSF_VERSION }}
 
 source:
-  git_url: https://github.com/lofar-astron/PyBDSF.git
-  git_tag: v{{ PY_BDSF_VERSION }}
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
 
 build:
   number: 0
