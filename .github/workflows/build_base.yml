@@ -85,10 +85,10 @@ jobs:
         run: |
           conda create -y -n testpy39 python=3.9
           conda activate testpy39
-          conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
+          conda install -y -c "i4ds/label/${{ inputs.label }}" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
           python -c "${{ inputs.python_call }}"
           
           conda create -y -n testpy310 python=3.10
           conda activate testpy310
-          conda install -y -c "i4ds/label/$LABEL" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
+          conda install -y -c "i4ds/label/${{ inputs.label }}" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
           python -c "${{ inputs.python_call }}"
