@@ -1,4 +1,5 @@
 {% set name = "BDSF" %}
+{% set version = {{ PY_BDSF_VERSION }} %}
 
 package:
   name: {{ name|lower }}
