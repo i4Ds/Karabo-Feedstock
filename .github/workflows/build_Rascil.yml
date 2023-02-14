@@ -1,0 +1,16 @@
+name: Rascil
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  SKA_SDP_Func:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      recipe_path: rascil/conda/.
+      package_name: rascil
+      package_version: $RASCIL_VERSION
+      python_call: from rascil.apps.rascil_image_check import cli_parser, image_check
+    secrets:
+      condaSecret: ${{ secrets.ANACONDA_SECRET }}
