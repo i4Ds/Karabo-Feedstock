@@ -5,7 +5,7 @@ on:
 
 jobs:
 
-  SKA_SDP_Func:
+  Rascil:
     uses: ./.github/workflows/build_base.yml
     with:
       recipe_path: rascil/conda/.

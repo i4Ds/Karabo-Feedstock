@@ -5,7 +5,7 @@ on:
 
 jobs:
 
-  SKA_SDP_Func:
+  SKA_SDP_Func_Python_Wrapper:
     uses: ./.github/workflows/build_base.yml
     with:
       recipe_path: ska-sdp-func-python/conda/.
