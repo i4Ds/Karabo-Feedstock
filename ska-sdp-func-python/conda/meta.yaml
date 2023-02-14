@@ -8,7 +8,6 @@ package:
 
 source:
    url: https://artefact.skao.int/repository/pypi-internal/packages/{{ name }}/{{ SKA_SDP_FUNC_PY_VERSION }}/{{ uNameAndVers }}.tar.gz
-   sha256: caee75113d7f80fd6488b641af389a3ada307567731240f6bc4c94735962e8cc
 
 build:
   noarch: python
