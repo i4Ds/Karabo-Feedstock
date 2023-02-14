@@ -1,4 +1,4 @@
-{% set name = "BDSF" %}
+{% set name = "bdsf" %}
 
 package:
   name: {{ name|lower }}
