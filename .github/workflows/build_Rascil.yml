@@ -12,5 +12,6 @@ jobs:
       package_name: rascil
       package_version: $RASCIL_VERSION
       python_call: from rascil.apps.rascil_image_check import cli_parser, image_check
+      label: dev
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}
