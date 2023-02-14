@@ -16,7 +16,7 @@ jobs:
       recipe_path: pybdsf/conda/.
       package_name: pybdsf
       package_version: $PY_BDSF_VERSION
-      python_call: import bdsm.functions as func
+      python_call: import bdsf.functions as func
       label: ${{ inputs.label }}
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}
