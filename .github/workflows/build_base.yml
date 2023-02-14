@@ -21,6 +21,10 @@ on:
       python_call:
         required: true
         type: string
+      label:
+        required: false
+        default: "main"
+        type: string
       useCuda:
         required: false
         default: false
@@ -28,10 +32,6 @@ on:
       arch:
         required: false
         default: "noarch"
-        type: string
-      label:
-        required: false
-        default: "main"
         type: string
         
     secrets:

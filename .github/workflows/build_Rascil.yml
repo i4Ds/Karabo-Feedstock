@@ -2,6 +2,11 @@ name: Rascil
 
 on:
   workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
 
 jobs:
 
@@ -12,6 +17,6 @@ jobs:
       package_name: rascil
       package_version: $RASCIL_VERSION
       python_call: from rascil.apps.rascil_image_check import cli_parser, image_check
-      label: dev
+      label: ${{ inputs.label }}
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}
