@@ -27,16 +27,12 @@ requirements:
   run:
     - python
     - pip
-    - astroplan >=0.8,<0.9
-    - astropy >=5.1,<6.0 
-    - h5py >=3.7.0,<4.0.0 
-    - numpy >=1.23.4,<2.0.0
-    - pandas >=1.5.0,<2.0.0
-    - xarray >=2022.10.0,<2023.0.0
-    
-#test:
-#  imports:
-  
+    - astroplan         >=0.8,          <0.9
+    - astropy           >=5.1,          <6.0 
+    - h5py              >=3.7.0,        <4.0.0 
+    - numpy             >=1.23.4,       <2.0.0
+    - pandas            >=1.5.0,        <2.0.0
+    - xarray            >=2022.10.0,    <2023.0.0
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels
@@ -50,5 +46,4 @@ about:
 
 extra:
   recipe-maintainers:
-    - filip.schramka@fhnw.ch 
-    
+    - filip.schramka@fhnw.ch

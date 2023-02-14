@@ -6,7 +6,7 @@ package:
 
 source:
   git_url: https://gitlab.com/ska-telescope/external/rascil-main
-  git_tag: 1.0.0
+  git_tag: {{ RASCIL_VERSION }}
 
 build:
   noarch: python
@@ -34,13 +34,14 @@ requirements:
     - matplotlib            >=3.6,      <3.7
     - numpy                 >=1.23,     <1.24
     - pandas                >=1.5,      <1.6
+    - pybdsf                {{ PY_BDSF_VERSION }}
     - python-casacore       >=3.5,      <3.6
     - reproject             >=0.9,      <0.10
     - scipy                 >=1.9,      <1.10
     - seqfile               >=0.2,      <0.3
-    - ska-sdp-datamodels    >=0.1,      <0.2
-    - ska-sdp-func
-    - ska-sdp-func-python   >=0.1,      <0.2
+    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION }}
+    - ska-sdp-func          {{ SKA_SDP_FUNC_VERSION }}
+    - ska-sdp-func-python   {{ SKA_SDP_FUNC_PY_VERSION }}
     - tabulate              >=0.9,      <0.10
     - xarray                >=2022.12,  <2022.13
 
@@ -57,4 +58,4 @@ about:
 
 extra:
   recipe-maintainers:
-    - Filip Schramka
+    - filip.schramka@fhnw.ch
