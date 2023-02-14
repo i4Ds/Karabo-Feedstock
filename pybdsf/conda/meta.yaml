@@ -1,12 +1,11 @@
 {% set name = "BDSF" %}
-{% set version = {{ PY_BDSF_VERSION }} %}
 
 package:
   name: {{ name|lower }}
   version: {{ PY_BDSF_VERSION }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ PY_BDSF_VERSION }}.tar.gz
 
 build:
   number: 0
