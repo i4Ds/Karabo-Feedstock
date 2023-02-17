@@ -19,7 +19,7 @@ requirements:
     - pip
     - numpy {{ numpy }}
     - boost {{ boost }}
-    - setuptools ==65.5.1
+    - setuptools ==59.8.0
     
   host:
     - python {{ python }}
@@ -27,7 +27,7 @@ requirements:
     - boost {{ boost }}
     - astropy
     - matplotlib
-    - setuptools ==65.5.1
+    - setuptools ==59.8.0
     
   run:
     - python {{ python }}
