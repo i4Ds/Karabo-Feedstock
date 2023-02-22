@@ -34,6 +34,10 @@ on:
         required: false
         default: "noarch"
         type: string
+      py310rdy:
+        required: false
+        default: true
+        type: boolean
         
     secrets:
       condaSecret:
@@ -81,14 +85,17 @@ jobs:
         run: |
           #conda update -y -n base conda # conda update breaks libmamba currently
           conda install -y -n base conda-libmamba-solver
-      - name: Install Package
+      - name: Install Package and test with Python 3.9
         shell: bash -l {0}
         run: |
           conda create -y -n testpy39 python=3.9
           conda activate testpy39
           conda install -y -c "i4ds/label/${{ inputs.label }}" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
           python -c "${{ inputs.python_call }}"
-          
+      - name: Install Package and test with Python 3.10 => ${{ inputs.py310rdy }}
+        if: ${{ inputs.py310rdy }}
+        shell: bash -l {0}
+        run: |
           conda create -y -n testpy310 python=3.10
           conda activate testpy310
           conda install -y -c "i4ds/label/${{ inputs.label }}" -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
