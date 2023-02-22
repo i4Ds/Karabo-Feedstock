@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/build_base.yml
     with:
       recipe_path: pybdsf/conda/.
-      package_name: pybdsf
+      package_name: bdsf
       package_version: $PY_BDSF_VERSION
       python_call: import bdsf.functions as func
       label: ${{ inputs.label }}
