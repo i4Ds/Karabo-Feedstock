@@ -28,10 +28,6 @@ on:
         required: false
         default: "main"
         type: string
-      useLabelForInstall:
-        required: false
-        default: ${{ inputs.label != "main" && "-c i4ds/label/"+inputs.label || "" }} 
-        type: string
       useCuda:
         required: false
         default: false
@@ -68,7 +64,7 @@ jobs:
       - name: Install Conda-Build and create target
         run: |
           conda install conda-build
-          conda build -c i4ds -c conda-forge ${{ inputs.recipe_path }}
+          conda build -c "i4ds/label/${{ inputs.label }}" -c i4ds -c conda-forge ${{ inputs.recipe_path }}
       - name: Install and publish to Conda
         shell: bash -l {0}
         run: |
