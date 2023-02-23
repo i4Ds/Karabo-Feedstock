@@ -27,7 +27,7 @@ requirements:
   run:
     - python                >=3.9,      <3.11
     - astropy               >=5.1,      <5.2
-    - bdsf                {{ PYBDSF_VERSION }}
+    - bdsf                  {{ PYBDSF_VERSION }}
     - dask                  >=2022.12,  <2022.13
     - dask-memusage         >=1.1,      <1.2
     - distributed           >=2022.12,  <2022.13
