@@ -28,6 +28,10 @@ on:
         required: false
         default: "main"
         type: string
+      useLabelForInstall:
+        required: false
+        default: ${{ inputs.label != "main" && "-c i4ds/label/"+inputs.label || "" }} 
+        type: string
       useCuda:
         required: false
         default: false
