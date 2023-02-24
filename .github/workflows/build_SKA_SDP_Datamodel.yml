@@ -16,5 +16,6 @@ jobs:
       packageName: ska-sdp-datamodels
       packageVersion: $SKA_SDP_DTMDL_VERSION
       pythonCall: from ska_sdp_datamodels import *
+      label: ${{ inputs.label }}
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}

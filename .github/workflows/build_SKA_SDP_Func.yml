@@ -17,5 +17,6 @@ jobs:
       pythonCall: from ska_sdp_func.visibility import dft_point_v00, dft_point_v01
       useCuda: true
       isNative: true
+      label: ${{ inputs.label }}
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}
