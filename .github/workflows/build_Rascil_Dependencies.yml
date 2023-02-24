@@ -7,17 +7,11 @@ on:
         type: string
         default: "main"
         required: true
-    secrets:
-      passedSecret: ${{ secrets.ANACONDA_SECRET }}
         
   workflow_call:
     inputs:
       label:
         type: string
-        default: "main"
-        required: true
-    secrets:
-      passedSecret:
         required: true
         
 jobs:
@@ -26,27 +20,23 @@ jobs:
     uses: ./.github/workflows/build_SKA_SDP_Func_Python.yml
     with:
       label: ${{ inputs.label }}
-    secrets:
-      condaSecret: ${{ secrets.passedSecret }}
+    secrets: inherit
 
   SKA_SDP_Datamodels:
     uses: ./.github/workflows/build_SKA_SDP_Datamodel.yml
     with:
       label: ${{ inputs.label }}
-    secrets:
-      condaSecret: ${{ secrets.passedSecret }}
+    secrets: inherit
 
   PyBDSF:
     uses: ./.github/workflows/build_PyBDSF.yml
     with:
       label: ${{ inputs.label }}
-    secrets:
-      condaSecret: ${{ secrets.passedSecret }}
+    secrets: inherit
 
   SKA_SDP_Func_Python:
     needs: [SKA_SDP_Func_Native, SKA_SDP_Datamodels]
     uses: ./.github/workflows/build_SKA_SDP_Func_Python.yml
     with:
       label: ${{ inputs.label }}
-    secrets:
-      condaSecret: ${{ secrets.passedSecret }}
+    secrets: inherit

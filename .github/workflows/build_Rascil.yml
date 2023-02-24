@@ -7,17 +7,11 @@ on:
         type: string
         default: "main"
         required: true
-    secrets:
-      passedSecret: ${{ secrets.ANACONDA_SECRET }}
         
   workflow_call:
     inputs:
       label:
         type: string
-        default: "main"
-        required: true
-    secrets:
-      passedSecret:
         required: true
 
 jobs:
@@ -29,5 +23,4 @@ jobs:
       packageVersion: $RASCIL_VERSION
       pythonCall: from rascil.apps.rascil_image_check import cli_parser, image_check
       label: ${{ inputs.label }}
-    secrets:
-      condaSecret: ${{ secrets.passedSecret }}
+    secrets: inherit
