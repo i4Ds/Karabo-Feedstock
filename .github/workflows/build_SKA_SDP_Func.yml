@@ -7,6 +7,8 @@ on:
         type: string
         default: "main"
         required: true
+    secrets:
+      passedSecret: ${{ secrets.ANACONDA_SECRET }}
         
   workflow_call:
     inputs:
@@ -14,6 +16,10 @@ on:
         type: string
         default: "main"
         required: true
+    secrets:
+      passedSecret:
+        required: true
+
 jobs:
 
   SKA_SDP_Func:
@@ -26,4 +32,4 @@ jobs:
       isNative: true
       label: ${{ inputs.label }}
     secrets:
-      condaSecret: ${{ secrets.ANACONDA_SECRET }}
+      condaSecret: ${{ secrets.passedSecret }}

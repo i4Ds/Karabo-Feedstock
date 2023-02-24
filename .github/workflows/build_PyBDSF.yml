@@ -7,12 +7,17 @@ on:
         type: string
         default: "main"
         required: true
+    secrets:
+      passedSecret: ${{ secrets.ANACONDA_SECRET }}
         
   workflow_call:
     inputs:
       label:
         type: string
         default: "main"
+        required: true
+    secrets:
+      passedSecret:
         required: true
 
 jobs:
@@ -27,4 +32,4 @@ jobs:
       label: ${{ inputs.label }}
       isNative: true
     secrets:
-      condaSecret: ${{ secrets.ANACONDA_SECRET }}
+      condaSecret: ${{ secrets.passedSecret }}
