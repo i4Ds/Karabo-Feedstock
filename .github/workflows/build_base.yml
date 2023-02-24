@@ -31,7 +31,6 @@ on:
       
       customPath:
         required: false
-        default: ""
         type: string
       
       pythonCall:
@@ -76,11 +75,11 @@ jobs:
         with:
           cuda: '11.7.0'
       - name: Set custom path to recipe
-        if: inputs.customPath != ""
+        if: inputs.customPath != ''
         run: |
           echo "recipePath=${{ inputs.customPath }}" >> $GITHUB_ENV
       - name: Set default path to recipe
-        if: inputs.customPath == ""
+        if: inputs.customPath == ''
         run: |
           echo "recipePath=${{ inputs.packageName }}/." >> $GITHUB_ENV
       - name: Install Conda-Build and create target
