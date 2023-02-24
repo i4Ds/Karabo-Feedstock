@@ -1,7 +1,7 @@
 name: SKA SDP Func Native
 
 on:
-  workflow_dispatch:
+  [workflow_dispatch, workflow_call]:
     inputs:
       label:
         type: string

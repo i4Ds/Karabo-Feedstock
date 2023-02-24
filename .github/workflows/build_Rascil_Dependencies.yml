@@ -1,7 +1,7 @@
 name: Build Rascil Dependencies
 
 on:
-  workflow_dispatch:
+  [workflow_dispatch, workflow_call]:
     inputs:
       label:
         type: string
