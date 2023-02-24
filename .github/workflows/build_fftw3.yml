@@ -7,17 +7,12 @@ on:
         type: string
         default: "main"
         required: true
-    secrets:
-      passedSecret: ${{ secrets.ANACONDA_SECRET }}
         
   workflow_call:
     inputs:
       label:
         type: string
         default: "main"
-        required: true
-    secrets:
-      passedSecret:
         required: true
 
 jobs:
@@ -29,5 +24,4 @@ jobs:
       packageVersion: $FFTW3_VERSION
       label: ${{ inputs.label }}
       isNative: true
-    secrets:
-      condaSecret: ${{ secrets.passedSecret }}
+    secrets: inherit
