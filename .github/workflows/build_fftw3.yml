@@ -24,4 +24,5 @@ jobs:
       packageVersion: $FFTW3_VERSION
       label: ${{ inputs.label }}
       isNative: true
+      customPath: fftw3/.
     secrets: inherit
