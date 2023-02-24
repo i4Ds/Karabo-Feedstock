@@ -27,6 +27,7 @@ requirements:
   run:
     - python                >=3.9,      <3.11
     - astropy               >=5.1,      <5.2
+    - bdsf                  {{ PYBDSF_VERSION }}
     - dask                  >=2022.12,  <2022.13
     - dask-memusage         >=1.1,      <1.2
     - distributed           >=2022.12,  <2022.13
@@ -34,7 +35,6 @@ requirements:
     - matplotlib            >=3.6,      <3.7
     - numpy                 {{ NUMPY_VERSION }}
     - pandas                >=1.5,      <1.6
-    - pybdsf                {{ PYBDSF_VERSION }}
     - python-casacore       >=3.5,      <3.6
     - reproject             >=0.9,      <0.10
     - scipy                 >=1.9,      <1.10
