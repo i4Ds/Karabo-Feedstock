@@ -1,7 +1,14 @@
 name: SKA SDP Func Python Wrapper
 
 on:
-  [workflow_dispatch, workflow_call]:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
     inputs:
       label:
         type: string

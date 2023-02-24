@@ -1,12 +1,20 @@
 name: Build Rascil Dependencies
 
 on:
-  [workflow_dispatch, workflow_call]:
+  workflow_dispatch:
     inputs:
       label:
         type: string
         default: "main"
         required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
 jobs:
 
   SKA_SDP_Func_Native:
