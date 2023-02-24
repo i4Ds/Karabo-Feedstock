@@ -2,6 +2,11 @@ name: SKA SDP Datamodel
 
 on:
   workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
 
 jobs:
 

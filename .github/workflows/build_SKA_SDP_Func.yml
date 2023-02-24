@@ -2,7 +2,11 @@ name: SKA SDP Func Native
 
 on:
   workflow_dispatch:
-
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
 jobs:
 
   SKA_SDP_Func:
