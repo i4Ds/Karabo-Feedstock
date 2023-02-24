@@ -1,0 +1,40 @@
+{% set pName = "fftw" %}
+{% set name = pName + "3" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ FFTW3_VERSION }}
+
+source:
+   url: https://www.fftw.org/{{ pName }}-{{ FFTW3_VERSION }}.tar.gz 
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('gfortran') }}
+    - openmpi
+    
+  host:
+    - openmpi
+   
+  run:
+    - openmpi
+  
+
+about:
+  home: https://github.com/FFTW/fftw3
+  license: GPL-2.0-or-later
+  license_file: COPYING
+  summary: 'FFTW3 with MPI extension'
+  description: |
+   FFTW3 compiled with --enable-mpi --enable-openmp --disable-shared  CC="mpicc" F77="mpif90" MPICC="mpicc" CFLAGS="-O3" FFLAGS="-O3"
+  doc_url: http://fftw.org/fftw3_doc/
+  dev_url: https://github.com/FFTW/fftw3
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch

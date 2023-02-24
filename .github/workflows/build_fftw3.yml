@@ -1,0 +1,21 @@
+name: FFTW3
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+
+jobs:
+
+  FFTW3:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      recipe_path: fftw3/.
+      package_name: fftw3
+      package_version: $FFTW3_VERSION
+      label: ${{ inputs.label }}
+    secrets:
+      condaSecret: ${{ secrets.ANACONDA_SECRET }}
