@@ -18,7 +18,7 @@ jobs:
       package_version: $PYBDSF_VERSION
       python_call: import bdsf.functions as func
       label: ${{ inputs.label }}
-      arch: linux-64
+      isNative: true
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}
 

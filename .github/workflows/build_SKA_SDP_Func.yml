@@ -13,6 +13,6 @@ jobs:
       package_version: $SKA_SDP_FUNC_VERSION
       python_call: from ska_sdp_func.visibility import dft_point_v00, dft_point_v01
       useCuda: true
-      arch: linux-64
+      isNative: true
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}

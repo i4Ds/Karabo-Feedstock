@@ -41,10 +41,10 @@ on:
         required: false
         default: false
         type: boolean
-      arch:
+      isNative:
         required: false
-        default: "noarch"
-        type: string
+        default: false
+        type: boolean
       py310rdy:
         required: false
         default: true
@@ -74,12 +74,20 @@ jobs:
         run: |
           conda install conda-build
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.recipe_path }}
+      - name: Set linux64 as architecture
+        if: ${{ inputs.isNative }}
+        run: |
+          echo "arch=linux-64" >> $GITHUB_ENV
+      - name: Set python as architecture
+        if: ${{ !inputs.isNative }}
+        run: |
+          echo "arch=noarch" >> $GITHUB_ENV
       - name: Install and publish to Conda
         shell: bash -l {0}
         run: |
           conda activate base
           conda install anaconda-client
-          anaconda -t ${{ secrets.condaSecret }} upload /usr/share/miniconda/conda-bld/${{ inputs.arch }}/${{ inputs.package_name }}*.tar.bz2 --label ${{ inputs.label }} --force
+          anaconda -t ${{ secrets.condaSecret }} upload /usr/share/miniconda/conda-bld/${{ env.arch }}/${{ inputs.package_name }}*.tar.bz2 --label ${{ inputs.label }} --force
 
 
   test_base:

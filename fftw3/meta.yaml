@@ -1,12 +1,11 @@
-{% set pName = "fftw" %}
-{% set name = pName + "3" %}
+{% set name = "fftw" %}
 
 package:
   name: {{ name|lower }}
   version: {{ FFTW3_VERSION }}
 
 source:
-   url: https://www.fftw.org/{{ pName }}-{{ FFTW3_VERSION }}.tar.gz 
+   url: https://www.fftw.org/{{ name }}-{{ FFTW3_VERSION }}.tar.gz 
 
 build:
   number: 0

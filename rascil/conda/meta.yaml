@@ -14,10 +14,22 @@ build:
 
 requirements:
   build:
+    - bdsf                  {{ PYBDSF_VERSION }}.*
+    - dask                  >=2022.12,  <2022.13
+    - dask-memusage         >=1.1,      <1.2
+    - distributed           >=2022.12,  <2022.13
     - python
     - pip
     - git-lfs
     - git
+    - reproject             >=0.9,      <0.10
+    - seqfile               >=0.2,      <0.3
+    - python-casacore       >=3.5,      <3.6
+    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION }}.*
+    - ska-sdp-func          {{ SKA_SDP_FUNC_VERSION }}.*
+    - ska-sdp-func-python   {{ SKA_SDP_FUNC_PY_VERSION }}.*
+    - tabulate              >=0.9,      <0.10
+    - xarray                >=2022.12,  <2022.13
 
   host:
     - python
@@ -25,7 +37,6 @@ requirements:
     - curl
 
   run:
-    - python                >=3.9,      <3.11
     - astropy               >=5.1,      <5.2
     - bdsf                  {{ PYBDSF_VERSION }}.*
     - dask                  >=2022.12,  <2022.13
@@ -35,6 +46,7 @@ requirements:
     - matplotlib            >=3.6,      <3.7
     - numpy                 {{ NUMPY_VERSION }}.*
     - pandas                >=1.5,      <1.6
+    - python                >=3.9,      <3.11
     - python-casacore       >=3.5,      <3.6
     - reproject             >=0.9,      <0.10
     - scipy                 >=1.9,      <1.10
