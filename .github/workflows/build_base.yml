@@ -1,8 +1,8 @@
 name: Build Base
 
 env:
-  BOOST_VERSION: 1.74.* # casacore<--python-casacore<--rascil<--karabo needs boost 1.74
-  NUMPY_VERSION: 1.22.* # pybdsf does not work with higher versions yet
+  BOOST_VERSION: 1.74 # casacore<--python-casacore<--rascil<--karabo needs boost 1.74
+  NUMPY_VERSION: 1.22 # pybdsf does not work with higher versions yet
   PYBDSF_VERSION: 1.10.2
   RASCIL_VERSION: 1.0.0
   SKA_SDP_DTMDL_VERSION: 0.1.3

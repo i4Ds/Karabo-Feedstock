@@ -23,8 +23,8 @@ requirements:
     - astroplan             >=0.8
     - ducc0                 >=0.27.0,       <0.28
     - photutils             >=1.5
-    - ska-sdp-datamodels    >=0.1.2
-    - ska-sdp-func          >=0.0.6
+    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION }}.*
+    - ska-sdp-func          {{ SKA_SDP_FUNC_VERSION }}.*
 
   host:
     - python                >=3.9
@@ -33,8 +33,8 @@ requirements:
     - astroplan             >=0.8
     - ducc0                 >=0.27.0,       <0.28
     - photutils             >=1.5
-    - ska-sdp-datamodels    >=0.1.2
-    - ska-sdp-func          >=0.0.6
+    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION }}.*
+    - ska-sdp-func          {{ SKA_SDP_FUNC_VERSION }}.*
     
   run:
     - python                >=3.9
@@ -42,11 +42,11 @@ requirements:
     - astroplan             >=0.8
     - astropy               >=5.1
     - ducc0                 >=0.27.0,       <0.28
-    - numpy                 {{ NUMPY_VERSION }}
+    - numpy                 {{ NUMPY_VERSION }}:*
     - photutils             >=1.5
     - scipy                 >=1.9.3
-    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION }}
-    - ska-sdp-func          {{ SKA_SDP_FUNC_VERSION }}
+    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION }}.*
+    - ska-sdp-func          {{ SKA_SDP_FUNC_VERSION }}.*
     - xarray                >=2022.11.0  
 
 about:

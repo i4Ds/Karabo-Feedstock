@@ -17,23 +17,23 @@ requirements:
     - {{ compiler('gfortran') }}
     - python {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION }}
-    - boost {{ BOOST_VERSION }}
+    - numpy {{ NUMPY_VERSION }}.*
+    - boost {{ BOOST_VERSION }}.*
     - setuptools ==59.8.0
     
   host:
     - python {{ python }}
-    - numpy {{ NUMPY_VERSION }}
-    - boost {{ BOOST_VERSION }}
+    - numpy {{ NUMPY_VERSION }}.*
+    - boost {{ BOOST_VERSION }}.*
     - astropy
     - matplotlib
     - setuptools ==59.8.0
     
   run:
     - python {{ python }}
-    - boost {{ BOOST_VERSION }}
+    - boost {{ BOOST_VERSION }}.*
     - astropy
-    - numpy {{ NUMPY_VERSION }}
+    - numpy {{ NUMPY_VERSION }}.*
     - scipy
     - matplotlib
     - ipython
