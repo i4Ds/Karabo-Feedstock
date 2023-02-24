@@ -20,7 +20,7 @@ jobs:
   FFTW3:
     uses: ./.github/workflows/build_base.yml
     with:
-      packageName: fftw3
+      packageName: fftw
       packageVersion: $FFTW3_VERSION
       label: ${{ inputs.label }}
       isNative: true
