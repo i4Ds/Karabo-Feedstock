@@ -17,5 +17,6 @@ jobs:
       package_name: fftw3
       package_version: $FFTW3_VERSION
       label: ${{ inputs.label }}
+      arch: linux-64
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}
