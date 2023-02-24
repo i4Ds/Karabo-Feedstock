@@ -13,12 +13,11 @@ jobs:
   PyBDSF:
     uses: ./.github/workflows/build_base.yml
     with:
-      recipe_path: pybdsf/conda/.
-      package_name: bdsf
-      package_version: $PYBDSF_VERSION
-      python_call: import bdsf.functions as func
+      packageName: bdsf
+      packageVersion: $PYBDSF_VERSION
+      customPath: pybdsf/.
+      pythonCall: import bdsf.functions as func
       label: ${{ inputs.label }}
       isNative: true
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}
-

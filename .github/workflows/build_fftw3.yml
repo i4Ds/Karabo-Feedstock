@@ -13,9 +13,8 @@ jobs:
   FFTW3:
     uses: ./.github/workflows/build_base.yml
     with:
-      recipe_path: fftw3/.
-      package_name: fftw3
-      package_version: $FFTW3_VERSION
+      packageName: fftw3
+      packageVersion: $FFTW3_VERSION
       label: ${{ inputs.label }}
       isNative: true
     secrets:

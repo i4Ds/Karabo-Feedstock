@@ -8,9 +8,8 @@ jobs:
   SKA_SDP_Func_Python_Wrapper:
     uses: ./.github/workflows/build_base.yml
     with:
-      recipe_path: ska-sdp-func-python/conda/.
-      package_name: ska-sdp-func-python
-      package_version: $SKA_SDP_FUNC_PY_VERSION
-      python_call: from ska_sdp_func_python import *
+      packageName: ska-sdp-func-python
+      packageVersion: $SKA_SDP_FUNC_PY_VERSION
+      pythonCall: from ska_sdp_func_python import *
     secrets:
       condaSecret: ${{ secrets.ANACONDA_SECRET }}

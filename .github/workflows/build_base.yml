@@ -20,31 +20,40 @@ env:
 on:
   workflow_call:
     inputs:
-      recipe_path:
+      
+      packageName:
         required: true
         type: string
-      package_name:
+      
+      packageVersion:
         required: true
         type: string
-      package_version:
-        required: true
+      
+      customPath:
+        required: false
+        default: Null
         type: string
-      python_call:
+      
+      pythonCall:
         required: false
         default: ""
         type: string
+      
       label:
         required: false
         default: "main"
         type: string
+      
       useCuda:
         required: false
         default: false
         type: boolean
+      
       isNative:
         required: false
         default: false
         type: boolean
+      
       py310rdy:
         required: false
         default: true
@@ -70,10 +79,18 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
+      - name: Set custom path to recipe
+        if: ${{ inputs.customPath != Null }}
+        run: |
+          echo "recipePath=${{ inputs.customPath }}" >> $GITHUB_ENV
+      - name: Set default path to recipe
+        if: ${{ inputs.customPath == Null }}
+        run: |
+          echo "recipePath=${{ inputs.packageName }}/." >> $GITHUB_ENV
       - name: Install Conda-Build and create target
         run: |
           conda install conda-build
-          conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.recipe_path }}
+          conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
       - name: Set linux64 as architecture
         if: ${{ inputs.isNative }}
         run: |
@@ -87,7 +104,7 @@ jobs:
         run: |
           conda activate base
           conda install anaconda-client
-          anaconda -t ${{ secrets.condaSecret }} upload /usr/share/miniconda/conda-bld/${{ env.arch }}/${{ inputs.package_name }}*.tar.bz2 --label ${{ inputs.label }} --force
+          anaconda -t ${{ secrets.condaSecret }} upload /usr/share/miniconda/conda-bld/${{ env.arch }}/${{ inputs.packageName }}*.tar.bz2 --label ${{ inputs.label }} --force
 
 
   test_base:
@@ -109,13 +126,13 @@ jobs:
         run: |
           conda create -y -n testpy39 python=3.9
           conda activate testpy39
-          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
-          python -c "${{ inputs.python_call }}"
+          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ inputs.packageVersion }}" --experimental-solver=libmamba
+          python -c "${{ inputs.pythonCall }}"
       - name: Install Package and test with Python 3.10 => ${{ inputs.py310rdy }}
         if: ${{ inputs.py310rdy }}
         shell: bash -l {0}
         run: |
           conda create -y -n testpy310 python=3.10
           conda activate testpy310
-          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.package_name }}="${{ inputs.package_version }}" --experimental-solver=libmamba
-          python -c "${{ inputs.python_call }}"
+          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ inputs.packageVersion }}" --experimental-solver=libmamba
+          python -c "${{ inputs.pythonCall }}"

@@ -8,10 +8,9 @@ jobs:
   SKA_SDP_Func:
     uses: ./.github/workflows/build_base.yml
     with:
-      recipe_path: ska-sdp-func/conda/.
-      package_name: ska-sdp-func
-      package_version: $SKA_SDP_FUNC_VERSION
-      python_call: from ska_sdp_func.visibility import dft_point_v00, dft_point_v01
+      packageName: ska-sdp-func
+      packageVersion: $SKA_SDP_FUNC_VERSION
+      pythonCall: from ska_sdp_func.visibility import dft_point_v00, dft_point_v01
       useCuda: true
       isNative: true
     secrets:
