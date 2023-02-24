@@ -1,0 +1,39 @@
+name: Build Rascil Dependencies
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+jobs:
+
+  SKA_SDP_Func_Native:
+    uses: ./.github/workflows/build_SKA_SDP_Func_Python.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets:
+      condaSecret: ${{ secrets.ANACONDA_SECRET }}
+
+  SKA_SDP_Datamodels:
+    uses: ./.github/workflows/build_SKA_SDP_Datamodel.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets:
+      condaSecret: ${{ secrets.ANACONDA_SECRET }}
+
+  PyBDSF:
+    uses: ./.github/workflows/build_PyBDSF.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets:
+      condaSecret: ${{ secrets.ANACONDA_SECRET }}
+
+  SKA_SDP_Func_Python:
+    needs: [SKA_SDP_Func_Native, SKA_SDP_Datamodels]
+    uses: ./.github/workflows/build_SKA_SDP_Func_Python.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets:
+      condaSecret: ${{ secrets.ANACONDA_SECRET }}
