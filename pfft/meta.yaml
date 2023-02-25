@@ -1,0 +1,37 @@
+{% set name = "pfft" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ PFFT_VERSION }}
+
+source:
+   git_url: https://github.com/mpip/pfft.git
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('gfortran') }}
+    - openmpi
+    - fftw {{ FFTW3_VERSION }}.*
+    
+  host:
+   
+  run:  
+
+about:
+  home: https://github.com/mpip/pfft
+  license: GPL-2.0-or-later
+  license_file: COPYING
+  summary: 'PFFT'
+  description: |
+   PFFT using FFTW3 with MPI extension for frameworks like pinocchio
+  doc_url: https://www-user.tu-chemnitz.de/~potts/workgroup/pippig/software.php#pfft
+  dev_url: https://github.com/mpip/pfft/
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch

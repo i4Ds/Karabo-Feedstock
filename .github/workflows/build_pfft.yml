@@ -1,0 +1,26 @@
+name: PFFT
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+
+jobs:
+
+  PFFT:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: pfft
+      packageVersion: $PFFT_VERSION
+      label: ${{ inputs.label }}
+      isNative: true
+    secrets: inherit
