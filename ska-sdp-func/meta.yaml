@@ -1,8 +1,5 @@
-{% set name = "ska-sdp-func" %}
-{% set fileName = name|replace("-", "_") %}
-
 package:
-  name: {{ name|lower }}
+  name: {{ PACKAGE_NAME|lower }}
   version: {{ SKA_SDP_FUNC_VERSION }}
 
 source:

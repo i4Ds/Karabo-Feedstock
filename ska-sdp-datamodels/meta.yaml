@@ -1,13 +1,11 @@
-{% set name = "ska-sdp-datamodels" %}
-{% set uName = name|replace("-", "_") %}
-{% set uNameAndVers = uName + "-" + SKA_SDP_DTMDL_VERSION %}
+{% set uNameAndVers = PACKAGE_NAME|replace("-", "_") + "-" + SKA_SDP_DTMDL_VERSION %} # naming convention needs this
 
 package:
-  name: {{ name|lower }}
+  name: {{ PACKAGE_NAME|lower }}
   version: {{ SKA_SDP_DTMDL_VERSION }}
 
 source:
-   url: https://artefact.skao.int/repository/pypi-internal/packages/{{ name }}/{{ SKA_SDP_DTMDL_VERSION }}/{{ uNameAndVers }}.tar.gz
+   url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_SDP_DTMDL_VERSION }}/{{ uNameAndVers }}.tar.gz
 
 build:
   noarch: python

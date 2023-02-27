@@ -1,7 +1,5 @@
-{% set name = "rascil" %}
-
 package:
-  name: {{ name|lower }}
+  name: {{ PACKAGE_NAME|lower }}
   version: {{ RASCIL_VERSION }}
 
 source:

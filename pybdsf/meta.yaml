@@ -1,11 +1,9 @@
-{% set name = "bdsf" %}
-
 package:
-  name: {{ name|lower }}
+  name: {{ PACKAGE_NAME|lower }}
   version: {{ PYBDSF_VERSION }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ PYBDSF_VERSION }}.tar.gz
+  url: https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ PYBDSF_VERSION }}.tar.gz
 
 build:
   number: 0

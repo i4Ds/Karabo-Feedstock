@@ -1,7 +1,5 @@
-{% set name = "fftw" %}
-
 package:
-  name: {{ name|lower }}
+  name: {{ PACKAGE_NAME|lower }}
   version: {{ FFTW3_VERSION }}
 
 source:
