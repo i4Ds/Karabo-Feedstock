@@ -6,7 +6,7 @@ env:
   NUMPY_VERSION: 1.22 # pybdsf does not work with higher versions yet
 
   # Pinocchio Line
-  #PINOCCHIO_VERSION: 
+  PINOCCHIO_VERSION: 5.0.0
   PFFT_VERSION: 1.0.8
   FFTW3_VERSION: 3.3.10
   

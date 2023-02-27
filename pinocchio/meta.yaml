@@ -1,0 +1,42 @@
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ PINOCCHIO_VERSION }}
+
+source:
+   git_url: https://github.com/i4Ds/Pinocchio.git
+   git_tag: fivedotzero
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('gfortran') }}
+    - fftw {{ FFTW3_VERSION }}.*
+    - pfft {{ PFFT_VERSION }}.*
+    - gsl=2.7=he838d99_0
+    - openmpi=4.1.4=ha1ae619_102
+    
+  host:
+ 
+  run:
+    - fftw {{ FFTW3_VERSION }}.*
+    - pfft {{ PFFT_VERSION }}.*
+    - gsl=2.7=he838d99_0
+    - openmpi=4.1.4=ha1ae619_102
+  
+about:
+  home: https://github.com/i4Ds/Pinocchio
+  license: GPL-2.0-or-later
+  license_file: COPYING
+  summary: 'Pinocchio'
+  description: |
+   PINOCCHIO is a fast code to generate catalogues of cosmological dark matter halos with known mass, position, velocity and merger history.
+  doc_url: https://adlibitum.oats.inaf.it/monaco/pinocchio.html
+  dev_url: https://github.com/i4Ds/Pinocchio
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch 
