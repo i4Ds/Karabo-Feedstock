@@ -1,7 +1,5 @@
-{% set name = "pfft" %}
-
 package:
-  name: {{ name|lower }}
+  name: {{ PACKAGE_NAME|lower }}
   version: {{ PFFT_VERSION }}
 
 source:
