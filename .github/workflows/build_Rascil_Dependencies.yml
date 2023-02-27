@@ -17,7 +17,7 @@ on:
 jobs:
 
   SKA_SDP_Func_Native:
-    uses: ./.github/workflows/build_SKA_SDP_Func_Python.yml
+    uses: ./.github/workflows/build_SKA_SDP_Func_Native.yml
     with:
       label: ${{ inputs.label }}
     secrets: inherit

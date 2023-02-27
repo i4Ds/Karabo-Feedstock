@@ -16,7 +16,7 @@ on:
 
 jobs:
 
-  SKA_SDP_Func:
+  SKA_SDP_Func_Native:
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: ska-sdp-func
