@@ -77,9 +77,6 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
-      - name: Export package name
-        run: |
-          echo "recipePath=${{ inputs.customPath }}" >> $GITHUB_ENV
       - name: Set custom path to recipe
         if: inputs.customPath != ''
         run: |
