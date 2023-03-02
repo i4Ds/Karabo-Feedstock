@@ -27,6 +27,7 @@ env:
   SEQFILE_VERSION: 0.2.0
   EIDOS_VERSION: 1.1.0
   SKA_GRDR_NFTY_CU_VERSION: 0.0.11
+  KATBEAM_VERSION: 0.1.1
 
   # Package Name
   PACKAGE_NAME: ${{ inputs.packageName }}

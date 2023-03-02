@@ -1,0 +1,40 @@
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ KATBEAM_VERSION }}
+
+source:
+  git_url: https://github.com/ska-sa/katbeam.git
+
+build:
+  noarch: python
+  string: {{ CHANNEL_LABEL }}
+
+requirements:
+  build:
+    - python
+    - pip
+    - numpy {{ NUMPY_VERSION }}
+
+  host:
+    - python
+    - pip
+    - numpy {{ NUMPY_VERSION }}
+
+  run:
+    - python
+    - numpy {{ NUMPY_VERSION }}
+
+about:
+  home: https://github.com/i4Ds/katbeam
+  license: BSD-License
+  license_family: BSD
+  license_file: LICENSE.txt
+  summary: 'edios - Primary beam modelling of radio astronomy antennas.'
+  description: |
+    Primary beam model library for the MeerKAT project
+  doc_url: https://github.com/i4Ds/katbeam
+  dev_url: https://github.com/i4Ds/katbeam
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch

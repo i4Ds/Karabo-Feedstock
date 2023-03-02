@@ -1,0 +1,26 @@
+name: KatBeam
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+
+jobs:
+
+  KatBeam:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: katbeam
+      packageVersion: $KATBEAM_VERSION
+      label: ${{ inputs.label }}
+      pythonCall: import katbeam
+    secrets: inherit
