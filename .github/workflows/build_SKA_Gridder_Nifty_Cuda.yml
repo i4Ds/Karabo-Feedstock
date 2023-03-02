@@ -21,6 +21,7 @@ jobs:
     with:
       packageName: ska-gridder-nifty-cuda
       packageVersion: $SKA_GRDR_NFTY_CU_VERSION
+      useCuda: true
       pythonCall: import ducc0.wgridder
       label: ${{ inputs.label }}
       isNative: true
