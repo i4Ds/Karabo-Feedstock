@@ -1,4 +1,4 @@
-name: Build Rascil Dependencies
+name: Build Rascil with dependency tree
 
 on:
   workflow_dispatch:
