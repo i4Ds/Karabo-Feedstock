@@ -9,7 +9,7 @@ source:
 
 build:
   noarch: python
-  number: 0
+  string: {{ CHANNEL_LABEL }}
   script_env:
    - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
   

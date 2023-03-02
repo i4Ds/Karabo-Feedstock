@@ -8,7 +8,7 @@ source:
 
 build:
   noarch: python
-  number: 0
+  string: {{ CHANNEL_LABEL }}
 
 requirements:
   build:

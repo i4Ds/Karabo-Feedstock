@@ -6,7 +6,7 @@ source:
   git_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-func.git
 
 build:
-  number: 0
+  string: {{ CHANNEL_LABEL }}
   
 requirements:
   build:
