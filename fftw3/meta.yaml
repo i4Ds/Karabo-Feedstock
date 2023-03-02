@@ -6,7 +6,7 @@ source:
    url: https://www.fftw.org/{{ name }}-{{ FFTW3_VERSION }}.tar.gz 
 
 build:
-  number: 0
+  string: {{ CHANNEL_LABEL }}
 
 requirements:
   build:
