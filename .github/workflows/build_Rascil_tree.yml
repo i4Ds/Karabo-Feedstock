@@ -40,3 +40,10 @@ jobs:
     with:
       label: ${{ inputs.label }}
     secrets: inherit
+    
+  Rascil:
+    needs: [SKA_SDP_Func_Native, SKA_SDP_Datamodels, PyBDSF, SKA_SDP_Func_Python]
+    uses: ./.github/workflows/build_Rascil.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
