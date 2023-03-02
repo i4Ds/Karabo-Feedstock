@@ -13,13 +13,13 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - openmpi
+    - openmpi {{ OPENMPI_VERSION }}.*
     
   host:
-    - openmpi
+    - openmpi {{ OPENMPI_VERSION }}.*
    
   run:
-    - openmpi
+    - openmpi {{ OPENMPI_VERSION }}.*
   
 
 about:

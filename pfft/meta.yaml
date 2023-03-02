@@ -13,7 +13,7 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - openmpi
+    - openmpi {{ OPENMPI_VERSION }}.*
     - fftw {{ FFTW3_VERSION }}.*
     
   host:
