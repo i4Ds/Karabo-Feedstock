@@ -3,7 +3,7 @@ package:
   version: {{ FFTW3_VERSION }}
 
 source:
-   url: https://www.fftw.org/{{ name }}-{{ FFTW3_VERSION }}.tar.gz 
+   url: https://www.fftw.org/{{ PACKAGE_NAME|lower }}-{{ FFTW3_VERSION }}.tar.gz 
 
 build:
   string: {{ CHANNEL_LABEL }}
