@@ -34,8 +34,9 @@ test:
 
 about:
   home: "https://github.com/aotools/aotools"
-  license: GPL-2.0-or-later
-  license_file: LICENSE.md
+  license: UNKNOWN
+  license_family: OTHER
+  license_file: 
   summary: "A set of useful functions for Adaptive Optics in Python"
   doc_url: https://aotools.readthedocs.io/en/v1.0.1/
   dev_url: https://github.com/aotools/aotools
