@@ -20,6 +20,9 @@ env:
   # Package Name
   PACKAGE_NAME: ${{ inputs.packageName }}
   
+  # Label
+  CHANNEL_LABEL: ${{ inputs.label }}
+  
 on:
   workflow_call:
     inputs:
