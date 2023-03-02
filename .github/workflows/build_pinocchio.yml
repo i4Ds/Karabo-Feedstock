@@ -1,0 +1,26 @@
+name: Pinocchio
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+
+jobs:
+
+  Pinocchio:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: pinocchio
+      packageVersion: $PINOCCHIO_VERSION
+      label: ${{ inputs.label }}
+      isNative: true
+    secrets: inherit
