@@ -22,4 +22,5 @@ jobs:
       packageName: aotools
       packageVersion: $AOTOOLS_VERSION
       label: ${{ inputs.label }}
+      isNative: true
     secrets: inherit
