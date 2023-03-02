@@ -1,4 +1,4 @@
-name: Oskar
+name: Oskar Python Wrapper
 
 on:
   workflow_dispatch:
@@ -16,12 +16,11 @@ on:
 
 jobs:
 
-  Oskar:
+  OskarPy:
     uses: ./.github/workflows/build_base.yml
     with:
-      packageName: oskar
+      packageName: oskarpy
       packageVersion: $OSKAR_VERSION
       label: ${{ inputs.label }}
-      useCuda: true
-      isNative: true
+      pythonCall: import oskar
     secrets: inherit

@@ -7,26 +7,33 @@ source:
   git_tag: {{ OSKAR_VERSION }}
 
 build:
+  noarch: python
   string: {{ CHANNEL_LABEL }}
 
 requirements:
   build:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
-    - cmake
-    - make
+    - python
+    - pip
+    - numpy {{ NUMPY_VERSION }}
+    - oskar {{ OSKAR_VERSION }}
 
   host:
-    - casacore
+    - python
+    - pip
+    - numpy {{ NUMPY_VERSION }}
+    - oskar {{ OSKAR_VERSION }}
+
   run:
-    - casacore
+    - python
+    - numpy {{ NUMPY_VERSION }}
+    - oskar {{ OSKAR_VERSION }}
 
 about:
   home: https://github.com/OxfordSKA/OSKAR
   license: BSD-3-Clause
   license_family: BSD
-  license_file: LICENSE
-  summary: 'SKA Radio Telescope Simulator'
+  license_file: OSKAR/LICENSE
+  summary: 'Python-Interface for SKA Radio Telescope Simulator'
   description: |
     The OSKAR package consists of a number of applications for the simulation of astronomical radio interferometers.
     OSKAR has been designed primarily to produce simulated data from telescopes that use aperture arrays, as envisaged for the SKA.
