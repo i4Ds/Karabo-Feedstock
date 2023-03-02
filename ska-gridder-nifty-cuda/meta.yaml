@@ -1,0 +1,44 @@
+{% set name = "ska-gridder-nifty-cuda" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ SKA_GRDR_NFTY_CU_VERSION }}
+
+source:
+  git_url: https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda.git
+
+build:
+  string: {{ CHANNEL_LABEL }}
+
+requirements:
+  build: 
+    - git
+    - {{ compiler('cxx') }}
+    - python {{ python }}
+    - pip
+    - numpy {{ NUMPY_VERSION }}
+
+  host:
+    - python {{ python }}
+    - pip
+    - numpy {{ NUMPY_VERSION }}
+  run:
+    - python {{ python }}
+    - numpy {{ NUMPY_VERSION }}
+
+about:
+  home: https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda
+  license: Custom
+  license_family: Other
+  copyright: 
+    - Copyright 2021 Adam Campbell, Anthony Griffin, Andrew Ensor, Seth Hall
+    - Copyright 2021 High Performance Computing Research Laboratory, Auckland University of Technology (AUT)
+  summary: 'NIFTy Gridder - CUDA implementation'
+  description: |
+   This repository contains of an in-progress parallelised prototype of the Numerical Information Field Theory (NIFTy) based gridding algorithm for wide-field radio telescope imaging systems. The NIFTy gridder is a composition of an analytical exponential of semicircle gridding kernel (as presented in this research paper), and the improved w-stacking method (as presented on page 139 in this thesis). This implemention approximately follows a C++ implementation of NIFTy gridder (available from this repository).
+  doc_url: https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda/-/blob/sim-874-python-wrapper/README.md
+  dev_url: https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda/-/tree/sim-874-python-wrapper
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch

@@ -1,0 +1,27 @@
+name: SKA Gridder Nifty Cuda
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+
+jobs:
+
+  SKA_Gridder_Nifty_Cuda:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: ska-gridder-nifty-cuda
+      packageVersion: $SKA_GRDR_NFTY_CU_VERSION
+      pythonCall: import ducc0.wgridder
+      label: ${{ inputs.label }}
+      isNative: true
+    secrets: inherit
