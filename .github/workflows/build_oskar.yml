@@ -1,0 +1,27 @@
+name: Oskar
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+
+jobs:
+
+  Oskar:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: oskar
+      packageVersion: $OSKAR_BASE_VERSION
+      label: ${{ inputs.label }}
+      useCuda: true
+      isNative: true
+    secrets: inherit

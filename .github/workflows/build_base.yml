@@ -18,6 +18,10 @@ env:
   SKA_SDP_DTMDL_VERSION: 0.1.3
   SKA_SDP_FUNC_PY_VERSION: 0.1.4
   SKA_SDP_FUNC_VERSION: 0.0.6
+  
+  # Oskar Line
+  OSKAR_BASE_VERSION: 2.8.3
+  OSKAR_PY_VERSION: 2.8.3
 
   # additional karabo dependencies
   AOTOOLS_VERSION: 1.0.6
