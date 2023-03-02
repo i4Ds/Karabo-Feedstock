@@ -32,7 +32,7 @@ about:
   home: https://github.com/OxfordSKA/OSKAR
   license: BSD-3-Clause
   license_family: BSD
-  license_file: OSKAR/LICENSE
+  license_file: LICENSE
   summary: 'Python-Interface for SKA Radio Telescope Simulator'
   description: |
     The OSKAR package consists of a number of applications for the simulation of astronomical radio interferometers.
