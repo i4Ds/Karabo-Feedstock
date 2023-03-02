@@ -23,4 +23,5 @@ jobs:
       packageVersion: $OSKAR_VERSION
       label: ${{ inputs.label }}
       pythonCall: import oskar
+      customPath: oskar-py/.
     secrets: inherit
