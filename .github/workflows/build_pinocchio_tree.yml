@@ -1,0 +1,38 @@
+name: Build Pinocchio with dependency tree
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+        
+jobs:
+
+  FFTW:
+    uses: ./.github/workflows/build_fftw3.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+
+  PFFT:
+    needs: FFTW
+    uses: ./.github/workflows/build_pfft.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+
+  Pinocchio:
+    needs: PFFT
+    uses: ./.github/workflows/build_pinocchio.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+

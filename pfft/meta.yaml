@@ -6,7 +6,7 @@ source:
    git_url: https://github.com/mpip/pfft.git
 
 build:
-  number: 0
+  string: {{ CHANNEL_LABEL }}
 
 requirements:
   build:
