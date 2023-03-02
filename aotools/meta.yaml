@@ -1,0 +1,45 @@
+package:
+  name: "{{ PACKAGE_NAME|lower }}"
+  version: "{{ AOTOOLS_VERSION }}"
+
+source:
+  url: "https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ AOTOOLS_VERSION }}.tar.gz"
+
+build:
+  string: {{ CHANNEL_LABEL }}
+
+requirements:
+  host:
+    - matplotlib
+    - numba
+    - numpy {{ NUMPY_VERSION }}.*
+    - pip
+    - python
+    - scipy
+  run:
+    - matplotlib
+    - numba
+    - numpy {{ NUMPY_VERSION }}.*
+    - python
+    - scipy
+
+test:
+  imports:
+    - aotools
+    - aotools.astronomy
+    - aotools.functions
+    - aotools.image_processing
+    - aotools.turbulence
+    - aotools.wfs
+
+about:
+  home: "https://github.com/aotools/aotools"
+  license: GPL-2.0-or-later
+  license_file: LICENSE.md
+  summary: "A set of useful functions for Adaptive Optics in Python"
+  doc_url: https://aotools.readthedocs.io/en/v1.0.1/
+  dev_url: https://github.com/aotools/aotools
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch
