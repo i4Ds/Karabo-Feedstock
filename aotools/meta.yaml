@@ -6,9 +6,14 @@ source:
   url: "https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ AOTOOLS_VERSION }}.tar.gz"
 
 build:
+  noarch: python
   string: {{ CHANNEL_LABEL }}
 
 requirements:
+  build: 
+    - python
+    - pip
+
   host:
     - matplotlib
     - numba
@@ -16,6 +21,7 @@ requirements:
     - pip
     - python
     - scipy
+
   run:
     - matplotlib
     - numba
