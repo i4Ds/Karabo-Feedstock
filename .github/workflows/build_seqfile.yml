@@ -1,0 +1,26 @@
+name: SeqFile
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+
+jobs:
+
+  SeqFile:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: seqfile
+      packageVersion: $SEQFILE_VERSION
+      label: ${{ inputs.label }}
+      pythonCall: import seqfile
+    secrets: inherit

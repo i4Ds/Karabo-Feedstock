@@ -21,6 +21,7 @@ env:
 
   # additional karabo dependencies
   AOTOOLS_VERSION: 1.0.6
+  SEQFILE_VERSION: 0.2.0
   
   # Package Name
   PACKAGE_NAME: ${{ inputs.packageName }}
