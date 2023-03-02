@@ -3,8 +3,8 @@ package:
   version: {{ PINOCCHIO_VERSION }}
 
 source:
-   git_url: https://github.com/i4Ds/Pinocchio.git
-   git_tag: fivedotzero
+  git_url: https://github.com/i4Ds/Pinocchio.git
+  git_tag: fivedotzero
 
 build:
   string: {{ CHANNEL_LABEL }}
