@@ -4,7 +4,8 @@ env:
   # Native Global Libs
   BOOST_VERSION: 1.74 # casacore<--python-casacore<--rascil<--karabo needs boost 1.74
   NUMPY_VERSION: 1.22 # pybdsf does not work with higher versions yet
-  OPENMPI_VERSION: 4.1.4=ha1ae619_102 # pinocchio needs this exact version
+  OPENMPI_VERSION: 4.1.4 
+  OPENMPI_BUILD: ha1ae619_102 # pinocchio needs this exact build
 
   # Pinocchio Line
   PINOCCHIO_VERSION: 5.0.0

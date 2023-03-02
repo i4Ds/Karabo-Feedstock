@@ -13,12 +13,14 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - openmpi {{ OPENMPI_VERSION }}.*
+    - openmpi {{ OPENMPI_VERSION }}.*{{ OPENMPI_BUILD }}
     - fftw {{ FFTW3_VERSION }}.*
     
   host:
    
   run:  
+    - openmpi {{ OPENMPI_VERSION }}.*{{ OPENMPI_BUILD }}
+    - fftw {{ FFTW3_VERSION }}.*
 
 about:
   home: https://github.com/mpip/pfft
