@@ -1,0 +1,47 @@
+name: Build additional dependencies for Karabo
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+        
+jobs:
+
+  Seqfile:
+    uses: ./.github/workflows/build_seqfile.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+
+  SKAGridderNiftyCuda:
+    uses: ./.github/workflows/build_SKA_Gridder_Nifty_Cuda.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+
+  Katbeam:
+    uses: ./.github/workflows/build_katbeam.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+    
+  Eidos:
+    uses: ./.github/workflows/build_eidos.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+    
+  AOtools:
+    uses: ./.github/workflows/build_aotools.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit

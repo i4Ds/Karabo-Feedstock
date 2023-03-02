@@ -1,0 +1,42 @@
+name: Build Karabo dependency tree
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+        
+jobs:
+
+  OskarTree:
+    uses: ./.github/workflows/build_oskar_tree.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+
+  RascilTree:
+    uses: ./.github/workflows/build_rascil_tree.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+    
+  PinocchioTree:
+    uses: ./.github/workflows/build_pinocchio_tree.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+
+  AdditionalDeps:
+    uses: ./.github/workflows/build_loose_deps.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+  

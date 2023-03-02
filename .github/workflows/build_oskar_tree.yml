@@ -1,0 +1,30 @@
+name: Build Oskar with dependency tree
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+        
+jobs:
+
+  OskarNative:
+    uses: ./.github/workflows/build_oskar.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
+
+  OskarPythonWrapper:
+    needs: OskarNative
+    uses: ./.github/workflows/build_oskar_py.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
