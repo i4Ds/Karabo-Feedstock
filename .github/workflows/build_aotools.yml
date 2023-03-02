@@ -22,4 +22,5 @@ jobs:
       packageName: aotools
       packageVersion: $AOTOOLS_VERSION
       label: ${{ inputs.label }}
+      pythonCall: import aotools
     secrets: inherit
