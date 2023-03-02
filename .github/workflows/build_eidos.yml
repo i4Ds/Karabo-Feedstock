@@ -1,4 +1,4 @@
-name: eidos
+name: Eidos
 
 on:
   workflow_dispatch:
