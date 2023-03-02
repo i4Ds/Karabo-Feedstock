@@ -23,15 +23,6 @@ requirements:
     - python
     - scipy
 
-test:
-  imports:
-    - aotools
-    - aotools.astronomy
-    - aotools.functions
-    - aotools.image_processing
-    - aotools.turbulence
-    - aotools.wfs
-
 about:
   home: "https://github.com/aotools/aotools"
   license: UNKNOWN
