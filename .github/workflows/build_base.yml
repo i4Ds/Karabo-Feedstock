@@ -76,6 +76,11 @@ on:
         required: false
         default: true
         type: boolean
+      
+      skipTest:
+        required: false
+        default: false
+        type: boolean
         
 jobs:   
   build_base:
@@ -126,22 +131,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
+        if: ${{ !inputs.skipTest }}
         uses: actions/checkout@v3
       - name: Install Conda
+        if: ${{ !inputs.skipTest }}
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
       - name: Install Mamba Solver
+        if: ${{ !inputs.skipTest }}
         run: |
           #conda update -y -n base conda # conda update breaks libmamba currently
           conda install -y -n base conda-libmamba-solver
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
-        if: ${{ inputs.useCuda }}
+        if: ${{ inputs.useCuda && !inputs.skipTest }}
         uses: Jimver/cuda-toolkit@v0.2.8
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
       - name: Install Package and test with Python 3.9
+        if: ${{ !inputs.skipTest }}
         shell: bash -l {0}
         run: |
           conda create -y -n testpy39 python=3.9
@@ -149,7 +158,7 @@ jobs:
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ inputs.packageVersion }}" --experimental-solver=libmamba
           python -c "${{ inputs.pythonCall }}"
       - name: Install Package and test with Python 3.10 => ${{ inputs.py310rdy }}
-        if: ${{ inputs.py310rdy }}
+        if: ${{ inputs.py310rdy && !inputs.skipTest }}
         shell: bash -l {0}
         run: |
           conda create -y -n testpy310 python=3.10

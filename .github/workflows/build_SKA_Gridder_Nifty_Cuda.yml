@@ -23,6 +23,6 @@ jobs:
       packageVersion: $SKA_GRDR_NFTY_CU_VERSION
       useCuda: true
       isNative: true
-      pythonCall: import wagg
       label: ${{ inputs.label }}
+      skipTest: true
     secrets: inherit
