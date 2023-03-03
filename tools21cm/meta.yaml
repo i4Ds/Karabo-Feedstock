@@ -22,6 +22,7 @@ requirements:
     - numba
     - numpy {{ NUMPY_VERSION }}
     - pip
+    - fftw3 {{ FFTW3_VERSION }}
     - pyfftw
     - pytest
     - python
@@ -36,6 +37,7 @@ requirements:
     - matplotlib
     - numba
     - numpy {{ NUMPY_VERSION }}
+    - fftw3 {{ FFTW3_VERSION }}
     - pyfftw
     - pytest
     - python
