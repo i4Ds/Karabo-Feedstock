@@ -23,7 +23,7 @@ jobs:
     secrets: inherit
 
   RascilTree:
-    uses: ./.github/workflows/build_rascil_tree.yml
+    uses: ./.github/workflows/build_Rascil_tree.yml
     with:
       label: ${{ inputs.label }}
     secrets: inherit
