@@ -23,6 +23,6 @@ jobs:
       packageVersion: $SKA_GRDR_NFTY_CU_VERSION
       useCuda: true
       isNative: true
-      pythonCall: import ducc0.wgridder
+      pythonCall: import wagg
       label: ${{ inputs.label }}
     secrets: inherit
