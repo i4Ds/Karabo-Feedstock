@@ -25,4 +25,5 @@ jobs:
       pythonCall: import bdsf.functions as func
       label: ${{ inputs.label }}
       isNative: true
+      py310rdy: false
     secrets: inherit

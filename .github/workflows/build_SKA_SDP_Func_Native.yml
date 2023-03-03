@@ -25,4 +25,5 @@ jobs:
       useCuda: true
       isNative: true
       label: ${{ inputs.label }}
+      py310rdy: false
     secrets: inherit
