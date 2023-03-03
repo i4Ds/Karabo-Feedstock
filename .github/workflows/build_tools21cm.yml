@@ -1,0 +1,26 @@
+name: Tools21cm
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+
+jobs:
+
+  tools21cm:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: tools21cm
+      packageVersion: $TOOLS_21CM_VERSION
+      label: ${{ inputs.label }}
+      pythonCall: import tools21cm
+    secrets: inherit

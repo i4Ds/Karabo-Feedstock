@@ -1,0 +1,58 @@
+package:
+  name: "{{ PACKAGE_NAME|lower }}"
+  version: "{{ TOOLS_21CM_VERSION }}"
+
+source:
+  git_url: "https://github.com/sambit-giri/tools21cm"
+  git_rev: "39c4197ee2f345361c3a2e2190a576e197caee45"
+
+build:
+  noarch: python
+  string: {{ CHANNEL_LABEL }}
+
+requirements:
+  build:
+    - python
+    - setuptools
+
+  host:
+    - astropy
+    - joblib
+    - matplotlib
+    - numba
+    - numpy {{ NUMPY_VERSION }}
+    - pip
+    - pyfftw
+    - pytest
+    - python
+    - scikit-image
+    - scikit-learn
+    - scipy
+    - tqdm
+
+  run:
+    - astropy
+    - joblib
+    - matplotlib
+    - numba
+    - numpy {{ NUMPY_VERSION }}
+    - pyfftw
+    - pytest
+    - python
+    - scikit-image
+    - scikit-learn
+    - scipy
+    - tqdm
+
+about:
+  home: "https://github.com/sambit-giri/tools21cm"
+  license: MIT
+  license_family: MIT
+  summary: tools21cm
+  description: A python package for analysing 21-cm signals from the Epoch of Reionization (EoR) and Cosmic Dawn (CD).
+  doc_url: "https://tools21cm.readthedocs.io/"
+  dev_url: "https://github.com/sambit-giri/tools21cm"
+
+extra:
+  recipe-maintainers:
+    - lukas.gehrig@fhnw.ch
