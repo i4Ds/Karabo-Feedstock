@@ -135,6 +135,12 @@ jobs:
         run: |
           #conda update -y -n base conda # conda update breaks libmamba currently
           conda install -y -n base conda-libmamba-solver
+      - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
+        if: ${{ inputs.useCuda }}
+        uses: Jimver/cuda-toolkit@v0.2.8
+        id: cuda-toolkit
+        with:
+          cuda: '11.7.0'
       - name: Install Package and test with Python 3.9
         shell: bash -l {0}
         run: |

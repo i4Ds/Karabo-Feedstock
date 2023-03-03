@@ -22,9 +22,11 @@ requirements:
     - python {{ python }}
     - pip
     - numpy {{ NUMPY_VERSION }}
+
   run:
     - python {{ python }}
     - numpy {{ NUMPY_VERSION }}
+    - 
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda
