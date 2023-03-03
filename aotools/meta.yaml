@@ -20,14 +20,14 @@ requirements:
     - numpy {{ NUMPY_VERSION }}.*
     - pip
     - python
-    - scipy
+    - scipy {{ SCIPY_VERSION }}
 
   run:
     - matplotlib
     - numba
     - numpy {{ NUMPY_VERSION }}.*
     - python
-    - scipy
+    - scipy {{ SCIPY_VERSION }}
 
 about:
   home: "https://github.com/aotools/aotools"

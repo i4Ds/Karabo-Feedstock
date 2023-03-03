@@ -28,7 +28,7 @@ requirements:
     - python
     - scikit-image
     - scikit-learn
-    - scipy
+    - scipy {{ SCIPY_VERSION }}
     - tqdm
 
   run:
@@ -43,7 +43,7 @@ requirements:
     - python
     - scikit-image
     - scikit-learn
-    - scipy
+    - scipy {{ SCIPY_VERSION }}
     - tqdm
 
 about:

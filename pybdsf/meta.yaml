@@ -32,7 +32,7 @@ requirements:
     - boost {{ BOOST_VERSION }}.*
     - astropy
     - numpy {{ NUMPY_VERSION }}.*
-    - scipy
+    - scipy {{ SCIPY_VERSION }}
     - matplotlib
     - ipython
 

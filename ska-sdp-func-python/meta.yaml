@@ -42,7 +42,7 @@ requirements:
     - ducc0                 >=0.27.0,       <0.28
     - numpy                 {{ NUMPY_VERSION }}.*
     - photutils             >=1.5
-    - scipy                 >=1.9.3
+    - scipy                 {{ SCIPY_VERSION }}
     - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION }}.*
     - ska-sdp-func          {{ SKA_SDP_FUNC_VERSION }}.*
     - xarray                >=2022.11.0  
