@@ -24,4 +24,5 @@ jobs:
       label: ${{ inputs.label }}
       pythonCall: import oskar
       customPath: oskar-py/.
+      isNative: true
     secrets: inherit

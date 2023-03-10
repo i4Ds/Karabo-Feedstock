@@ -7,24 +7,23 @@ source:
   git_tag: {{ OSKAR_VERSION }}
 
 build:
-  noarch: python
-  string: {{ CHANNEL_LABEL }}
+  string: {{ CHANNEL_LABEL }}_{{ python }}
 
 requirements:
   build:
-    - python
+    - python {{ python }}
     - pip
     - numpy {{ NUMPY_VERSION }}
     - oskar {{ OSKAR_VERSION }}
 
   host:
-    - python
+    - python {{ python }}
     - pip
     - numpy {{ NUMPY_VERSION }}
     - oskar {{ OSKAR_VERSION }}
 
   run:
-    - python
+    - python {{ python }}
     - numpy {{ NUMPY_VERSION }}
     - oskar {{ OSKAR_VERSION }}
 
