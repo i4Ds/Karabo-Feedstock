@@ -45,3 +45,9 @@ jobs:
     with:
       label: ${{ inputs.label }}
     secrets: inherit
+
+  Tools21cm:
+    uses: ./.github/workflows/build_tools21cm.yml
+    with:
+      label: ${{ inputs.label }}
+    secrets: inherit
