@@ -4,7 +4,7 @@ package:
 
 source:
   git_url: https://github.com/ska-sa/katbeam.git
-  git_tag: v{{ KATBEAM_VERSION }}
+  git_rev: 5ce6fcc35471168f4c4b84605cf601d57ced8d9e
 
 build:
   noarch: python
