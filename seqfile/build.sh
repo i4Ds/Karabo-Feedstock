@@ -1,11 +1,3 @@
 #!/bin/sh
 
-if [ "$DEV_BUILD" = "true" ]; then
-    # Replace the patch number with "dev" followed by the original patch number
-    SEQFILE_VERSION=$(echo "${SEQFILE_VERSION}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
-    # Update the version field in the meta.yaml file
-    sed -i "s/version: .*/version: ${SEQFILE_VERSION}/" meta.yaml
-    sed -i "s/string: .*/string: ${SEQFILE_VERSION}/" meta.yaml
-fi
-
 $PYTHON -m pip install --no-deps --use-pep517 .

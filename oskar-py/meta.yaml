@@ -8,9 +8,6 @@ source:
 
 build:
   string: {{ OSKAR_VERSION }}_{{ python }}
-  script_env:
-    - OSKAR_VERSION
-    - DEV_BUILD
 
 requirements:
   build:

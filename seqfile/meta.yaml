@@ -8,9 +8,6 @@ source:
 build:
   noarch: python
   string: {{ SEQFILE_VERSION }}
-  script_env:
-    - SEQFILE_VERSION
-    - DEV_BUILD
 #  entry_points:
 #    - seqfile = seqfile.seqfile:_run
 

@@ -8,9 +8,6 @@ source:
 
 build:
   string: {{ PINOCCHIO_VERSION }}
-  script_env:
-    - PINOCCHIO_VERSION
-    - DEV_BUILD
 
 requirements:
   build:

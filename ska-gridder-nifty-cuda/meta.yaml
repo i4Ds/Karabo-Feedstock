@@ -10,9 +10,6 @@ source:
 
 build:
   string: {{ SKA_GRDR_NFTY_CU_VERSION }}_{{ python }}
-  script_env:
-    - SKA_GRDR_NFTY_CU_VERSION
-    - DEV_BUILD
 
 requirements:
   build: 

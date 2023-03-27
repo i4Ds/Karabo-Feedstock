@@ -1,6 +1,6 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ KATBEAM_VERSION }}.0
+  version: {{ KATBEAM_VERSION }}
 
 source:
   git_url: https://github.com/ska-sa/katbeam.git
@@ -9,9 +9,6 @@ source:
 build:
   noarch: python
   string: {{ KATBEAM_VERSION }}
-  script_env:
-    - KATBEAM_VERSION
-    - DEV_BUILD
 
 requirements:
   build:

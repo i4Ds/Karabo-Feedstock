@@ -9,9 +9,6 @@ source:
 build:
   noarch: python
   string: {{ TOOLS_21CM_VERSION }}
-  script_env:
-    - TOOLS_21CM_VERSION
-    - DEV_BUILD
 
 requirements:
   build:

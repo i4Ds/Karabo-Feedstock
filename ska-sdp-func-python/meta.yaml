@@ -12,8 +12,6 @@ build:
   string: {{ SKA_SDP_FUNC_PY_VERSION }}
   script_env:
     - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
-    - SKA_SDP_FUNC_PY_VERSION
-    - DEV_BUILD
   
 requirements:
   build:

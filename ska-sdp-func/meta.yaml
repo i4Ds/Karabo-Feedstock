@@ -8,9 +8,6 @@ source:
 
 build:
   string: {{ SKA_SDP_FUNC_VERSION }}_{{ python }}
-  script_env:
-    - SKA_SDP_FUNC_VERSION
-    - DEV_BUILD
   
 requirements:
   build:

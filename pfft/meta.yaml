@@ -8,9 +8,6 @@ source:
 
 build:
   string: {{ PFFT_VERSION }}
-  script_env:
-    - PFFT_VERSION
-    - DEV_BUILD
 
 requirements:
   build:

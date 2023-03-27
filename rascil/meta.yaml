@@ -9,9 +9,6 @@ source:
 build:
   noarch: python
   string: {{ RASCIL_VERSION }}
-  script_env:
-    - RASCIL_VERSION
-    - DEV_BUILD
 
 requirements:
   build:
