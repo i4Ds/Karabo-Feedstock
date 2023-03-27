@@ -8,8 +8,8 @@ source:
 build:
   string: {{ PYBDSF_VERSION }}_{{ python }}
   script_env:
-    - EIDOS_VERSION
     - PYBDSF_VERSION
+    - DEV_BUILD
 
 requirements:
   build:
