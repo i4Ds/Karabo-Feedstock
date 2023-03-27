@@ -115,6 +115,12 @@ jobs:
         if: inputs.customPath == ''
         run: |
           echo "recipePath=${{ inputs.packageName }}/." >> $GITHUB_ENV
+      - name: Alter meta.yaml if dev
+        if: ${{ inputs.dev }}
+        run: |
+          PKG_VERSION=$(echo "${{ inputs.packageVersion }}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
+          sed -i "s/version: .*/version: ${PKG_VERSION}/" ${{ env.recipePath }}/meta.yaml
+          sed -i "s/string: .*/string: ${PKG_VERSION}/" ${{ env.recipePath }}/meta.yaml
       - name: Install Conda-Build and create target
         run: |
           conda install conda-build

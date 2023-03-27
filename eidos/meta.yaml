@@ -9,9 +9,6 @@ source:
 build:
   noarch: python
   string: {{ EIDOS_VERSION }}
-  script_env:
-    - EIDOS_VERSION
-    - DEV_BUILD
 
 requirements:
   build:
