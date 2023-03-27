@@ -31,5 +31,5 @@ jobs:
       packageVersion: $SKA_SDP_FUNC_PY_VERSION
       pythonCall: from ska_sdp_func_python import *
       label: ${{ inputs.label }}
-       dev: ${{ inputs.dev }}
+      dev: ${{ inputs.dev }}
     secrets: inherit

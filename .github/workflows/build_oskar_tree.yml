@@ -35,5 +35,5 @@ jobs:
     uses: ./.github/workflows/build_oskar_py.yml
     with:
       label: ${{ inputs.label }}
-      dev: ${{ inputs.dev }
+      dev: ${{ inputs.dev }}
     secrets: inherit
