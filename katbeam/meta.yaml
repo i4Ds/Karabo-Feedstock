@@ -8,7 +8,10 @@ source:
 
 build:
   noarch: python
-  string: {{ CHANNEL_LABEL }}
+  string: {{ KATBEAM_VERSION }}
+  script_env:
+    - KATBEAM_VERSION
+    - DEV_BUILD
 
 requirements:
   build:

@@ -7,7 +7,10 @@ source:
   git_tag: {{ SKA_SDP_FUNC_VERSION }}-testing
 
 build:
-  string: {{ CHANNEL_LABEL }}_{{ python }}
+  string: {{ SKA_SDP_FUNC_VERSION }}_{{ python }}
+  script_env:
+    - SKA_SDP_FUNC_VERSION
+    - DEV_BUILD
   
 requirements:
   build:

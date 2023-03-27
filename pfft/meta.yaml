@@ -7,7 +7,10 @@ source:
    git_tag: v{{ PFFT_VERSION }}-alpha
 
 build:
-  string: {{ CHANNEL_LABEL }}
+  string: {{ PFFT_VERSION }}
+  script_env:
+    - PFFT_VERSION
+    - DEV_BUILD
 
 requirements:
   build:

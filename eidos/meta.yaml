@@ -8,7 +8,7 @@ source:
 
 build:
   noarch: python
-  string: {{ CHANNEL_LABEL }}
+  string: {{ EIDOS_VERSION }}
   script_env:
     - EIDOS_VERSION
     - DEV_BUILD

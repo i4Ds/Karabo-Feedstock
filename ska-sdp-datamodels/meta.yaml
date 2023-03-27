@@ -9,9 +9,11 @@ source:
 
 build:
   noarch: python
-  string: {{ CHANNEL_LABEL }}
+  string: {{ SKA_SDP_DTMDL_VERSION }}
   script_env:
-   - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
+    - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
+    - SKA_SDP_DTMDL_VERSION
+    - DEV_BUILD
   
 requirements:
   build:

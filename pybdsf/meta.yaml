@@ -6,7 +6,10 @@ source:
   url: https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ PYBDSF_VERSION }}.tar.gz
 
 build:
-  string: {{ CHANNEL_LABEL }}_{{ python }}
+  string: {{ PYBDSF_VERSION }}_{{ python }}
+  script_env:
+    - EIDOS_VERSION
+    - PYBDSF_VERSION
 
 requirements:
   build:

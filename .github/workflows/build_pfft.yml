@@ -7,12 +7,20 @@ on:
         type: string
         default: "main"
         required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
         
   workflow_call:
     inputs:
       label:
         type: string
         required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
 
@@ -22,5 +30,6 @@ jobs:
       packageName: pfft
       packageVersion: $PFFT_VERSION
       label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
       isNative: true
     secrets: inherit
