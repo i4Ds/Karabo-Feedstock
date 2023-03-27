@@ -6,6 +6,7 @@ package:
 
 source:
   git_url: https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda.git
+  git_tag: {{ SKA_GRDR_NFTY_CU_VERSION }}
 
 build:
   string: {{ CHANNEL_LABEL }}_{{ python }}

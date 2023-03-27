@@ -4,6 +4,7 @@ package:
 
 source:
   git_url: https://github.com/i4Ds/eidos.git
+  git_tag: v{{ EIDOS_VERSION }}
 
 build:
   noarch: python

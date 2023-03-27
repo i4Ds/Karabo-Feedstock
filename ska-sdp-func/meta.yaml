@@ -4,6 +4,7 @@ package:
 
 source:
   git_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-func.git
+  git_tag: {{ SKA_SDP_FUNC_VERSION }}-testing
 
 build:
   string: {{ CHANNEL_LABEL }}_{{ python }}

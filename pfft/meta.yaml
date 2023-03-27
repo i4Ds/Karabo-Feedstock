@@ -4,6 +4,7 @@ package:
 
 source:
    git_url: https://github.com/mpip/pfft.git
+   git_tag: v{{ PFFT_VERSION }}-alpha
 
 build:
   string: {{ CHANNEL_LABEL }}
