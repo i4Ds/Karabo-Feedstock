@@ -9,6 +9,9 @@ source:
 build:
   noarch: python
   string: {{ CHANNEL_LABEL }}
+  script_env:
+    - EIDOS_VERSION
+    - DEV_BUILD
 
 requirements:
   build:
