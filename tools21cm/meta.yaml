@@ -30,6 +30,9 @@ requirements:
     - scikit-learn
     - scipy {{ SCIPY_VERSION }}
     - tqdm
+    - numexpr
+    - tensorflow
+    - astroml
 
   run:
     - astropy
@@ -45,6 +48,9 @@ requirements:
     - scikit-learn
     - scipy {{ SCIPY_VERSION }}
     - tqdm
+    - numexpr
+    - tensorflow
+    - astroml
 
 about:
   home: "https://github.com/sambit-giri/tools21cm"
