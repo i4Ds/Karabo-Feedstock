@@ -73,6 +73,11 @@ on:
         required: false
         default: ""  # set matching packages-names for dev to use
         type: string
+
+      fromTree:  # use dev-setup if dev-flag is set and from-tree is true
+        type: boolean
+        required: false
+        default: false
       
       useCuda:
         required: false
@@ -136,7 +141,7 @@ jobs:
       - name: Install Conda-Build and create target
         run: |
           DEV_DEPS_LIST=${{ inputs.devDeps }}
-          if [[ ${{ inputs.dev }}="true" && ${#DEV_DEPS_LIST} > 0 ]]
+          if [[ ${{ inputs.dev }}="true" && ${#DEV_DEPS_LIST} > 0 && ${{ inputs.fromTree }}="true" ]]
           then
             IFS=', ' read -r -a DEV_DEPS <<< "$DEV_DEPS_LIST"
             for DEV_DEP in "${DEV_DEPS[@]}"

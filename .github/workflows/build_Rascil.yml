@@ -21,6 +21,10 @@ on:
         type: boolean
         required: false
         default: false
+      fromTree:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
 
