@@ -67,6 +67,11 @@ on:
         required: false
         default: false
         type: boolean
+
+      devDeps:  # string of dev-deps with ", " as delimiter
+        required: false
+        default: ""  # set matching packages-names for dev to use
+        type: string
       
       useCuda:
         required: false
@@ -129,6 +134,16 @@ jobs:
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
       - name: Install Conda-Build and create target
         run: |
+          DEV_DEPS_LIST=${{ inputs.devDeps }}
+          if [[ ${{ inputs.dev }}="true" && ${#DEV_DEPS_LIST} > 0 ]]
+          then
+            IFS=', ' read -r -a DEV_DEPS <<< "$DEV_DEPS_LIST"
+            for DEV_DEP in "${DEV_DEPS[@]}"
+            do
+              declare $DEV_DEP=$(echo "${!DEV_DEP}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
+              export $DEV_DEP="${!DEV_DEP}"
+            done
+          fi
           conda install conda-build
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
       - name: Set linux64 as architecture
