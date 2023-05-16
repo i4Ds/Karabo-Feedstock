@@ -22,6 +22,7 @@ env:
   
   # Oskar Line
   OSKAR_VERSION: 2.8.3
+  OSKARPY_VERSION: 2.8.3  # oskarpy should have same version as `OSKAR_VERSION`, needed because `OSKAR_VERSION` could get overwritten
 
   # additional karabo dependencies
   AOTOOLS_VERSION: 1.0.6

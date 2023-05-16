@@ -1,31 +1,31 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ OSKAR_VERSION }}
+  version: {{ OSKARPY_VERSION }}
 
 source:
   git_url: https://github.com/OxfordSKA/OSKAR.git
-  git_tag: {{ OSKAR_VERSION }}
+  git_tag: {{ OSKARPY_VERSION }}
 
 build:
-  string: {{ OSKAR_VERSION }}_{{ python }}
+  string: {{ OSKARPY_VERSION }}_{{ python }}
 
 requirements:
   build:
     - python {{ python }}
     - pip
     - numpy {{ NUMPY_VERSION }}
-    - oskar {{ OSKAR_VERSION }}
+    - oskar {{ OSKARPY_VERSION }}
 
   host:
     - python {{ python }}
     - pip
     - numpy {{ NUMPY_VERSION }}
-    - oskar {{ OSKAR_VERSION }}
+    - oskar {{ OSKARPY_VERSION }}
 
   run:
     - python {{ python }}
     - numpy {{ NUMPY_VERSION }}
-    - oskar {{ OSKAR_VERSION }}
+    - oskar {{ OSKARPY_VERSION }}
 
 about:
   home: https://github.com/OxfordSKA/OSKAR

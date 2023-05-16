@@ -32,4 +32,5 @@ jobs:
       pythonCall: from rascil.apps.rascil_image_check import cli_parser, image_check
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      devDeps: "PYBDSF_VERSION, SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_PY_VERSION, SKA_SDP_FUNC_VERSION"
     secrets: inherit

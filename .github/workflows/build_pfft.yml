@@ -31,5 +31,6 @@ jobs:
       packageVersion: $PFFT_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      devDeps: "FFTW3_VERSION"
       isNative: true
     secrets: inherit

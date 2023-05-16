@@ -31,5 +31,6 @@ jobs:
       packageVersion: $PINOCCHIO_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      devDeps: "PFFT_VERSION, FFTW3_VERSION"
       isNative: true
     secrets: inherit
