@@ -36,6 +36,7 @@ jobs:
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       devDeps: "OSKAR_VERSION"
+      fromTree: ${{ inputs.fromTree }}
       pythonCall: import oskar
       customPath: oskar-py/.
       isNative: true
