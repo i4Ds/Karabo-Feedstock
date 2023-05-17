@@ -11,6 +11,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "PFFT_VERSION, FFTW3_VERSION"
         
   workflow_call:
     inputs:
@@ -21,10 +25,10 @@ on:
         type: boolean
         required: false
         default: false
-      fromTree:
-        type: boolean
+      devDeps:
+        type: string
         required: false
-        default: false
+        default: "PFFT_VERSION, FFTW3_VERSION"
 
 jobs:
 
@@ -35,7 +39,6 @@ jobs:
       packageVersion: $PINOCCHIO_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
-      devDeps: "PFFT_VERSION, FFTW3_VERSION"
-      fromTree: ${{ inputs.fromTree }}
+      devDeps: ${{ inputs.devDeps }}
       isNative: true
     secrets: inherit

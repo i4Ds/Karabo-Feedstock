@@ -73,11 +73,6 @@ on:
         required: false
         default: ""  # set matching packages-names for dev to use
         type: string
-
-      fromTree:  # use dev-setup if dev-flag is set and from-tree is true
-        type: boolean
-        required: false
-        default: false
       
       useCuda:
         required: false
@@ -128,6 +123,8 @@ jobs:
       - name: Alter meta.yaml if dev
         id: pkgv
         if: ${{ inputs.dev }}
+        # In case ${{ inputs.dev }}="true", the ${{ inputs.packageVersion }} get's a PEP440 dev-version added.
+        # The version and string (build-string) of the `meta.yaml` get's replaced with $PKG_VERSION.
         run: |
           if [[ ${{ inputs.dev }}="true" ]]
           then
@@ -139,9 +136,11 @@ jobs:
           fi
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
       - name: Install Conda-Build and create target
+        # In case ${{ inputs.dev }}="true" & ${{ inputs.devDeps }} is not empty, the in `env` declared variables
+        # included in `devDeps` get's a PEP440 dev-version added and exported for the underlying conda-build process.
         run: |
           DEV_DEPS_LIST=${{ inputs.devDeps }}
-          if [[ ${{ inputs.dev }}="true" && ${#DEV_DEPS_LIST} > 0 && ${{ inputs.fromTree }}="true" ]]
+          if [[ ${{ inputs.dev }}="true" && ${#DEV_DEPS_LIST} > 0 ]]
           then
             IFS=', ' read -r -a DEV_DEPS <<< "$DEV_DEPS_LIST"
             for DEV_DEP in "${DEV_DEPS[@]}"

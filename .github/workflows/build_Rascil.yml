@@ -11,6 +11,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "PYBDSF_VERSION, SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_PY_VERSION, SKA_SDP_FUNC_VERSION"
         
   workflow_call:
     inputs:
@@ -21,10 +25,10 @@ on:
         type: boolean
         required: false
         default: false
-      fromTree:
-        type: boolean
+      devDeps:
+        type: string
         required: false
-        default: false
+        default: "PYBDSF_VERSION, SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_PY_VERSION, SKA_SDP_FUNC_VERSION"
 
 jobs:
 
@@ -36,6 +40,5 @@ jobs:
       pythonCall: from rascil.apps.rascil_image_check import cli_parser, image_check
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
-      devDeps: "PYBDSF_VERSION, SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_PY_VERSION, SKA_SDP_FUNC_VERSION"
-      fromTree: ${{ inputs.fromTree }}
+      devDeps: ${{ inputs.devDeps }}
     secrets: inherit

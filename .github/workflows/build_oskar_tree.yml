@@ -28,6 +28,7 @@ jobs:
     uses: ./.github/workflows/build_oskar.yml
     with:
       label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
     secrets: inherit
 
   OskarPythonWrapper:
