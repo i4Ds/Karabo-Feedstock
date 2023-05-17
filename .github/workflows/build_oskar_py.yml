@@ -36,7 +36,7 @@ jobs:
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: oskarpy
-      packageVersion: $OSKAR_VERSION
+      packageVersion: $OSKARPY_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       devDeps: ${{ inputs.devDeps }}
