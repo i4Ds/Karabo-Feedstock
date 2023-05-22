@@ -141,7 +141,7 @@ jobs:
           fi
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
-          PKG_KEYS=$(echo "${{ toJSON(env) }}" | jq -r 'keys | .[]')
+          PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
           for PKG_KEY in $PKG_KEYS; do
             IS_DEV=$(echo $DEV_DEPS_LIST | grep -w $PKG_KEY)
             if [[ ${#IS_DEV} > 0 ]]
