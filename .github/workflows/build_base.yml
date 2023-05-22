@@ -148,10 +148,11 @@ jobs:
             if [[ ${#IS_DEV} > 0 ]]
             then
               VERSION_ALT=$(echo "${!PKG_KEY}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
-              echo "$NAME_ALT=$VERSION_ALT" >> $GITHUB_ENV
             else
-              echo "$NAME_ALT=${!PKG_KEY}" >> $GITHUB_ENV
+              VERSION_ALT=${!PKG_KEY}
             fi
+            echo "DEBUG: $VERSION_ALT"
+            echo "$NAME_ALT=$VERSION_ALT" >> $GITHUB_ENV
           done
 
       - name: Install Conda-Build and create target
