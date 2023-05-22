@@ -144,12 +144,13 @@ jobs:
           PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
           for PKG_KEY in $PKG_KEYS; do
             IS_DEV=$(echo $DEV_DEPS_LIST | grep -w $PKG_KEY)
+            NAME_ALT=${PKG_KEY}_ALT
             if [[ ${#IS_DEV} > 0 ]]
             then
               VERSION_ALT=$(echo "${!PKG_KEY}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
-              echo "${PKG_KEY}_ALT=$VERSION_ALT" >> $GITHUB_ENV
+              echo "$NAME_ALT=$VERSION_ALT" >> $GITHUB_ENV
             else
-              echo "${PKG_KEY}_ALT=${!PKG_KEY}" >> $GITHUB_ENV
+              echo "$NAME_ALT=${!PKG_KEY}" >> $GITHUB_ENV
             fi
           done
 
