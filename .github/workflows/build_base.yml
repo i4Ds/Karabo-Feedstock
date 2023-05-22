@@ -50,6 +50,10 @@ on:
         required: true
         type: string
 
+      packageVersionName:  # env.VAR_NAME of the corresponding build
+        required: true
+        type: string
+
       customPath:
         required: false
         type: string
@@ -120,7 +124,7 @@ jobs:
         if: inputs.customPath == ''
         run: |
           echo "recipePath=${{ inputs.packageName }}/." >> $GITHUB_ENV
-      - name: Install Conda-Build and create target
+      - name: Prepare Setup
         # In case ${{ inputs.dev }}="true", ${{ inputs.packageVersion }} of ${{ inputs.packageVersion }}
         # gets a PEP440 dev-version added.
         # In case ${{ inputs.dev }}="true" & ${{ inputs.devDeps }} is not empty, the in `env` declared variables
@@ -130,22 +134,26 @@ jobs:
           if [[ ${{ inputs.dev }}="true" ]]
           then
             PKG_VERSION=$(echo "${{ inputs.packageVersion }}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
-            sed -i "s/version: .*/version: ${PKG_VERSION}/" ${{ env.recipePath }}/meta.yaml
-            sed -i "s/string: {{[^}]*}}/string: ${PKG_VERSION}/" ${{ env.recipePath }}/meta.yaml
-            DEV_DEPS_LIST=${{ inputs.devDeps }}
-            if [[ ${#DEV_DEPS_LIST} > 0 ]]
-            then
-              IFS=', ' read -r -a DEV_DEPS <<< "$DEV_DEPS_LIST"
-              for DEV_DEP in "${DEV_DEPS[@]}"
-              do
-                declare $DEV_DEP=$(echo "${!DEV_DEP}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
-                export $DEV_DEP="${!DEV_DEP}"
-              done
-            fi
+            DEV_DEPS_LIST=$(echo "${{ inputs.packageVersionName }}, ${{ inputs.devDeps }}")
           else
             PKG_VERSION=${{ inputs.packageVersion }}
+            DEV_DEPS_LIST=""
           fi
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
+
+          PKG_KEYS=$(echo "${{ toJSON(env) }}" | jq -r 'keys | .[]')
+          for PKG_KEY in $PKG_KEYS; do
+            IS_DEV=$(echo $DEV_DEPS_LIST | grep -w $PKG_KEY)
+            if [[ ${#IS_DEV} > 0 ]]
+            then
+              $VERSION_ALT=$(echo "${!PKG_KEY}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
+              echo "${PKG_KEY}_ALT=$VERSION_ALT" >> $GITHUB_ENV
+            else
+              echo "${PKG_KEY}_ALT=${!PKG_KEY}" >> $GITHUB_ENV
+            fi
+          done
+
+      - name: Install Conda-Build and create target
           conda install conda-build
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
       - name: Set linux64 as architecture

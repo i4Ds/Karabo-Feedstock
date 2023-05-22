@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: katbeam
       packageVersion: $KATBEAM_VERSION
+      packageVersionName: KATBEAM_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       pythonCall: import katbeam

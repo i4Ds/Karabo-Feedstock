@@ -37,6 +37,7 @@ jobs:
     with:
       packageName: pinocchio
       packageVersion: $PINOCCHIO_VERSION
+      packageVersionName: PINOCCHIO_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       devDeps: ${{ inputs.devDeps }}

@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: ska-sdp-datamodels
       packageVersion: $SKA_SDP_DTMDL_VERSION
+      packageVersionName: SKA_SDP_DTMDL_VERSION
       pythonCall: from ska_sdp_datamodels import *
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}

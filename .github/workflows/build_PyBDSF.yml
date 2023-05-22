@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: bdsf
       packageVersion: $PYBDSF_VERSION
+      packageVersionName: PYBDSF_VERSION
       customPath: pybdsf/.
       pythonCall: import bdsf.functions as func
       label: ${{ inputs.label }}

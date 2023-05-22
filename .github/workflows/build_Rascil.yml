@@ -37,6 +37,7 @@ jobs:
     with:
       packageName: rascil
       packageVersion: $RASCIL_VERSION
+      packageVersionName: RASCIL_VERSION
       pythonCall: from rascil.apps.rascil_image_check import cli_parser, image_check
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}

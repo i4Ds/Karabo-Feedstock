@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: tools21cm
       packageVersion: $TOOLS_21CM_VERSION
+      packageVersionName: TOOLS_21CM_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       pythonCall: import tools21cm

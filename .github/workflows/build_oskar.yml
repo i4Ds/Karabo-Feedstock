@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: oskar
       packageVersion: $OSKAR_VERSION
+      packageVersionName: OSKAR_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       useCuda: true

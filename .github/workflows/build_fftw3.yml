@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: fftw
       packageVersion: $FFTW3_VERSION
+      packageVersionName: FFTW3_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       isNative: true

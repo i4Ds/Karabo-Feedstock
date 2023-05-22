@@ -37,6 +37,7 @@ jobs:
     with:
       packageName: pfft
       packageVersion: $PFFT_VERSION
+      packageVersionName: PFFT_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       devDeps: ${{ inputs.devDeps }}
