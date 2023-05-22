@@ -143,6 +143,7 @@ jobs:
 
           PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
           echo "PKG_KEYS: $PKG_KEYS"
+          echo "DEV_DEPS_LIST: $DEV_DEPS_LIST"
           for PKG_KEY in $PKG_KEYS; do
             echo "PKG_KEY: $PKG_KEY"
             IS_DEV=$(echo $DEV_DEPS_LIST | grep -w $PKG_KEY)
