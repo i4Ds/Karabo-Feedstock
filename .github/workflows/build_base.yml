@@ -154,6 +154,7 @@ jobs:
           done
 
       - name: Install Conda-Build and create target
+        run: |
           conda install conda-build
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
       - name: Set linux64 as architecture
