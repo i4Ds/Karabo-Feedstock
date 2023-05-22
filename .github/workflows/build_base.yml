@@ -146,7 +146,7 @@ jobs:
             IS_DEV=$(echo $DEV_DEPS_LIST | grep -w $PKG_KEY)
             if [[ ${#IS_DEV} > 0 ]]
             then
-              $VERSION_ALT=$(echo "${!PKG_KEY}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
+              VERSION_ALT=$(echo "${!PKG_KEY}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
               echo "${PKG_KEY}_ALT=$VERSION_ALT" >> $GITHUB_ENV
             else
               echo "${PKG_KEY}_ALT=${!PKG_KEY}" >> $GITHUB_ENV
