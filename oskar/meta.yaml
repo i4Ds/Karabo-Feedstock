@@ -1,13 +1,13 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ OSKAR_VERSION }}
+  version: {{ OSKAR_VERSION_ALT }}
 
 source:
   git_url: https://github.com/OxfordSKA/OSKAR.git
   git_tag: {{ OSKAR_VERSION }}
 
 build:
-  string: {{ OSKAR_VERSION }}
+  string: {{ OSKAR_VERSION_ALT }}
 
 requirements:
   build:

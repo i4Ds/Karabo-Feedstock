@@ -1,12 +1,12 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ PYBDSF_VERSION }}
+  version: {{ PYBDSF_VERSION_ALT }}
 
 source:
   url: https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ PYBDSF_VERSION }}.tar.gz
 
 build:
-  string: {{ PYBDSF_VERSION }}_{{ python }}
+  string: {{ PYBDSF_VERSION_ALT }}_{{ python }}
 
 requirements:
   build:
@@ -15,24 +15,24 @@ requirements:
     - {{ compiler('gfortran') }}
     - python {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION }}.*
-    - boost {{ BOOST_VERSION }}.*
+    - numpy {{ NUMPY_VERSION_ALT }}.*
+    - boost {{ BOOST_VERSION_ALT }}.*
     - setuptools ==59.8.0
     
   host:
     - python {{ python }}
-    - numpy {{ NUMPY_VERSION }}.*
-    - boost {{ BOOST_VERSION }}.*
+    - numpy {{ NUMPY_VERSION_ALT }}.*
+    - boost {{ BOOST_VERSION_ALT }}.*
     - astropy
     - matplotlib
     - setuptools ==59.8.0
     
   run:
     - python {{ python }}
-    - boost {{ BOOST_VERSION }}.*
+    - boost {{ BOOST_VERSION_ALT }}.*
     - astropy
-    - numpy {{ NUMPY_VERSION }}.*
-    - scipy {{ SCIPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}.*
+    - scipy {{ SCIPY_VERSION_ALT }}
     - matplotlib
     - ipython
 

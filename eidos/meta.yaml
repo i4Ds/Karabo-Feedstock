@@ -1,6 +1,6 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ EIDOS_VERSION }}
+  version: {{ EIDOS_VERSION_ALT }}
 
 source:
   git_url: https://github.com/i4Ds/eidos.git
@@ -8,30 +8,30 @@ source:
 
 build:
   noarch: python
-  string: {{ EIDOS_VERSION }}
+  string: {{ EIDOS_VERSION_ALT }}
 
 requirements:
   build:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION }}
-    - scipy {{ SCIPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
+    - scipy {{ SCIPY_VERSION_ALT }}
     - astropy
     - future
 
   host:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION }}
-    - scipy {{ SCIPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
+    - scipy {{ SCIPY_VERSION_ALT }}
     - astropy
     - future
 
   run:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION }}
-    - scipy {{ SCIPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
+    - scipy {{ SCIPY_VERSION_ALT }}
     - astropy
     - future
 

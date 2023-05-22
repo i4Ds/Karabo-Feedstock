@@ -2,14 +2,14 @@
 
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ SKA_SDP_DTMDL_VERSION }}
+  version: {{ SKA_SDP_DTMDL_VERSION_ALT }}
 
 source:
    url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_SDP_DTMDL_VERSION }}/{{ uNameAndVers }}.tar.gz
 
 build:
   noarch: python
-  string: {{ SKA_SDP_DTMDL_VERSION }}
+  string: {{ SKA_SDP_DTMDL_VERSION_ALT }}
   script_env:
     - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
   
@@ -28,7 +28,7 @@ requirements:
     - astroplan         >=0.8,          <0.9
     - astropy           >=5.1,          <6.0 
     - h5py              >=3.7.0,        <4.0.0 
-    - numpy             {{ NUMPY_VERSION }}.*
+    - numpy             {{ NUMPY_VERSION_ALT }}.*
     - pandas            >=1.5.0,        <2.0.0
     - xarray            >=2022.10.0,    <2023.0.0
 

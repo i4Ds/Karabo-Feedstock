@@ -1,13 +1,13 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ SKA_SDP_FUNC_VERSION }}
+  version: {{ SKA_SDP_FUNC_VERSION_ALT }}
 
 source:
   git_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-func.git
   git_tag: {{ SKA_SDP_FUNC_VERSION }}-testing
 
 build:
-  string: {{ SKA_SDP_FUNC_VERSION }}_{{ python }}
+  string: {{ SKA_SDP_FUNC_VERSION_ALT }}_{{ python }}
   
 requirements:
   build:
@@ -27,7 +27,7 @@ requirements:
   run:
     - python {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION }}.*
+    - numpy {{ NUMPY_VERSION_ALT }}.*
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func/

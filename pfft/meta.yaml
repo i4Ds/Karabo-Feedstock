@@ -1,27 +1,27 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ PFFT_VERSION }}
+  version: {{ PFFT_VERSION_ALT }}
 
 source:
    git_url: https://github.com/mpip/pfft.git
    git_tag: v{{ PFFT_VERSION }}-alpha
 
 build:
-  string: {{ PFFT_VERSION }}
+  string: {{ PFFT_VERSION_ALT }}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - openmpi={{ OPENMPI_VERSION }}.*={{ OPENMPI_BUILD }}
-    - fftw {{ FFTW3_VERSION }}.*
+    - openmpi={{ OPENMPI_VERSION_ALT }}.*={{ OPENMPI_BUILD_ALT }}
+    - fftw {{ FFTW3_VERSION_ALT }}.*
     
   host:
    
   run:  
-    - openmpi={{ OPENMPI_VERSION }}.*={{ OPENMPI_BUILD }}
-    - fftw {{ FFTW3_VERSION }}.*
+    - openmpi={{ OPENMPI_VERSION_ALT }}.*={{ OPENMPI_BUILD_ALT }}
+    - fftw {{ FFTW3_VERSION_ALT }}.*
 
 about:
   home: https://github.com/mpip/pfft

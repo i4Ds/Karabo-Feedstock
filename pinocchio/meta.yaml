@@ -1,31 +1,31 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ PINOCCHIO_VERSION }}
+  version: {{ PINOCCHIO_VERSION_ALT }}
 
 source:
   git_url: https://github.com/i4Ds/Pinocchio.git
   git_tag: fivedotzero
 
 build:
-  string: {{ PINOCCHIO_VERSION }}
+  string: {{ PINOCCHIO_VERSION_ALT }}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - fftw {{ FFTW3_VERSION }}.*
-    - pfft {{ PFFT_VERSION }}.*
+    - fftw {{ FFTW3_VERSION_ALT }}.*
+    - pfft {{ PFFT_VERSION_ALT }}.*
     - gsl=2.7=he838d99_0
-    - openmpi={{ OPENMPI_VERSION }}.*={{ OPENMPI_BUILD }}
+    - openmpi={{ OPENMPI_VERSION_ALT }}.*={{ OPENMPI_BUILD_ALT }}
     
   host:
  
   run:
-    - fftw {{ FFTW3_VERSION }}.*
-    - pfft {{ PFFT_VERSION }}.*
+    - fftw {{ FFTW3_VERSION_ALT }}.*
+    - pfft {{ PFFT_VERSION_ALT }}.*
     - gsl=2.7=he838d99_0
-    - openmpi={{ OPENMPI_VERSION }}.*={{ OPENMPI_BUILD }}
+    - openmpi={{ OPENMPI_VERSION_ALT }}.*={{ OPENMPI_BUILD_ALT }}
   
 about:
   home: https://github.com/i4Ds/Pinocchio

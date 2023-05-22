@@ -2,14 +2,14 @@
 
 package:
   name: {{ name|lower }}
-  version: {{ SKA_GRDR_NFTY_CU_VERSION }}
+  version: {{ SKA_GRDR_NFTY_CU_VERSION_ALT }}
 
 source:
   git_url: https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda.git
   git_tag: {{ SKA_GRDR_NFTY_CU_VERSION }}
 
 build:
-  string: {{ SKA_GRDR_NFTY_CU_VERSION }}_{{ python }}
+  string: {{ SKA_GRDR_NFTY_CU_VERSION_ALT }}_{{ python }}
 
 requirements:
   build: 
@@ -17,16 +17,16 @@ requirements:
     - {{ compiler('cxx') }}
     - python {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
 
   host:
     - python {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
 
   run:
     - python {{ python }}
-    - numpy {{ NUMPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda
