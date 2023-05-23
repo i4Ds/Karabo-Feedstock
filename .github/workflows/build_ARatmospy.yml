@@ -24,7 +24,7 @@ on:
 
 jobs:
 
-  SeqFile:
+  Aratmospy:
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: aratmospy
