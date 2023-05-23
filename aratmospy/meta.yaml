@@ -1,0 +1,47 @@
+package:
+  name: "{{ PACKAGE_NAME|lower }}"
+  version: "{{ ARATMOSPY_VERSION_ALT }}"
+
+source:
+  git_url: "https://github.com/SimonP2207/ARatmospy"
+  git_rev: "bca2a3b1c115d24625acf35ea19063f374bde6fd"
+
+build:
+  noarch: python
+  string: {{ ARATMOSPY_VERSION_ALT }}
+
+requirements:
+  build:
+    - python
+    - pip
+
+  host:
+    - astropy
+    - matplotlib
+    - numpy
+    - pyfftw
+    - scipy
+    - pip
+    - python
+
+  run:
+    - astropy
+    - matplotlib
+    - numpy
+    - pyfftw
+    - scipy
+    - pip
+    - python
+
+about:
+  home: "https://github.com/SimonP2207/ARatmospy"
+  license: MIT License or MIT
+  license_family: MIT
+  license_file: 
+  summary: "Python version of autoregressive atmosphere generator."
+  doc_url: "https://github.com/SimonP2207/ARatmospy"
+  dev_url: "https://github.com/SimonP2207/ARatmospy"
+
+extra:
+  recipe-maintainers:
+    - lukas.gehrig@fhnw.ch
