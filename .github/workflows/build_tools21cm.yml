@@ -24,13 +24,13 @@ on:
 
 jobs:
 
-  Aratmospy:
+  tools21cm:
     uses: ./.github/workflows/build_base.yml
     with:
-      packageName: aratmospy
-      packageVersion: $ARATMOSPY_VERSION
-      packageVersionName: ARATMOSPY_VERSION
+      packageName: tools21cm
+      packageVersion: $TOOLS_21CM_VERSION
+      packageVersionName: TOOLS_21CM_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
-      pythonCall: import aratmospy
+      pythonCall: import tools21cm
     secrets: inherit
