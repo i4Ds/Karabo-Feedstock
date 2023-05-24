@@ -3,8 +3,8 @@ package:
   version: "{{ ARATMOSPY_VERSION_ALT }}"
 
 source:
-  git_url: "https://github.com/SimonP2207/ARatmospy"
-  git_rev: "fe1e1849330915df5f2877f9b37de8a77d7772b3"
+  git_url: "https://github.com/i4Ds/ARatmospy"
+  git_rev: "4e3b8867ec7926cac05a39f2492b0dcdbbf4e46b"
 
 build:
   noarch: python
@@ -34,13 +34,13 @@ requirements:
     - python
 
 about:
-  home: "https://github.com/SimonP2207/ARatmospy"
+  home: "https://github.com/i4Ds/ARatmospy"
   license: MIT License or MIT
   license_family: MIT
   license_file: 
   summary: "Python version of autoregressive atmosphere generator."
-  doc_url: "https://github.com/SimonP2207/ARatmospy"
-  dev_url: "https://github.com/SimonP2207/ARatmospy"
+  doc_url: "https://github.com/i4Ds/ARatmospy"
+  dev_url: "https://github.com/i4Ds/ARatmospy"
 
 extra:
   recipe-maintainers:
