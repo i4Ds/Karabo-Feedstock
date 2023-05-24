@@ -4,7 +4,7 @@ package:
 
 source:
   git_url: "https://github.com/i4Ds/ARatmospy"
-  git_rev: "4e3b8867ec7926cac05a39f2492b0dcdbbf4e46b"
+  git_rev: "33e0a3735c84014df3cdbb0e0a03cc9a16ead8ae"
 
 build:
   noarch: python
@@ -20,7 +20,7 @@ requirements:
     - matplotlib
     - numpy
     - pyfftw
-    - scipy
+    - scipy         >=1.9
     - pip
     - python
 
@@ -29,7 +29,7 @@ requirements:
     - matplotlib
     - numpy
     - pyfftw
-    - scipy
+    - scipy         >=1.9
     - pip
     - python
 
