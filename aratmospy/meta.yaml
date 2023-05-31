@@ -1,0 +1,47 @@
+package:
+  name: "{{ PACKAGE_NAME|lower }}"
+  version: "{{ ARATMOSPY_VERSION_ALT }}"
+
+source:
+  git_url: "https://github.com/i4Ds/ARatmospy"
+  git_rev: "e9210243d828fba04ab8dc00dd84af8d8572160c"
+
+build:
+  noarch: python
+  string: {{ ARATMOSPY_VERSION_ALT }}
+
+requirements:
+  build:
+    - python
+    - pip
+
+  host:
+    - astropy
+    - matplotlib
+    - numpy
+    - pyfftw
+    - scipy         >=1.9
+    - pip
+    - python
+
+  run:
+    - astropy
+    - matplotlib
+    - numpy
+    - pyfftw
+    - scipy         >=1.9
+    - pip
+    - python
+
+about:
+  home: "https://github.com/i4Ds/ARatmospy"
+  license: MIT License or MIT
+  license_family: MIT
+  license_file: 
+  summary: "Python version of autoregressive atmosphere generator."
+  doc_url: "https://github.com/i4Ds/ARatmospy"
+  dev_url: "https://github.com/i4Ds/ARatmospy"
+
+extra:
+  recipe-maintainers:
+    - lukas.gehrig@fhnw.ch
