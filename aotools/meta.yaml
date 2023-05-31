@@ -1,13 +1,13 @@
 package:
   name: "{{ PACKAGE_NAME|lower }}"
-  version: "{{ AOTOOLS_VERSION }}"
+  version: "{{ AOTOOLS_VERSION_ALT }}"
 
 source:
   url: "https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ AOTOOLS_VERSION }}.tar.gz"
 
 build:
   noarch: python
-  string: {{ AOTOOLS_VERSION }}
+  string: {{ AOTOOLS_VERSION_ALT }}
 
 requirements:
   build: 
@@ -17,17 +17,17 @@ requirements:
   host:
     - matplotlib
     - numba
-    - numpy {{ NUMPY_VERSION }}.*
+    - numpy {{ NUMPY_VERSION_ALT }}.*
     - pip
     - python
-    - scipy {{ SCIPY_VERSION }}
+    - scipy {{ SCIPY_VERSION_ALT }}
 
   run:
     - matplotlib
     - numba
-    - numpy {{ NUMPY_VERSION }}.*
+    - numpy {{ NUMPY_VERSION_ALT }}.*
     - python
-    - scipy {{ SCIPY_VERSION }}
+    - scipy {{ SCIPY_VERSION_ALT }}
 
 about:
   home: "https://github.com/aotools/aotools"

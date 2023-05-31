@@ -11,6 +11,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "FFTW3_VERSION"
         
   workflow_call:
     inputs:
@@ -21,6 +25,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "FFTW3_VERSION"
 
 jobs:
 
@@ -29,7 +37,9 @@ jobs:
     with:
       packageName: pfft
       packageVersion: $PFFT_VERSION
+      packageVersionName: PFFT_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      devDeps: ${{ inputs.devDeps }}
       isNative: true
     secrets: inherit

@@ -11,6 +11,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "OSKAR_VERSION"
         
   workflow_call:
     inputs:
@@ -21,6 +25,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "OSKAR_VERSION"
 
 jobs:
 
@@ -28,9 +36,11 @@ jobs:
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: oskarpy
-      packageVersion: $OSKAR_VERSION
+      packageVersion: $OSKARPY_VERSION
+      packageVersionName: OSKARPY_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      devDeps: ${{ inputs.devDeps }}
       pythonCall: import oskar
       customPath: oskar-py/.
       isNative: true

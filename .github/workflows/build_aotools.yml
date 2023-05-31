@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: aotools
       packageVersion: $AOTOOLS_VERSION
+      packageVersionName: AOTOOLS_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       pythonCall: import aotools

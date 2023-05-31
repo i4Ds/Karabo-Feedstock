@@ -1,6 +1,6 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ KATBEAM_VERSION }}
+  version: {{ KATBEAM_VERSION_ALT }}
 
 source:
   git_url: https://github.com/ska-sa/katbeam.git
@@ -8,22 +8,22 @@ source:
 
 build:
   noarch: python
-  string: {{ KATBEAM_VERSION }}
+  string: {{ KATBEAM_VERSION_ALT }}
 
 requirements:
   build:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
 
   host:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
 
   run:
     - python
-    - numpy {{ NUMPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
 
 about:
   home: https://github.com/i4Ds/katbeam

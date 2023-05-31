@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: seqfile
       packageVersion: $SEQFILE_VERSION
+      packageVersionName: SEQFILE_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       pythonCall: import seqfile

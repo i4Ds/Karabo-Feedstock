@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: eidos
       packageVersion: $EIDOS_VERSION
+      packageVersionName: EIDOS_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       pythonCall: import eidos

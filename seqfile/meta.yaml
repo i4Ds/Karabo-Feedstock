@@ -1,13 +1,13 @@
 package:
   name: "{{ PACKAGE_NAME|lower }}"
-  version: "{{ SEQFILE_VERSION }}"
+  version: "{{ SEQFILE_VERSION_ALT }}"
 
 source:
   url: "https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ SEQFILE_VERSION }}.tar.gz"
 
 build:
   noarch: python
-  string: {{ SEQFILE_VERSION }}
+  string: {{ SEQFILE_VERSION_ALT }}
 #  entry_points:
 #    - seqfile = seqfile.seqfile:_run
 

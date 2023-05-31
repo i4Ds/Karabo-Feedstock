@@ -1,6 +1,6 @@
 package:
   name: "{{ PACKAGE_NAME|lower }}"
-  version: "{{ TOOLS_21CM_VERSION }}"
+  version: "{{ TOOLS_21CM_VERSION_ALT }}"
 
 source:
   git_url: "https://github.com/sambit-giri/tools21cm"
@@ -8,7 +8,7 @@ source:
 
 build:
   noarch: python
-  string: {{ TOOLS_21CM_VERSION }}
+  string: {{ TOOLS_21CM_VERSION_ALT }}
 
 requirements:
   build:
@@ -20,15 +20,15 @@ requirements:
     - joblib
     - matplotlib
     - numba
-    - numpy {{ NUMPY_VERSION }}
+    - numpy {{ NUMPY_VERSION_ALT }}
     - pip
-    - fftw {{ FFTW3_VERSION }}.*
+    - fftw {{ FFTW3_VERSION_ALT }}.*
     - pyfftw
     - pytest
     - python
     - scikit-image
     - scikit-learn
-    - scipy {{ SCIPY_VERSION }}
+    - scipy {{ SCIPY_VERSION_ALT }}
     - tqdm
     - numexpr
     - tensorflow
@@ -39,14 +39,14 @@ requirements:
     - joblib
     - matplotlib
     - numba
-    - numpy {{ NUMPY_VERSION }}
-    - fftw {{ FFTW3_VERSION }}.*
+    - numpy {{ NUMPY_VERSION_ALT }}
+    - fftw {{ FFTW3_VERSION_ALT }}.*
     - pyfftw
     - pytest
     - python
     - scikit-image
     - scikit-learn
-    - scipy {{ SCIPY_VERSION }}
+    - scipy {{ SCIPY_VERSION_ALT }}
     - tqdm
     - numexpr
     - tensorflow

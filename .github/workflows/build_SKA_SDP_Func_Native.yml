@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: ska-sdp-func
       packageVersion: $SKA_SDP_FUNC_VERSION
+      packageVersionName: SKA_SDP_FUNC_VERSION
       pythonCall: from ska_sdp_func.visibility import dft_point_v00, dft_point_v01
       useCuda: true
       isNative: true

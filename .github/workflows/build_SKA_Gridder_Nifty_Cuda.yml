@@ -29,6 +29,7 @@ jobs:
     with:
       packageName: ska-gridder-nifty-cuda
       packageVersion: $SKA_GRDR_NFTY_CU_VERSION
+      packageVersionName: SKA_GRDR_NFTY_CU_VERSION
       useCuda: true
       isNative: true
       label: ${{ inputs.label }}

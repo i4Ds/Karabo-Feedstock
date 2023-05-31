@@ -22,6 +22,7 @@ env:
   
   # Oskar Line
   OSKAR_VERSION: 2.8.3
+  OSKARPY_VERSION: 2.8.3  # oskarpy should have same version as `OSKAR_VERSION`, needed because `OSKAR_VERSION` could get overwritten
 
   # additional karabo dependencies
   AOTOOLS_VERSION: 1.0.6
@@ -48,7 +49,11 @@ on:
       packageVersion:
         required: true
         type: string
-      
+
+      packageVersionName:  # env.VAR_NAME of the corresponding build
+        required: true
+        type: string
+
       customPath:
         required: false
         type: string
@@ -67,6 +72,11 @@ on:
         required: false
         default: false
         type: boolean
+
+      devDeps:  # string of dev-deps with ", " as delimiter
+        required: false
+        default: ""  # set matching packages-names for dev to use
+        type: string
       
       useCuda:
         required: false
@@ -114,19 +124,35 @@ jobs:
         if: inputs.customPath == ''
         run: |
           echo "recipePath=${{ inputs.packageName }}/." >> $GITHUB_ENV
-      - name: Alter meta.yaml if dev
+      - name: Prepare Setup
+        # In case ${{ inputs.dev }}="true", ${{ inputs.packageVersion }} of ${{ inputs.packageVersion }}
+        # gets a PEP440 dev-version added.
+        # In case ${{ inputs.dev }}="true" & ${{ inputs.devDeps }} is not empty, the in `env` declared variables
+        # included in `devDeps` gets a PEP440 dev-version added and exported for the underlying conda-build process.
         id: pkgv
-        if: ${{ inputs.dev }}
         run: |
-          if [[ ${{ inputs.dev }}="true" ]]
+          if [[ ${{ inputs.dev }} == "true" ]]
           then
             PKG_VERSION=$(echo "${{ inputs.packageVersion }}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
-            sed -i "s/version: .*/version: ${PKG_VERSION}/" ${{ env.recipePath }}/meta.yaml
-            sed -i "s/string: {{[^}]*}}/string: ${PKG_VERSION}/" ${{ env.recipePath }}/meta.yaml
+            DEV_DEPS_LIST=$(echo "${{ inputs.packageVersionName }}, ${{ inputs.devDeps }}")
           else
             PKG_VERSION=${{ inputs.packageVersion }}
+            DEV_DEPS_LIST=""
           fi
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
+
+          PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
+          for PKG_KEY in $PKG_KEYS; do
+            if [[ $DEV_DEPS_LIST == *"$PKG_KEY"* ]]
+            then
+              VERSION_ALT=$(echo "${!PKG_KEY}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
+            else
+              VERSION_ALT=${!PKG_KEY}
+            fi
+            NAME_ALT=${PKG_KEY}_ALT
+            echo "$NAME_ALT=$VERSION_ALT" >> $GITHUB_ENV
+          done
+
       - name: Install Conda-Build and create target
         run: |
           conda install conda-build
