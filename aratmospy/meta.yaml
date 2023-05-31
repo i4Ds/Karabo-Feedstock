@@ -4,7 +4,7 @@ package:
 
 source:
   git_url: "https://github.com/i4Ds/ARatmospy"
-  git_rev: "33e0a3735c84014df3cdbb0e0a03cc9a16ead8ae"
+  git_rev: "e9210243d828fba04ab8dc00dd84af8d8572160c"
 
 build:
   noarch: python
