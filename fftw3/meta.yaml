@@ -28,7 +28,7 @@ about:
   license_file: COPYING
   summary: 'FFTW3 with MPI extension'
   description: |
-   FFTW3 compiled with --enable-mpi --enable-openmp --disable-shared  CC="mpicc" F77="mpif90" MPICC="mpicc" CFLAGS="-O3" FFLAGS="-O3"
+   FFTW3 libs in double and float compiled with --enable-mpi --enable-openmp --enable-threads --enable-avx --enable-avx2 --enable-shared
   doc_url: http://fftw.org/fftw3_doc/
   dev_url: https://github.com/FFTW/fftw3
 
