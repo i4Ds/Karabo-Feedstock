@@ -1,0 +1,51 @@
+package:
+  name: "{{ PACKAGE_NAME|lower }}"
+  version: "{{ PYCSOU_VERSION_ALT }}"
+
+source:
+  git_url: "https://github.com/matthieumeo/pycsou"
+  git_rev: "ad5d54268d1a752fc2c0c3f3e5becab29bf3afac"  # corresponds to 1.0.7.dev1679
+
+build:
+  noarch: python
+  string: {{ PYCSOU_VERSION_ALT }}
+
+requirements:
+  build:
+    - python
+    - pip
+
+  host:
+    - numpy
+    - scipy
+    - dask
+    - matplotlib
+    - pandas
+    - joblib
+    - scikit-learn
+    - numba
+    - pylops
+
+  run:
+    - numpy
+    - scipy
+    - dask
+    - matplotlib
+    - pandas
+    - joblib
+    - scikit-learn
+    - numba
+    - pylops
+
+about:
+  home: "https://github.com/matthieumeo/pycsou"
+  license: MIT License or MIT
+  license_family: MIT
+  license_file: 
+  summary: "Pycsou is a Python 3 package for solving linear inverse problems with state-of-the-art proximal algorithms. The software implements in a highly modular way the main building blocks -cost functionals, penalty terms and linear operators- of generic penalised convex optimisation problems."
+  doc_url: "https://github.com/matthieumeo/pycsou"
+  dev_url: "https://github.com/matthieumeo/pycsou"
+
+extra:
+  recipe-maintainers:
+    - lukas.gehrig@fhnw.ch
