@@ -1,0 +1,51 @@
+package:
+  name: "{{ PACKAGE_NAME|lower }}"
+  version: "{{ HVOX_VERSION_ALT }}"
+
+source:
+  git_url: "https://github.com/matthieumeo/hvox"
+  git_rev: "bb9619ed33c782a76d2be32ca1f145d216425643"
+
+build:
+  noarch: python
+  string: {{ HVOX_VERSION_ALT }}
+
+requirements:
+  build:
+    - python
+    - pip
+
+  host:
+    - astropy
+    - matplotlib
+    - numpy
+    - healpy
+    - ducc0
+    - pycsou                {{ PYCSOU_VERSION_ALT }}
+    - rascil                {{ RASCIL_VERSION_ALT }}
+    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION_ALT }}
+    - ska-sdp-func-python   {{ SKA_SDP_FUNC_PY_VERSION_ALT }}
+
+  run:
+    - astropy
+    - matplotlib
+    - numpy
+    - healpy
+    - ducc0
+    - pycsou                {{ PYCSOU_VERSION_ALT }}
+    - rascil                {{ RASCIL_VERSION_ALT }}
+    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION_ALT }}
+    - ska-sdp-func-python   {{ SKA_SDP_FUNC_PY_VERSION_ALT }}
+
+about:
+  home: "https://github.com/matthieumeo/hvox"
+  license: MIT License or MIT
+  license_family: MIT
+  license_file: 
+  summary: "Python reference implementation of the HVOX gridder for mesh-agnostic wide-field interferometry."
+  doc_url: "https://github.com/matthieumeo/hvox"
+  dev_url: "https://github.com/matthieumeo/hvox"
+
+extra:
+  recipe-maintainers:
+    - lukas.gehrig@fhnw.ch

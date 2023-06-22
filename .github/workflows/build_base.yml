@@ -24,6 +24,10 @@ env:
   OSKAR_VERSION: 2.8.3
   OSKARPY_VERSION: 2.8.3  # oskarpy should have same version as `OSKAR_VERSION`
 
+  # hvox Line -> don't add dev-label through ci-options because the setup is not ready for that.
+  HVOX_VERSION: 0.0.1.dev48  # `pbr` version because they don't have an official release tag yet
+  PYCSOU_VERSION: 1.0.7.dev1679  # `pbr` version because they just refer to `v2-dev` branch which has this version
+
   # additional karabo dependencies
   AOTOOLS_VERSION: 1.0.6
   SEQFILE_VERSION: 0.2.0
@@ -127,7 +131,7 @@ jobs:
           echo "recipePath=${{ inputs.packageName }}/." >> $GITHUB_ENV
       - name: Prepare Setup
         # In case ${{ inputs.dev }}="true", ${{ inputs.packageVersion }} of ${{ inputs.packageVersion }}
-        # gets a PEP440 dev-version added.
+        # gets a PEP440 dev-version added at position "patch".
         # In case ${{ inputs.dev }}="true" & ${{ inputs.devDeps }} is not empty, the in `env` declared variables
         # included in `devDeps` gets a PEP440 dev-version added and exported for the underlying conda-build process.
         id: pkgv
