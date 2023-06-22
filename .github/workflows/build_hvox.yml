@@ -1,0 +1,45 @@
+name: hvox
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
+      devDeps:
+        type: string
+        required: false
+        default: "PYCSOU_VERSION"
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
+      devDeps:
+        type: string
+        required: false
+        default: "PYCSOU_VERSION"
+
+jobs:
+
+  hvox:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: hvox
+      packageVersion: $HVOX_VERSION
+      packageVersionName: HVOX_VERSION
+      pythonCall: import hvox
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      devDeps: ${{ inputs.devDeps }}
+    secrets: inherit
