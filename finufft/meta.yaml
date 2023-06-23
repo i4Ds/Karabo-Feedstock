@@ -3,7 +3,7 @@ package:
   version: {{ FINUFFT_VERSION_ALT }}
 
 source:
-  url: "https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ FINUFFT_VERSION }}.tar.gz"
+  url: "https://pypi.python.org/pypi/{{ PACKAGE_NAME }}/{{ FINUFFT_VERSION }}"
 
 build:
   string: {{ FINUFFT_VERSION_ALT }}

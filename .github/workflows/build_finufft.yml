@@ -24,7 +24,7 @@ on:
 
 jobs:
 
-  FFTW3:
+  FINUFFT:
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: finufft
@@ -35,3 +35,4 @@ jobs:
       isNative: true
       useCuda: true
     secrets: inherit
+
