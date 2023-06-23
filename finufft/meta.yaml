@@ -1,0 +1,42 @@
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ FINUFFT_VERSION_ALT }}
+
+source:
+  url: "https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ FINUFFT_VERSION }}.tar.gz"
+
+build:
+  string: {{ FINUFFT_VERSION_ALT }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('gfortran') }}
+    - pip
+    - python {{ python }}
+    - make
+    - cmake
+    
+  host:
+    - pip
+    - python {{ python }}
+
+  run:
+    - pip
+    - python {{ python }}
+
+about:
+  home: https://github.com/flatironinstitute/finufft
+  license: MIT License or MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: 'Nonuniform Fast Fourier Transform library'
+  description: |
+   Flatiron Institute Nonuniform Fast Fourier Transform library: FINUFFT
+  doc_url: https://github.com/epfl-radio-astro/bipp#readme
+  dev_url: https://github.com/epfl-radio-astro/bipp
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch
