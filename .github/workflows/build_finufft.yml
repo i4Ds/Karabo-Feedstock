@@ -35,4 +35,3 @@ jobs:
       isNative: true
       useCuda: true
     secrets: inherit
-
