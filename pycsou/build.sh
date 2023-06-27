@@ -1,3 +1,3 @@
 #!/bin/sh
 
-$PYTHON -m pip install --no-deps .
+$PYTHON -m pip install --use-pep517 --no-deps .
