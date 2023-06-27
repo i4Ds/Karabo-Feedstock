@@ -14,11 +14,14 @@ requirements:
   build:
     - python
     - pip
+    - setuptools
+    - pbr
 
   host:
+    - python                >=3.7.*
     - astropy
-    - matplotlib
-    - numpy
+    - matplotlib            >=3.3.*
+    - numpy                 >=1.10
     - healpy
     - ducc0
     - pycsou                {{ PYCSOU_VERSION_ALT }}
@@ -27,9 +30,10 @@ requirements:
     - ska-sdp-func-python   {{ SKA_SDP_FUNC_PY_VERSION_ALT }}
 
   run:
+    - python                >=3.7.*
     - astropy
-    - matplotlib
-    - numpy
+    - matplotlib            >=3.3.*
+    - numpy                 >=1.10
     - healpy
     - ducc0
     - pycsou                {{ PYCSOU_VERSION_ALT }}
