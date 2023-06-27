@@ -16,26 +16,28 @@ requirements:
     - pip
 
   host:
-    - numpy
-    - scipy
-    - dask
-    - matplotlib
-    - pandas
-    - joblib
-    - scikit-learn
-    - numba
-    - pylops
+    - python        >=3.6.*
+    - numpy         >=1.10
+    - scipy         >=1.5.*
+    - dask          >=2.16.*
+    - matplotlib    >=3.3.*
+    - pandas        >=1.0.5
+    - joblib        >=0.17.*
+    - scikit-image  >=0.17.*
+    - numba         >=0.50.1
+    - pylops        >=1.9.2
 
   run:
-    - numpy
-    - scipy
-    - dask
-    - matplotlib
-    - pandas
-    - joblib
-    - scikit-learn
-    - numba
-    - pylops
+    - python        >=3.6.*
+    - numpy         >=1.10
+    - scipy         >=1.5.*
+    - dask          >=2.16.*
+    - matplotlib    >=3.3.*
+    - pandas        >=1.0.5
+    - joblib        >=0.17.*
+    - scikit-image  >=0.17.*
+    - numba         >=0.50.1
+    - pylops        >=1.9.2
 
 about:
   home: "https://github.com/matthieumeo/pycsou"
