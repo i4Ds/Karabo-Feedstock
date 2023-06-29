@@ -1,11 +1,13 @@
+{% set pName = {{ PACKAGE_NAME|lower }} %}
+{% set pythonVersion = {{ python|replace(".", "") }} %}
+{% set fileName = "{{ pName }}-{{ FINUFFT_VERSION }}-cp{{ pythonVersion }}-cp{{ pythonVersion }}-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" %}
+
 package:
-  name: {{ PACKAGE_NAME|lower }}
+  name: {{ pName }}
   version: {{ FINUFFT_VERSION_ALT }}
-  pythonVersion: {{ python|replace(".", "") }}
-  filename: "{{ name }}-{{ FINUFFT_VERSION }}-cp{{ pythonVersion }}-cp{{ pythonVersion }}-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
 
 source:
-  url: "https://files.pythonhosted.org/packages/cp{{ pythonVersion }}/f/{{ name }}/{{ filename }}"
+  url: "https://files.pythonhosted.org/packages/cp{{ pythonVersion }}/f/{{ pName }}/{{ fileName }}"
 
 build:
   string: {{ FINUFFT_VERSION_ALT }}
@@ -13,7 +15,7 @@ build:
 requirements:
   build:
     script_env
-      -FILE_NAME = {{ filename }}
+      -FILE_NAME = {{ fileName }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
