@@ -10,12 +10,12 @@ source:
   url: "https://files.pythonhosted.org/packages/cp{{ pythonVersion }}/f/{{ pName }}/{{ fileName }}"
 
 build:
+  script_env:
+    - FILE_NAME = {{ fileName }}
   string: {{ FINUFFT_VERSION_ALT }}
 
 requirements:
   build:
-    script_env:
-      - FILE_NAME = {{ fileName }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
