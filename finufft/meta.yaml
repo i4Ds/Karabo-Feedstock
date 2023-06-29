@@ -12,7 +12,7 @@ source:
 build:
   script_env:
     - FILE_NAME={{ fileName }}
-  string: {{ FINUFFT_VERSION_ALT }}
+  string: {{ FINUFFT_VERSION_ALT }}_{{ python }}
 
 requirements:
   build:
