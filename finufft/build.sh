@@ -1,3 +1,3 @@
 #!/bin/sh
 
-$PYTHON -m pip install FILE_NAME
+$PYTHON -m pip install $FILE_NAME

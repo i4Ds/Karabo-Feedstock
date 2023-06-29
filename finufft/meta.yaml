@@ -11,7 +11,7 @@ source:
 
 build:
   script_env:
-    - FILE_NAME = {{ fileName }}
+    - FILE_NAME={{ fileName }}
   string: {{ FINUFFT_VERSION_ALT }}
 
 requirements:
@@ -36,7 +36,6 @@ about:
   home: https://github.com/flatironinstitute/finufft
   license: MIT License or MIT
   license_family: MIT
-  license_file: LICENSE
   summary: 'Nonuniform Fast Fourier Transform library'
   description: |
    Flatiron Institute Nonuniform Fast Fourier Transform library: FINUFFT
