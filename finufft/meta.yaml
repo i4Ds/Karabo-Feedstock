@@ -1,15 +1,19 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ FINUFFT_VERSION_ALT }}
+  pythonVersion: {{ python|replace(".", "") }}
+  filename: "{{ name }}-{{ FINUFFT_VERSION }}-cp{{ pythonVersion }}-cp{{ pythonVersion }}-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
 
 source:
-  url: "https://pypi.python.org/pypi/{{ PACKAGE_NAME }}/{{ FINUFFT_VERSION }}"
+  url: "https://files.pythonhosted.org/packages/cp{{ pythonVersion }}/f/{{ name }}/{{ filename }}"
 
 build:
   string: {{ FINUFFT_VERSION_ALT }}
 
 requirements:
   build:
+    script_env
+      -FILE_NAME = {{ filename }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
