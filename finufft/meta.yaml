@@ -14,7 +14,7 @@ build:
 
 requirements:
   build:
-    script_env
+    script_env:
       - FILE_NAME = {{ fileName }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
