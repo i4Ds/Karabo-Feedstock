@@ -23,14 +23,17 @@ requirements:
     - python {{ python }}
     - make
     - cmake
+    - numpy 
     
   host:
     - pip
     - python {{ python }}
+    - numpy 
 
   run:
     - pip
     - python {{ python }}
+    - numpy 
 
 about:
   home: https://github.com/flatironinstitute/finufft
