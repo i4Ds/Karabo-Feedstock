@@ -15,12 +15,14 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
     - cmake
+    - scikit-build
     - openblas
     - python {{ python }}
     - finufft {{ FINUFFT_VERSION_ALT }}
     
   host:
     - openblas
+    - scikit-build
     - python {{ python }}
     - finufft {{ FINUFFT_VERSION_ALT }}
 
