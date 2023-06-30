@@ -27,7 +27,7 @@ jobs:
   Bluebild :
     uses: ./.github/workflows/build_base.yml
     with:
-      packageName: bipp
+      packageName: Bluebild
       packageVersion: $BLUEBILD_VERSION
       packageVersionName: BLUEBILD_VERSION
       label: ${{ inputs.label }}

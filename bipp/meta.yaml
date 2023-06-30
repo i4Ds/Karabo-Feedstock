@@ -1,13 +1,13 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ BIPP_VERSION_ALT }}
+  version: {{ BLUEBILD_VERSION_ALT }}
 
 source:
   git_url: "https://github.com/epfl-radio-astro/bipp"
   git_rev: "f13353bca7f4dbd9940eded3b96f98b75e98186e" 
 
 build:
-  string: {{ BIPP_VERSION_ALT }}
+  string: {{ BLUEBILD_VERSION_ALT }}
 
 requirements:
   build:
