@@ -1,4 +1,3 @@
-mkdir build
-cd build
-cmake .. -DBIPP_PYTHON=ON -DBIPP_INSTALL=PYTHON -DBIPP_PYBIND11_DOWNLOAD=ON
-make install
+#!/bin/sh
+
+BIPP_GPU=CUDA $PYTHON -m pip install --no-deps .
