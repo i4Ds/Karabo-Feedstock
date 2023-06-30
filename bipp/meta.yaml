@@ -1,0 +1,44 @@
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ BIPP_VERSION_ALT }}
+
+source:
+  git_url: "https://github.com/epfl-radio-astro/bipp"
+  git_rev: "f13353bca7f4dbd9940eded3b96f98b75e98186e" 
+
+build:
+  string: {{ BIPP_VERSION_ALT }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('gfortran') }}
+    - cmake
+    - openblas
+    - python {{ python }}
+    - finufft {{ FINUFFT_VERSION_ALT }}
+    
+  host:
+    - openblas
+    - python {{ python }}
+    - finufft {{ FINUFFT_VERSION_ALT }}
+
+  run:
+    - openblas
+    - python {{ python }}
+    - finufft {{ FINUFFT_VERSION_ALT }}
+
+about:
+  home: https://github.com/epfl-radio-astro/bipp
+  license: GPL-2.0-or-later
+  license_file: LICENSE
+  summary: 'BIPP - Bluebild Imaging++'
+  description: |
+   Image synthesis in radio astronomy is done with interferometry, a powerful technique allowing observation of the sky with antenna arrays with otherwise inaccessible angular resolutions and sensitivities. The Bluebild algorithm offers a novel approach to image synthesis, leveraging fPCA to decompose the sky image into distinct energy eigenimages. Bluebild Imaging++ is an HPC implementation of Bluebild.
+  doc_url: https://github.com/epfl-radio-astro/bipp#readme
+  dev_url: https://github.com/epfl-radio-astro/bipp
+
+extra:
+  recipe-maintainers:
+    - filip.schramka@fhnw.ch
