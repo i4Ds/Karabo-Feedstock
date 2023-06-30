@@ -30,6 +30,7 @@ jobs:
       packageName: Bluebild
       packageVersion: $BLUEBILD_VERSION
       packageVersionName: BLUEBILD_VERSION
+      customPath: bipp/.
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       isNative: true
