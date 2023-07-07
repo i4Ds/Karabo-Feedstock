@@ -1,3 +1,3 @@
 #!/bin/sh
 
-BIPP_GPU=CUDA $PYTHON -m pip install --no-deps .
+BIPP_GPU=OFF $PYTHON -m pip install --no-deps .
