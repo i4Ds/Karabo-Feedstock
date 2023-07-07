@@ -12,6 +12,7 @@ source:
 build:
   script_env:
     - FILE_NAME={{ fileName }}
+    - FINUFFT_VERSION_ENV={{ FINUFFT_VERSION_ALT }}
   string: {{ FINUFFT_VERSION_ALT }}_{{ python }}
 
 requirements:
@@ -24,16 +25,19 @@ requirements:
     - make
     - cmake
     - numpy 
+    - fftw {{ FFTW3_VERSION_ALT }}
     
   host:
     - pip
     - python {{ python }}
     - numpy 
+    - fftw {{ FFTW3_VERSION_ALT }}
 
   run:
     - pip
     - python {{ python }}
     - numpy 
+    - fftw {{ FFTW3_VERSION_ALT }}
 
 about:
   home: https://github.com/flatironinstitute/finufft

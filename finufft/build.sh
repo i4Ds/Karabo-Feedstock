@@ -4,9 +4,9 @@
 $PYTHON -m pip install $FILE_NAME 
 
 # create native C++ Lib
-wget https://github.com/flatironinstitute/finufft/archive/refs/tags/v$FINUFFT_VERSION_ALT.tar.gz
-tar -xzf v$FINUFFT_VERSION_ALT.tar.gz
-cd finufft-$FINUFFT_VERSION_ALT
+wget https://github.com/flatironinstitute/finufft/archive/refs/tags/v$FINUFFT_VERSION_ENV.tar.gz
+tar -xzf v$FINUFFT_VERSION_ENV.tar.gz
+cd finufft-$FINUFFT_VERSION_ENV
 
 echo -e "CXXFLAGS += -I$CONDA_PREFIX/include -LCONDA_PREFIX/lib\nexport LDFLAGS=-L$CONDA_PREFIX/lib\n" >> make.inc
 
