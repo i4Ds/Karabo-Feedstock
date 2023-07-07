@@ -12,8 +12,10 @@ echo -e "CXXFLAGS += -I$CONDA_PREFIX/include -LCONDA_PREFIX/lib\nexport LDFLAGS=
 
 # create lib
 make lib
-cp lib/*.so $CONDA_PREFIX/lib
-cp lib-static/*.a $CONDA_PREFIX/lib
-cp -r ./include $CONDA_PREFIX
+
+# cpy to output dir
+cp lib/*.so $PREFIX/lib
+cp lib-static/*.a $PREFIX/lib
+cp -r ./include $PREFIX
 
 # TODO add CUDA target - only in main, not in latest release
