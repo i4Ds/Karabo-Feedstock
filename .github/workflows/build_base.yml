@@ -39,7 +39,7 @@ env:
   
   # SKACH contributions
   FINUFFT_VERSION: 2.1.0
-  BLUEBILD_VERSION: 1.0.0
+  BLUEBILD_VERSION: 0.1.0
 
   # Package Name
   PACKAGE_NAME: ${{ inputs.packageName }}
