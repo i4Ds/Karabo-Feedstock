@@ -7,7 +7,7 @@ source:
   git_rev: "f13353bca7f4dbd9940eded3b96f98b75e98186e" 
 
 build:
-  string: {{ BLUEBILD_VERSION_ALT }}
+  string: {{ BLUEBILD_VERSION_ALT }}_{{ python }}
 
 requirements:
   build:
