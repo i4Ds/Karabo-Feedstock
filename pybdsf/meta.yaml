@@ -3,7 +3,7 @@ package:
   version: {{ PYBDSF_VERSION_ALT }}
 
 source:
-  url: https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ PYBDSF_VERSION }}.tar.gz
+  git_url: https://github.com/i4Ds/PyBDSF.git
 
 build:
   string: {{ PYBDSF_VERSION_ALT }}_{{ python }}
@@ -13,26 +13,32 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
+    - cmake>=3.18
     - python {{ python }}
     - pip
     - numpy {{ NUMPY_VERSION_ALT }}.*
     - boost {{ BOOST_VERSION_ALT }}.*
-    - setuptools ==59.8.0
+    - setuptools>=68
+    - scikit-build>=0.13
     
   host:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('gfortran') }}
+    - cmake>=3.18
     - python {{ python }}
+    - pip
     - numpy {{ NUMPY_VERSION_ALT }}.*
     - boost {{ BOOST_VERSION_ALT }}.*
-    - astropy
-    - matplotlib
-    - setuptools ==59.8.0
+    - setuptools>=68
+    - scikit-build>=0.13
     
   run:
     - python {{ python }}
     - boost {{ BOOST_VERSION_ALT }}.*
     - astropy
     - numpy {{ NUMPY_VERSION_ALT }}.*
-    - scipy {{ SCIPY_VERSION_ALT }}
+    - scipy {{ SCIPY_VERSION_ALT }}.*
     - matplotlib
     - ipython
 
