@@ -21,8 +21,12 @@ requirements:
     - finufft {{ FINUFFT_VERSION_ALT }}
     
   host:
-    - openblas
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('gfortran') }}
+    - cmake
     - scikit-build
+    - openblas
     - python {{ python }}
     - finufft {{ FINUFFT_VERSION_ALT }}
 
@@ -30,6 +34,14 @@ requirements:
     - openblas
     - python {{ python }}
     - finufft {{ FINUFFT_VERSION_ALT }}
+    - numpy
+    - astropy
+    - matplotlib
+    - tqdm
+    - pyproj
+    - scipy
+    - pandas
+    - healpy
 
 about:
   home: https://github.com/epfl-radio-astro/bipp
