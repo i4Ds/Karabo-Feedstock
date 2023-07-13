@@ -35,6 +35,7 @@ requirements:
     - python {{ python }}
     - finufft {{ FINUFFT_VERSION_ALT }}
     - numpy
+    - scikit-learn
     - astropy
     - matplotlib
     - tqdm
