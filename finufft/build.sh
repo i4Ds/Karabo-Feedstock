@@ -8,7 +8,7 @@ wget https://github.com/flatironinstitute/finufft/archive/refs/tags/v$FINUFFT_VE
 tar -xzf v$FINUFFT_VERSION_ENV.tar.gz
 cd finufft-$FINUFFT_VERSION_ENV
 
-echo -e "CXXFLAGS += -I$CONDA_PREFIX/include -LCONDA_PREFIX/lib\nexport LDFLAGS=-L$CONDA_PREFIX/lib\n" >> make.inc
+echo -e "CXXFLAGS += -I$CONDA_PREFIX/include -L$CONDA_PREFIX/lib\nexport LDFLAGS=-L$CONDA_PREFIX/lib\n" >> make.inc
 
 # create lib
 make lib
