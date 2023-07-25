@@ -36,6 +36,7 @@ env:
   KATBEAM_VERSION: 0.1.0 # acutal version 0.1 and has therefore no patch, but is needed for conda-build
   TOOLS_21CM_VERSION: 2.0.2
   ARATMOSPY_VERSION: 1.0.0
+  MONTAGEPY_VERSION: 6.0.0 # version is pinned through python-wheel in conda_build_config.yaml
   
   # SKACH contributions
   FINUFFT_VERSION: 2.1.0
