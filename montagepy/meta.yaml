@@ -1,0 +1,39 @@
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ MONTAGEPY_VERSION_ALT }}
+
+source:
+  url: {{ wheel_url }}
+  sha256: {{ wheel_sha }}
+
+build:
+  string: {{ MONTAGEPY_VERSION_ALT }}_{{ python }}
+
+requirements:
+  build:
+    - python {{ python }}
+    - {{ compiler('c') }}
+    - pip
+    
+  host:
+    - python {{ python }}
+    - {{ compiler('c') }}
+    - pip
+
+  run:
+    - python {{ python }}
+    - requests
+
+about:
+  home: https://github.com/Caltech-IPAC/Montage
+  license: BSD
+  license_file: LICENSE
+  summary: 'Montage, an astronomical image mosaic engine.'
+  description: |
+   Montage (http://montage.ipac.caltech.edu) is an Open Source toolkit, distributed with a BSD 3-clause license, for assembling Flexible Image Transport System (FITS) images into mosaics according to the user's custom specifications of coordinates, projection, spatial sampling, rotation and background matching.
+  doc_url: http://montage.ipac.caltech.edu/docs/index.html
+  dev_url: https://github.com/Caltech-IPAC/Montage
+
+extra:
+  recipe-maintainers:
+    - lukas.gehrig@fhnw.ch
