@@ -24,7 +24,7 @@ on:
 
 jobs:
 
-  Bluebild :
+  MontagePy :
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: MontagePy
