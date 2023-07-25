@@ -27,7 +27,7 @@ jobs:
   MontagePy :
     uses: ./.github/workflows/build_base.yml
     with:
-      packageName: MontagePy
+      packageName: montagepy
       packageVersion: $MONTAGEPY_VERSION
       packageVersionName: MONTAGEPY_VERSION
       customPath: montagepy/.
