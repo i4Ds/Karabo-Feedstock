@@ -3,7 +3,7 @@ name: Build Base
 env:
   # Native Global Libs
   BOOST_VERSION: 1.74 # casacore<--python-casacore<--rascil<--karabo needs boost 1.74
-  MPICH_VERSION: 4.1.*
+  MPICH_VERSION: 4.1
 
   # Pinocchio Line
   PINOCCHIO_VERSION: 5.0.0
