@@ -14,7 +14,7 @@ on:
       devDeps:
         type: string
         required: false
-        default: "PYCSOU_VERSION"
+        default: "PYCSOU_VERSION, RASCIL_VERSION, SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_PY_VERSION"
         
   workflow_call:
     inputs:
@@ -28,7 +28,7 @@ on:
       devDeps:
         type: string
         required: false
-        default: "PYCSOU_VERSION"
+        default: "PYCSOU_VERSION, RASCIL_VERSION, SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_PY_VERSION"
 
 jobs:
 

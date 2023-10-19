@@ -11,6 +11,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
         
   workflow_call:
     inputs:
@@ -21,6 +25,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
 
 jobs:
 
