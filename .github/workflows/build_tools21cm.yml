@@ -21,6 +21,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "FFTW3_VERSION"
 
 jobs:
 
