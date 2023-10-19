@@ -20,7 +20,7 @@ requirements:
     - joblib
     - matplotlib
     - numba
-    - numpy         >=1.21
+    - numpy         >=1.21, !=1.24.0
     - pip
     - fftw          {{ FFTW3_VERSION_ALT }}.*
     - pyfftw
@@ -39,7 +39,7 @@ requirements:
     - joblib
     - matplotlib
     - numba
-    - numpy         >=1.21
+    - numpy         >=1.21, !=1.24.0
     - fftw          {{ FFTW3_VERSION_ALT }}.*
     - pyfftw
     - pytest

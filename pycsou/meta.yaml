@@ -16,7 +16,7 @@ requirements:
     - pip
 
   host:
-    - numpy
+    - numpy       >=1.21, !=1.24.0
     - scipy
     - dask
     - matplotlib
@@ -27,7 +27,7 @@ requirements:
     - pylops
 
   run:
-    - numpy
+    - numpy       >=1.21, !=1.24.0
     - scipy
     - dask
     - matplotlib

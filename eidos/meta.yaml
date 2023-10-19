@@ -14,7 +14,7 @@ requirements:
   build:
     - python
     - pip
-    - numpy                   >=1.21
+    - numpy                   >=1.21, !=1.24.0
     - scipy                   >=1.10.1
     - astropy
     - future
@@ -22,7 +22,7 @@ requirements:
   host:
     - python
     - pip
-    - numpy                   >=1.21
+    - numpy                   >=1.21, !=1.24.0
     - scipy                   >=1.10.1
     - astropy
     - future
@@ -30,7 +30,7 @@ requirements:
   run:
     - python
     - pip
-    - numpy                   >=1.21
+    - numpy                   >=1.21, !=1.24.0
     - scipy                   >=1.10.1
     - astropy
     - future

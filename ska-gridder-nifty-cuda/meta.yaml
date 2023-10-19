@@ -17,16 +17,16 @@ requirements:
     - {{ compiler('cxx') }}
     - python    {{ python }}
     - pip
-    - numpy     >=1.21
+    - numpy     >=1.21, !=1.24.0
 
   host:
     - python    {{ python }}
     - pip
-    - numpy      >=1.21
+    - numpy      >=1.21, !=1.24.0
 
   run:
     - python    {{ python }}
-    - numpy     >=1.21
+    - numpy     >=1.21, !=1.24.0
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda

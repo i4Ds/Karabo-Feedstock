@@ -34,7 +34,7 @@ requirements:
     - openblas
     - python {{ python }}
     - finufft {{ FINUFFT_VERSION_ALT }}
-    - numpy
+    - numpy   >=1.21, !=1.24.0
     - scikit-learn
     - astropy
     - matplotlib
