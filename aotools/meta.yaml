@@ -17,17 +17,19 @@ requirements:
   host:
     - matplotlib
     - numba
-    - numpy {{ NUMPY_VERSION_ALT }}.*
+    - numpy                 >=1.21, !=1.24.0
+    - pip
     - pip
     - python
-    - scipy {{ SCIPY_VERSION_ALT }}
+    - scipy                 >=1.10.1
 
   run:
     - matplotlib
     - numba
-    - numpy {{ NUMPY_VERSION_ALT }}.*
+    - numpy                 >=1.21, !=1.24.0
+    - pip
     - python
-    - scipy {{ SCIPY_VERSION_ALT }}
+    - scipy                 >=1.10.1
 
 about:
   home: "https://github.com/aotools/aotools"
@@ -40,4 +42,4 @@ about:
 
 extra:
   recipe-maintainers:
-    - filip.schramka@fhnw.ch
+    - lukas.gehrig@fhnw.ch

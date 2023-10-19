@@ -40,9 +40,9 @@ requirements:
     - astroplan             >=0.8
     - astropy               >=5.1
     - ducc0                 >=0.27.0,       <0.28
-    - numpy                 {{ NUMPY_VERSION_ALT }}.*
+    - numpy                 >=1.21, !=1.24.0
     - photutils             >=1.5
-    - scipy                 {{ SCIPY_VERSION_ALT }}
+    - scipy                 >=1.10.1
     - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION_ALT }}.*
     - ska-sdp-func          {{ SKA_SDP_FUNC_VERSION_ALT }}.*
     - xarray                >=2022.11.0  
@@ -59,4 +59,4 @@ about:
 
 extra:
   recipe-maintainers:
-    - filip.schramka@fhnw.ch
+    - lukas.gehrig@fhnw.ch

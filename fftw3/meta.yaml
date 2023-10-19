@@ -3,7 +3,7 @@ package:
   version: {{ FFTW3_VERSION_ALT }}
 
 source:
-   url: https://www.fftw.org/{{ PACKAGE_NAME|lower }}-{{ FFTW3_VERSION }}.tar.gz 
+   url: https://fftw.org/fftw-{{ FFTW3_VERSION }}.tar.gz 
 
 build:
   string: {{ FFTW3_VERSION_ALT }}
@@ -13,13 +13,13 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - openmpi={{ OPENMPI_VERSION_ALT }}.*={{ OPENMPI_BUILD_ALT }}
+    - mpich              {{ MPICH_VERSION_ALT }}
     
   host:
-    - openmpi={{ OPENMPI_VERSION_ALT }}.*={{ OPENMPI_BUILD_ALT }}
+    - mpich              {{ MPICH_VERSION_ALT }}
    
   run:
-    - openmpi={{ OPENMPI_VERSION_ALT }}.*={{ OPENMPI_BUILD_ALT }}
+    - mpich              {{ MPICH_VERSION_ALT }}
   
 
 about:
@@ -34,4 +34,4 @@ about:
 
 extra:
   recipe-maintainers:
-    - filip.schramka@fhnw.ch
+    - lukas.gehrig@fhnw.ch

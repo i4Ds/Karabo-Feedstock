@@ -27,7 +27,7 @@ requirements:
   run:
     - python {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}.*
+    - numpy >=1.21, !=1.24.0
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func/
@@ -41,5 +41,5 @@ about:
 
 extra:
   recipe-maintainers:
-    - filip.schramka@fhnw.ch 
+    - lukas.gehrig@fhnw.ch
     

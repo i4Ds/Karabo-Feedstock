@@ -14,16 +14,16 @@ requirements:
   build:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}
+    - numpy             >=1.21, !=1.24.0
 
   host:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}
+    - numpy             >=1.21, !=1.24.0
 
   run:
     - python
-    - numpy {{ NUMPY_VERSION_ALT }}
+    - numpy             >=1.21, !=1.24.0
 
 about:
   home: https://github.com/i4Ds/katbeam
@@ -38,4 +38,4 @@ about:
 
 extra:
   recipe-maintainers:
-    - filip.schramka@fhnw.ch
+    - lukas.gehrig@fhnw.ch

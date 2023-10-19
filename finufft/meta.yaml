@@ -24,19 +24,19 @@ requirements:
     - python {{ python }}
     - make
     - cmake
-    - numpy 
+    - numpy >=1.21, !=1.24.0
     - fftw {{ FFTW3_VERSION_ALT }}
     
   host:
     - pip
     - python {{ python }}
-    - numpy 
+    - numpy >=1.21, !=1.24.0
     - fftw {{ FFTW3_VERSION_ALT }}
 
   run:
     - pip
     - python {{ python }}
-    - numpy 
+    - numpy >=1.21, !=1.24.0
     - fftw {{ FFTW3_VERSION_ALT }}
 
 about:
@@ -51,4 +51,4 @@ about:
 
 extra:
   recipe-maintainers:
-    - filip.schramka@fhnw.ch
+    - lukas.gehrig@fhnw.ch
