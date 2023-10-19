@@ -17,16 +17,16 @@ requirements:
     - pip
 
   host:
-    - natsort >=3.5.6
-    - nose >=1.0
-    - pep8 >=1.6.2
+    - natsort       >=3.5.6
+    - nose          >=1.0
+    - pep8          >=1.6.2
     - pip
     - python
 
   run:
-    - natsort >=3.5.6
-    - nose >=1.0
-    - pep8 >=1.6.2
+    - natsort       >=3.5.6
+    - nose          >=1.0
+    - pep8          >=1.6.2
     - pip
     - python
 

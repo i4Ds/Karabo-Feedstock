@@ -13,13 +13,13 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - mpich={{ MPICH_VERSION_ALT }}
+    - mpich              {{ MPICH_VERSION_ALT }}
     
   host:
-    - mpich={{ MPICH_VERSION_ALT }}
+    - mpich              {{ MPICH_VERSION_ALT }}
    
   run:
-    - mpich={{ MPICH_VERSION_ALT }}
+    - mpich              {{ MPICH_VERSION_ALT }}
   
 
 about:

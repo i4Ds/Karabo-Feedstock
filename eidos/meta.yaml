@@ -14,24 +14,24 @@ requirements:
   build:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}
-    - scipy {{ SCIPY_VERSION_ALT }}
+    - numpy                   >=1.21
+    - scipy                   >=1.10.1
     - astropy
     - future
 
   host:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}
-    - scipy {{ SCIPY_VERSION_ALT }}
+    - numpy                   >=1.21
+    - scipy                   >=1.10.1
     - astropy
     - future
 
   run:
     - python
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}
-    - scipy {{ SCIPY_VERSION_ALT }}
+    - numpy                   >=1.21
+    - scipy                   >=1.10.1
     - astropy
     - future
 

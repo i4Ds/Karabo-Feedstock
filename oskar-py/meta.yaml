@@ -13,18 +13,18 @@ requirements:
   build:
     - python {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}
+    - numpy   >=1.21
     - oskar {{ OSKARPY_VERSION_ALT }}
 
   host:
     - python {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}
+    - numpy   >=1.21
     - oskar {{ OSKARPY_VERSION_ALT }}
 
   run:
     - python {{ python }}
-    - numpy {{ NUMPY_VERSION_ALT }}
+    - numpy   >=1.21
     - oskar {{ OSKARPY_VERSION_ALT }}
 
 about:

@@ -27,7 +27,7 @@ requirements:
   run:
     - python {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}.*
+    - numpy >=1.21
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func/

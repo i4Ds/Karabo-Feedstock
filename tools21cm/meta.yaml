@@ -20,15 +20,15 @@ requirements:
     - joblib
     - matplotlib
     - numba
-    - numpy {{ NUMPY_VERSION_ALT }}
+    - numpy         >=1.21
     - pip
-    - fftw {{ FFTW3_VERSION_ALT }}.*
+    - fftw          {{ FFTW3_VERSION_ALT }}.*
     - pyfftw
     - pytest
     - python
     - scikit-image
     - scikit-learn
-    - scipy {{ SCIPY_VERSION_ALT }}
+    - scipy         >=1.10.1
     - tqdm
     - numexpr
     - tensorflow
@@ -39,14 +39,14 @@ requirements:
     - joblib
     - matplotlib
     - numba
-    - numpy {{ NUMPY_VERSION_ALT }}
-    - fftw {{ FFTW3_VERSION_ALT }}.*
+    - numpy         >=1.21
+    - fftw          {{ FFTW3_VERSION_ALT }}.*
     - pyfftw
     - pytest
     - python
     - scikit-image
     - scikit-learn
-    - scipy {{ SCIPY_VERSION_ALT }}
+    - scipy         >=1.10.1
     - tqdm
     - numexpr
     - tensorflow

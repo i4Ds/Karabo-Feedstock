@@ -13,32 +13,32 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - cmake>=3.18
-    - python {{ python }}
+    - cmake         >=3.18
+    - python        {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}.*
-    - boost {{ BOOST_VERSION_ALT }}.*
-    - setuptools>=68
-    - scikit-build>=0.13
+    - numpy         >=1.21
+    - boost         {{ BOOST_VERSION_ALT }}.*
+    - setuptools    >=68
+    - scikit-build  >=0.13
     
   host:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - cmake>=3.18
-    - python {{ python }}
+    - cmake         >=3.18
+    - python        {{ python }}
     - pip
-    - numpy {{ NUMPY_VERSION_ALT }}.*
-    - boost {{ BOOST_VERSION_ALT }}.*
-    - setuptools>=68
-    - scikit-build>=0.13
+    - numpy         >=1.21
+    - boost         {{ BOOST_VERSION_ALT }}.*
+    - setuptools     >=68
+    - scikit-build   >=0.13
     
   run:
-    - python {{ python }}
-    - boost {{ BOOST_VERSION_ALT }}.*
+    - python        {{ python }}
+    - boost         {{ BOOST_VERSION_ALT }}.*
     - astropy
-    - numpy {{ NUMPY_VERSION_ALT }}.*
-    - scipy {{ SCIPY_VERSION_ALT }}.*
+    - numpy         >=1.21
+    - scipy         >=1.10.1
     - matplotlib
     - ipython
 
