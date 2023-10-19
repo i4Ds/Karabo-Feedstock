@@ -27,7 +27,7 @@ Tree builds usually have a `tree` keyword in the workflow. These are a special k
 **Constrain Dependencies**: We intend to be nice to users of Karabo so they are able to install additional packages without breaking an environment. To enable that, we should be sure to not constrain well-known dependencies like `numpy`, `scipy` or `astropy` too much if possible. On the other hand, be sure to constrain packages with a lot of api-breaking changes and exclude versions of well-known packages with known issues (for Karabo). This approach relies on a lot of testing. But since we build a lot of conda-wheels of 3th party packages, it's too cumbersome to test them individually. Therefore, the aim should be to have a high test-coverage of Karabo.
 
 ## Feedstock Build Dependencies
-In case you intend to create a new build which also needs underlying changes of other builds, it's useful to know all feedstock-dependencies to know which one(s) to build first. The following provides an overview of the dependencies. In the brackets are the transversal dependencies if they're not present as direct dependency  (please keep them updated):
+In case you intend to create a new build which also needs underlying changes of other builds, it's useful to know all feedstock-dependencies to know which one(s) to build first. The following provides an overview of the dependencies. In the brackets are the transversal dependencies if they're not present as direct dependency. Please keep the list updated so that only karabo-latest builds are listed and that they have the correct direct and transversal dependencies:
 aotools: 		        -
 aratmospy: 		        -
 bipp: 			        finufft(fftw3)
