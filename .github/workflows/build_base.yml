@@ -205,11 +205,11 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
-      - name: Install Package and test with Python 3.9
+      - name: Install Package and test with Python
         if: ${{ !inputs.skipTest }}
         shell: bash -l {0}
         run: |
-          conda create -y -n testpy39 python=3.9
-          conda activate testpy39
+          conda create -y -n testenv python=3.9
+          conda activate testenv
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}" --experimental-solver=libmamba
           python -c "${{ inputs.pythonCall }}"
