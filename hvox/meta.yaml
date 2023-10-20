@@ -21,10 +21,10 @@ requirements:
     - numpy                 >=1.21, !=1.24.0
     - healpy
     - ducc0
-    - pycsou                {{ PYCSOU_VERSION_ALT }}
-    - rascil                {{ RASCIL_VERSION_ALT }}
-    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION_ALT }}
-    - ska-sdp-func-python   {{ SKA_SDP_FUNC_PY_VERSION_ALT }}
+    - pycsou                =={{ PYCSOU_VERSION_ALT }}
+    - rascil                =={{ RASCIL_VERSION_ALT }}
+    - ska-sdp-datamodels    =={{ SKA_SDP_DTMDL_VERSION_ALT }}
+    - ska-sdp-func-python   =={{ SKA_SDP_FUNC_PY_VERSION_ALT }}
 
   run:
     - astropy
@@ -32,10 +32,10 @@ requirements:
     - numpy                 >=1.21, !=1.24.0
     - healpy
     - ducc0
-    - pycsou                {{ PYCSOU_VERSION_ALT }}
-    - rascil                {{ RASCIL_VERSION_ALT }}
-    - ska-sdp-datamodels    {{ SKA_SDP_DTMDL_VERSION_ALT }}
-    - ska-sdp-func-python   {{ SKA_SDP_FUNC_PY_VERSION_ALT }}
+    - pycsou                =={{ PYCSOU_VERSION_ALT }}
+    - rascil                =={{ RASCIL_VERSION_ALT }}
+    - ska-sdp-datamodels    =={{ SKA_SDP_DTMDL_VERSION_ALT }}
+    - ska-sdp-func-python   =={{ SKA_SDP_FUNC_PY_VERSION_ALT }}
 
 about:
   home: "https://github.com/matthieumeo/hvox"

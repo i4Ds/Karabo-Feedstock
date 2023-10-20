@@ -14,14 +14,14 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - {{ MPI }} {{ MPI_VERSION_ALT }}.*
-    - fftw {{ FFTW3_VERSION_ALT }}
+    - {{ MPI }} =={{ MPI_VERSION_ALT }}.*
+    - fftw =={{ FFTW3_VERSION_ALT }}
     
   host:
    
   run:  
-    - {{ MPI }} {{ MPI_VERSION_ALT }}.*
-    - fftw {{ FFTW3_VERSION_ALT }}
+    - {{ MPI }} =={{ MPI_VERSION_ALT }}.*
+    - fftw =={{ FFTW3_VERSION_ALT }}
 
 about:
   home: https://github.com/mpip/pfft

@@ -14,18 +14,18 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - fftw {{ FFTW3_VERSION_ALT }}
-    - pfft {{ PFFT_VERSION_ALT }}
+    - fftw =={{ FFTW3_VERSION_ALT }}
+    - pfft =={{ PFFT_VERSION_ALT }}
     - gsl=2.7=he838d99_0
-    - {{ MPI }} {{ MPI_VERSION_ALT }}.*
+    - {{ MPI }} =={{ MPI_VERSION_ALT }}.*
     
   host:
  
   run:
-    - fftw {{ FFTW3_VERSION_ALT }}
-    - pfft {{ PFFT_VERSION_ALT }}
+    - fftw =={{ FFTW3_VERSION_ALT }}
+    - pfft =={{ PFFT_VERSION_ALT }}
     - gsl=2.7=he838d99_0
-    - {{ MPI }} {{ MPI_VERSION_ALT }}.*
+    - {{ MPI }} =={{ MPI_VERSION_ALT }}.*
   
 about:
   home: https://github.com/i4Ds/Pinocchio

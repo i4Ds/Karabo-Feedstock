@@ -22,7 +22,7 @@ requirements:
     - numba
     - numpy         >=1.21, !=1.24.0
     - pip
-    - fftw          {{ FFTW3_VERSION_ALT }}
+    - fftw          =={{ FFTW3_VERSION_ALT }}
     - pyfftw
     - pytest
     - python
@@ -40,7 +40,7 @@ requirements:
     - matplotlib
     - numba
     - numpy         >=1.21, !=1.24.0
-    - fftw          {{ FFTW3_VERSION_ALT }}
+    - fftw          =={{ FFTW3_VERSION_ALT }}
     - pyfftw
     - pytest
     - python

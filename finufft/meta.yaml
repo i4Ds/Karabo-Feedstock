@@ -1,6 +1,11 @@
 {% set pName = environ.get("PACKAGE_NAME")|lower %}
 {% set pythonVersion = python|replace(".", "") %}
 {% set fileName = pName + "-" + environ.get("FINUFFT_VERSION") + "-cp" + pythonVersion + "-cp" + pythonVersion + "-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" %}
+{% if "nompi" == environ.get("MPI") %}
+  {%  %}
+{% else %}
+  {%  %}
+{% endif %}
 
 package:
   name: {{ pName }}
@@ -25,19 +30,19 @@ requirements:
     - make
     - cmake
     - numpy >=1.21, !=1.24.0
-    - fftw {{ FFTW3_VERSION_ALT }}
+    - fftw =={{ FFTW3_VERSION_ALT }}
     
   host:
     - pip
     - python {{ python }}
     - numpy >=1.21, !=1.24.0
-    - fftw {{ FFTW3_VERSION_ALT }}
+    - fftw =={{ FFTW3_VERSION_ALT }}
 
   run:
     - pip
     - python {{ python }}
     - numpy >=1.21, !=1.24.0
-    - fftw {{ FFTW3_VERSION_ALT }}
+    - fftw =={{ FFTW3_VERSION_ALT }}
 
 about:
   home: https://github.com/flatironinstitute/finufft
