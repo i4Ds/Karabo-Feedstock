@@ -32,27 +32,27 @@ Dev-builds can have other conda-dependencies which are also part of the Feedstoc
 
 ## Feedstock Build Dependencies
 **Active builds**: In case you intend to create a new build which also needs underlying changes of other builds, it's useful to know all feedstock-dependencies to know which one(s) to build first. The following provides an overview of the dependencies. In the brackets are the transversal dependencies if they're not already present as direct dependency. Please keep the list updated so that only karabo-latest builds are listed and that they have the correct direct and transversal dependencies:
-aotools: 		        -
-aratmospy: 		        -
-bipp: 			        finufft(fftw3)
-eidos: 			        -
-fftw3: 			        -
-finufft: 		        fftw3
-hvox: 			        pycsou, rascil(pybdsf), ska-sdp-datamodels, ska-sdp-func-python
-katbeam: 		        -
-montagepy: 		        -
-oskar: 			        -
-oskar-py: 		        oskar
-pfft: 			        fftw3
-pinocchio: 		        pfft, fftw3
-pybdsf: 		        -
-pycsou: 		        -
-rascil: 		        pybdsf, ska-sdp-datamodels, ska-sdp-func-python, ska-sdp-func
-seqfile: 		        -
-ska-gridder-nifty-cuda:	-
-ska-sdp-datamodels: 	-
-ska-sdp-func: 		    -
-ska-sdp-func-python: 	ska-sdp-datamodels, ska-sdp-func
-tools21cm: 		        fftw3
+- aotools: 		            -
+- aratmospy: 		        -
+- bipp: 			        finufft(fftw3)
+- eidos: 			        -
+- fftw3: 			        -
+- finufft: 		            fftw3
+- hvox: 			        pycsou, rascil(pybdsf), ska-sdp-datamodels, ska-sdp-func-python
+- katbeam: 		            -
+- montagepy: 		        -
+- oskar: 			        -
+- oskar-py: 		        oskar
+- pfft: 			        fftw3
+- pinocchio: 		        pfft, fftw3
+- pybdsf: 		            -
+- pycsou: 		            -
+- rascil: 		            pybdsf, ska-sdp-datamodels, ska-sdp-func-python, ska-sdp-func
+- seqfile: 		            -
+- ska-gridder-nifty-cuda:	-
+- ska-sdp-datamodels: 	    -
+- ska-sdp-func: 		    -
+- ska-sdp-func-python: 	    ska-sdp-datamodels, ska-sdp-func
+- tools21cm: 		        fftw3
 
 **Removed builds**: To know on which commit to look for just in case.
