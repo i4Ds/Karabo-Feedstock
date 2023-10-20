@@ -17,7 +17,7 @@ requirements:
     - fftw {{ FFTW3_VERSION_ALT }}
     - pfft {{ PFFT_VERSION_ALT }}
     - gsl=2.7=he838d99_0
-    - mpich {{ MPICH_VERSION_ALT }}.*
+    - {{ MPI }} {{ MPI_VERSION_ALT }}.*
     
   host:
  
@@ -25,7 +25,7 @@ requirements:
     - fftw {{ FFTW3_VERSION_ALT }}
     - pfft {{ PFFT_VERSION_ALT }}
     - gsl=2.7=he838d99_0
-    - mpich {{ MPICH_VERSION_ALT }}.*
+    - {{ MPI }} {{ MPI_VERSION_ALT }}.*
   
 about:
   home: https://github.com/i4Ds/Pinocchio

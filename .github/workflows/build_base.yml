@@ -3,7 +3,8 @@ name: Build Base
 env:
   # Native Global Libs
   BOOST_VERSION: 1.74 # casacore<--python-casacore<--rascil<--karabo needs boost 1.74
-  MPICH_VERSION: 4.1
+  MPI_VERSION: 4.1
+  MPI: mpich  # mpich is CSCS-supported where openmpi isn't
 
   # Pinocchio Line
   PINOCCHIO_VERSION: 5.0.0
@@ -39,10 +40,8 @@ env:
   FINUFFT_VERSION: 2.1.0
   BLUEBILD_VERSION: 0.1.0
 
-  # Package Name
+  # Other
   PACKAGE_NAME: ${{ inputs.packageName }}
-  
-  # Label
   CHANNEL_LABEL: ${{ inputs.label }}
   
 on:
