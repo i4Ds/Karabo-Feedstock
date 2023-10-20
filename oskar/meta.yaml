@@ -8,7 +8,7 @@ source:
 
 build:
   number: {{ BUILD_NUMBER }}
-  string: {{ OSKAR_VERSION_ALT }}
+  string: h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:

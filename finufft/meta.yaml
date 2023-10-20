@@ -14,7 +14,7 @@ build:
     - FILE_NAME={{ fileName }}
     - FINUFFT_VERSION_ENV={{ FINUFFT_VERSION }}
   number: {{ BUILD_NUMBER }}
-  string: {{ FINUFFT_VERSION_ALT }}_{{ python }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:

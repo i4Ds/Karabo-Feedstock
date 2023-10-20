@@ -8,7 +8,7 @@ source:
 build:
   noarch: python
   number: {{ BUILD_NUMBER }}
-  string: {{ SEQFILE_VERSION_ALT }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 #  entry_points:
 #    - seqfile = seqfile.seqfile:_run
 

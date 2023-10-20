@@ -101,11 +101,6 @@ on:
         default: false
         type: boolean
       
-      py310rdy:
-        required: false
-        default: true
-        type: boolean
-      
       skipTest:
         required: false
         default: false
@@ -216,13 +211,5 @@ jobs:
         run: |
           conda create -y -n testpy39 python=3.9
           conda activate testpy39
-          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}" --experimental-solver=libmamba
-          python -c "${{ inputs.pythonCall }}"
-      - name: Install Package and test with Python 3.10 => ${{ inputs.py310rdy }}
-        if: ${{ inputs.py310rdy && !inputs.skipTest }}
-        shell: bash -l {0}
-        run: |
-          conda create -y -n testpy310 python=3.10
-          conda activate testpy310
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}" --experimental-solver=libmamba
           python -c "${{ inputs.pythonCall }}"

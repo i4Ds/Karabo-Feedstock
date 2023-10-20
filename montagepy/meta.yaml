@@ -8,7 +8,7 @@ source:
 
 build:
   number: {{ BUILD_NUMBER }}
-  string: {{ MONTAGEPY_VERSION_ALT }}_{{ python }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:

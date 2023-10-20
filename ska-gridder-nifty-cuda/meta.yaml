@@ -10,7 +10,7 @@ source:
 
 build:
   number: {{ BUILD_NUMBER }}
-  string: {{ SKA_GRDR_NFTY_CU_VERSION_ALT }}_{{ python }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build: 

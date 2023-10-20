@@ -9,7 +9,7 @@ source:
 build:
   noarch: python
   number: {{ BUILD_NUMBER }}
-  string: {{ HVOX_VERSION_ALT }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
