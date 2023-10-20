@@ -162,7 +162,7 @@ jobs:
 
       - name: Install Conda-Build and create target
         run: |
-          conda install conda-build
+          conda install conda-build conda-verify
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
       - name: Set linux64 as architecture
         if: ${{ inputs.isNative }}
@@ -195,8 +195,8 @@ jobs:
       - name: Install Mamba Solver
         if: ${{ !inputs.skipTest }}
         run: |
-          #conda update -y -n base conda # conda update breaks libmamba currently
           conda install -y -n base conda-libmamba-solver
+          conda config --set solver libmamba
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda && !inputs.skipTest }}
         uses: Jimver/cuda-toolkit@v0.2.11
