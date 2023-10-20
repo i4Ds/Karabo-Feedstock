@@ -48,5 +48,6 @@ jobs:
       pythonCall: from ska_sdp_func_python import *
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      devDeps: ${{ inputs.devDeps }}
       buildNumber: ${{ inputs.buildNumber }}
     secrets: inherit

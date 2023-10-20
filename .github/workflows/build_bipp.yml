@@ -48,6 +48,7 @@ jobs:
       customPath: bipp/.
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      devDeps: ${{ inputs.devDeps }}
       buildNumber: ${{ inputs.buildNumber }}
       isNative: true
       useCuda: true

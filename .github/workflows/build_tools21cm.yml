@@ -47,6 +47,7 @@ jobs:
       packageVersionName: TOOLS_21CM_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      devDeps: ${{ inputs.devDeps }}
       buildNumber: ${{ inputs.buildNumber }}
       pythonCall: import tools21cm
     secrets: inherit
