@@ -34,7 +34,7 @@ Currently, there are three different options on how a conda-wheel can be build w
 **Using Native MPI**: There are cases where using an MPI compiled on the target architecture is needed. We don't have to consider this use-case for the feedstock since there is a solution according to [conda-forge docs](https://conda-forge.org/docs/user/tipsandtricks.html). In this use-casee, the installer has to link the mpi of the environment to an MPI available at a standard-location as follows: `conda install "mpich=x.y.z=external_*"` or `conda install "openmpi=x.y.z=external_*"`.
 
 ## Feedstock Build Dependencies
-In case you intend to create a new build which also needs underlying changes of other builds, it's useful to know all feedstock-dependencies to know which one(s) to build first. The following provides an overview of the dependencies. In the brackets are the transversal dependencies if they're not present as direct dependency. Please keep the list updated so that only karabo-latest builds are listed and that they have the correct direct and transversal dependencies:
+In case you intend to create a new build which also needs underlying changes of other builds, it's useful to know all feedstock-dependencies to know which one(s) to build first. The following provides an overview of the dependencies. In the brackets are the transversal dependencies if they're not already present as direct dependency. Please keep the list updated so that only karabo-latest builds are listed and that they have the correct direct and transversal dependencies:
 aotools: 		        -
 aratmospy: 		        -
 bipp: 			        finufft(fftw3)
@@ -57,3 +57,5 @@ ska-sdp-datamodels: 	-
 ska-sdp-func: 		    -
 ska-sdp-func-python: 	ska-sdp-datamodels, ska-sdp-func
 tools21cm: 		        fftw3
+
+**Removed builds**: To know on which commit to look for just in case.

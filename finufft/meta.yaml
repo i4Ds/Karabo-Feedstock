@@ -1,11 +1,6 @@
 {% set pName = environ.get("PACKAGE_NAME")|lower %}
 {% set pythonVersion = python|replace(".", "") %}
 {% set fileName = pName + "-" + environ.get("FINUFFT_VERSION") + "-cp" + pythonVersion + "-cp" + pythonVersion + "-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" %}
-{% if "nompi" == environ.get("MPI") %}
-  {%  %}
-{% else %}
-  {%  %}
-{% endif %}
 
 package:
   name: {{ pName }}
