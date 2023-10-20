@@ -13,13 +13,16 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - {{ MPI }}          =={{ MPI_VERSION_ALT }}.*
+    {% for dep in extra_deps %}
+    - {{ dep }}
+    {% endfor %}
+    - {{ MPI }}          =={{ MPI_VERSION }}.*
     
   host:
-    - {{ MPI }}          =={{ MPI_VERSION_ALT }}.*
+    - {{ MPI }}          =={{ MPI_VERSION }}.*
    
   run:
-    - {{ MPI }}          =={{ MPI_VERSION_ALT }}.*
+    - {{ MPI }}          =={{ MPI_VERSION }}.*
   
 
 about:

@@ -28,12 +28,12 @@ requirements:
     - scikit-build
     - openblas
     - python {{ python }}
-    - finufft {{ FINUFFT_VERSION_ALT }}
+    - finufft =={{ FINUFFT_VERSION_ALT }}
 
   run:
     - openblas
     - python {{ python }}
-    - finufft {{ FINUFFT_VERSION_ALT }}
+    - finufft =={{ FINUFFT_VERSION_ALT }}
     - numpy   >=1.21, !=1.24.0
     - scikit-learn
     - astropy
