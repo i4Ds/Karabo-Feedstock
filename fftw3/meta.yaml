@@ -1,3 +1,12 @@
+{% set mpiImpl = environ.get("MPI") %}
+{% set mpiVers = environ.get("MPI_VERSION") %}
+{% set mpiBuildStr = "mpi_" + mpiImpl %}
+{% if mpiImpl == "mpich" or mpiImpl == "openmpi" %}
+  {% set mpiIter = load_str_data([mpiImpl == mpiVers + .*], "json") %}
+{% else %}
+  {% set mpiIter = load_str_data([], "json") %}
+{% endif %}
+
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ FFTW3_VERSION_ALT }}
@@ -6,23 +15,26 @@ source:
    url: https://fftw.org/fftw-{{ FFTW3_VERSION }}.tar.gz 
 
 build:
-  string: {{ FFTW3_VERSION_ALT }}
+  string: {{% mpiBuildStr + "_" + environ.get("FFTW3_VERSION_ALT") %}}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    {% for dep in extra_deps %}
+    {% for dep in mpiIter %}
     - {{ dep }}
     {% endfor %}
-    - {{ MPI }}          =={{ MPI_VERSION }}.*
     
   host:
-    - {{ MPI }}          =={{ MPI_VERSION }}.*
+    {% for dep in mpiIter %}
+    - {{ dep }}
+    {% endfor %}
    
   run:
-    - {{ MPI }}          =={{ MPI_VERSION }}.*
+    {% for dep in mpiIter %}
+    - {{ dep }}
+    {% endfor %}
   
 
 about:

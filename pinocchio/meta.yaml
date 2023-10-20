@@ -1,3 +1,12 @@
+{% set mpiImpl = environ.get("MPI") %}
+{% set mpiVers = environ.get("MPI_VERSION") %}
+{% set mpiBuildStr = "mpi_" + mpiImpl %}
+{% if mpiImpl == "mpich" or mpiImpl == "openmpi" %}
+  {% set mpiIter = load_str_data([mpiImpl == mpiVers + .*], "json") %}
+{% else %}
+  {% set mpiIter = load_str_data([], "json") %}
+{% endif %}
+
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ PINOCCHIO_VERSION_ALT }}
@@ -7,7 +16,7 @@ source:
   git_tag: fivedotzero
 
 build:
-  string: {{ PINOCCHIO_VERSION_ALT }}
+  string: {{% mpiBuildStr + "_" + environ.get("PINOCCHIO_VERSION_ALT") %}}
 
 requirements:
   build:
@@ -17,7 +26,9 @@ requirements:
     - fftw =={{ FFTW3_VERSION_ALT }}
     - pfft =={{ PFFT_VERSION_ALT }}
     - gsl=2.7=he838d99_0
-    - {{ MPI }} =={{ MPI_VERSION }}.*
+    {% for dep in mpiIter %}
+    - {{ dep }}
+    {% endfor %}
     
   host:
  
@@ -25,7 +36,9 @@ requirements:
     - fftw =={{ FFTW3_VERSION_ALT }}
     - pfft =={{ PFFT_VERSION_ALT }}
     - gsl=2.7=he838d99_0
-    - {{ MPI }} =={{ MPI_VERSION }}.*
+    {% for dep in mpiIter %}
+    - {{ dep }}
+    {% endfor %}
   
 about:
   home: https://github.com/i4Ds/Pinocchio

@@ -1,3 +1,12 @@
+{% set mpiImpl = environ.get("MPI") %}
+{% set mpiVers = environ.get("MPI_VERSION") %}
+{% set mpiBuildStr = "mpi_" + mpiImpl %}
+{% if mpiImpl == "mpich" or mpiImpl == "openmpi" %}
+  {% set mpiIter = load_str_data([mpiImpl == mpiVers + .*], "json") %}
+{% else %}
+  {% set mpiIter = load_str_data([], "json") %}
+{% endif %}
+
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ PFFT_VERSION_ALT }}
@@ -7,21 +16,25 @@ source:
    git_tag: v{{ PFFT_VERSION }}-alpha
 
 build:
-  string: {{ PFFT_VERSION_ALT }}
+  string: {{% mpiBuildStr + "_" + environ.get("PFFT_VERSION_ALT") %}}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - {{ MPI }} =={{ MPI_VERSION }}.*
     - fftw =={{ FFTW3_VERSION_ALT }}
+    {% for dep in mpiIter %}
+    - {{ dep }}
+    {% endfor %}
     
   host:
    
   run:  
-    - {{ MPI }} =={{ MPI_VERSION }}.*
     - fftw =={{ FFTW3_VERSION_ALT }}
+    {% for dep in mpiIter %}
+    - {{ dep }}
+    {% endfor %}
 
 about:
   home: https://github.com/mpip/pfft
