@@ -7,6 +7,7 @@ source:
   git_tag: {{ OSKARPY_VERSION }}
 
 build:
+  number: {{ BUILD_NUMBER }}
   string: {{ OSKARPY_VERSION_ALT }}_{{ python }}
 
 requirements:

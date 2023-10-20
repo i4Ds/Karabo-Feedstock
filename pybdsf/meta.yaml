@@ -6,6 +6,7 @@ source:
   git_url: https://github.com/i4Ds/PyBDSF.git
 
 build:
+  number: {{ BUILD_NUMBER }}
   string: {{ PYBDSF_VERSION_ALT }}_{{ python }}
 
 requirements:

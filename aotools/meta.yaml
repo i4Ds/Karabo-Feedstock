@@ -7,6 +7,7 @@ source:
 
 build:
   noarch: python
+  number: {{ BUILD_NUMBER }}
   string: {{ AOTOOLS_VERSION_ALT }}
 
 requirements:

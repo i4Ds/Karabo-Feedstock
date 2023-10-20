@@ -63,6 +63,10 @@ on:
         required: true
         type: string
 
+      buildNumber:
+        required: true
+        type: string
+
       customPath:
         required: false
         type: string
@@ -128,11 +132,11 @@ jobs:
       - name: Set custom path to recipe
         if: inputs.customPath != ''
         run: |
-          echo "recipePath=${{ inputs.customPath }}" >> $GITHUB_ENV
+          echo "recipePath=${{ inputs.customPath }}" >> "$GITHUB_ENV"
       - name: Set default path to recipe
         if: inputs.customPath == ''
         run: |
-          echo "recipePath=${{ inputs.packageName }}/." >> $GITHUB_ENV
+          echo "recipePath=${{ inputs.packageName }}/." >> "$GITHUB_ENV"
       - name: Prepare Setup
         # In case ${{ inputs.dev }}="true", ${{ inputs.packageVersion }} of ${{ inputs.packageVersion }}
         # gets a PEP440 dev-version added at position "patch".
@@ -140,6 +144,7 @@ jobs:
         # included in `devDeps` gets a PEP440 dev-version added and exported for the underlying conda-build process.
         id: pkgv
         run: |
+          echo "BUILD_NUMBER=${{ inputs.buildNumber }}" >> "$GITHUB_ENV"
           if [[ ${{ inputs.dev }} == "true" ]]
           then
             PKG_VERSION=$(echo "${{ inputs.packageVersion }}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
@@ -159,7 +164,7 @@ jobs:
               VERSION_ALT=${!PKG_KEY}
             fi
             NAME_ALT=${PKG_KEY}_ALT
-            echo "$NAME_ALT=$VERSION_ALT" >> $GITHUB_ENV
+            echo "$NAME_ALT=$VERSION_ALT" >> "$GITHUB_ENV"
           done
 
       - name: Install Conda-Build and create target

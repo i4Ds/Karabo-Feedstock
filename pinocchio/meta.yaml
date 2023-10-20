@@ -16,6 +16,7 @@ source:
   git_tag: fivedotzero
 
 build:
+  number: {{ BUILD_NUMBER }}
   string: {{% mpiBuildStr + "_" + environ.get("PINOCCHIO_VERSION_ALT") %}}
 
 requirements:

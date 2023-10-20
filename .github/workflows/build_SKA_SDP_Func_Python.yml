@@ -15,6 +15,10 @@ on:
         type: string
         required: false
         default: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
+      buildNumber:
+        type: string
+        required: false
+        default: "0"
         
   workflow_call:
     inputs:
@@ -29,6 +33,9 @@ on:
         type: string
         required: false
         default: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
+      buildNumber:
+        type: string
+        required: true
 
 jobs:
 
@@ -41,4 +48,5 @@ jobs:
       pythonCall: from ska_sdp_func_python import *
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
     secrets: inherit

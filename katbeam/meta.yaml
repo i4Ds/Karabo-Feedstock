@@ -8,6 +8,7 @@ source:
 
 build:
   noarch: python
+  number: {{ BUILD_NUMBER }}
   string: {{ KATBEAM_VERSION_ALT }}
 
 requirements:

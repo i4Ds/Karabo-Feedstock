@@ -7,6 +7,7 @@ source:
   sha256: {{ wheel_sha }}
 
 build:
+  number: {{ BUILD_NUMBER }}
   string: {{ MONTAGEPY_VERSION_ALT }}_{{ python }}
 
 requirements:

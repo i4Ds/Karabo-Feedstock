@@ -8,6 +8,7 @@ source:
 
 build:
   noarch: python
+  number: {{ BUILD_NUMBER }}
   string: {{ HVOX_VERSION_ALT }}
 
 requirements:

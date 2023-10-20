@@ -9,6 +9,7 @@ source:
   git_tag: {{ SKA_GRDR_NFTY_CU_VERSION }}
 
 build:
+  number: {{ BUILD_NUMBER }}
   string: {{ SKA_GRDR_NFTY_CU_VERSION_ALT }}_{{ python }}
 
 requirements:

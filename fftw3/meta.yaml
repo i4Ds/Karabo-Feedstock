@@ -15,6 +15,7 @@ source:
    url: https://fftw.org/fftw-{{ FFTW3_VERSION }}.tar.gz 
 
 build:
+  number: {{ BUILD_NUMBER }}
   string: {{% mpiBuildStr + "_" + environ.get("FFTW3_VERSION_ALT") %}}
 
 requirements:

@@ -8,6 +8,7 @@ source:
 
 build:
   noarch: python
+  number: {{ BUILD_NUMBER }}
   string: {{ ARATMOSPY_VERSION_ALT }}
 
 requirements:

@@ -9,6 +9,7 @@ source:
 
 build:
   noarch: python
+  number: {{ BUILD_NUMBER }}
   string: {{ SKA_SDP_FUNC_PY_VERSION_ALT }}
   script_env:
     - INTERNAL_FOLDER_NAME={{ uNameAndVers }}

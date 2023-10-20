@@ -7,6 +7,7 @@ source:
   git_tag: {{ OSKAR_VERSION }}
 
 build:
+  number: {{ BUILD_NUMBER }}
   string: {{ OSKAR_VERSION_ALT }}
 
 requirements:

@@ -15,6 +15,10 @@ on:
         type: string
         required: false
         default: "PYCSOU_VERSION, RASCIL_VERSION, SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_PY_VERSION"
+      buildNumber:
+        type: string
+        required: false
+        default: "0"
         
   workflow_call:
     inputs:
@@ -29,6 +33,9 @@ on:
         type: string
         required: false
         default: "PYCSOU_VERSION, RASCIL_VERSION, SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_PY_VERSION"
+      buildNumber:
+        type: string
+        required: true
 
 jobs:
 
@@ -41,5 +48,6 @@ jobs:
       pythonCall: import hvox
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
       devDeps: ${{ inputs.devDeps }}
     secrets: inherit
