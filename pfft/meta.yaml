@@ -1,10 +1,12 @@
-{% set mpiImpl = environ.get("MPI") %}
-{% set mpiVers = environ.get("MPI_VERSION") %}
-{% set mpiBuildStr = "mpi_" + mpiImpl %}
-{% if mpiImpl == "mpich" or mpiImpl == "openmpi" %}
-  {% set mpiIter = load_str_data([mpiImpl == mpiVers + .*], "json") %}
+{% set mpi_impl = environ.get("MPI") %}
+{% set mpi_vers = environ.get("MPI_VERSION") %}
+{% set mpi_prefix = "mpi_" + mpi_impl %}
+{% if mpi_impl == "mpich" or mpi_impl == "openmpi" %}
+  # prefer nompi builds via a build number offset
+  {% set BUILD_NUMBER = BUILD_NUMBER + 100 %}
+  {% set mpi = mpi_impl + " ==" + mpi_vers + ".*" %}
 {% else %}
-  {% set mpiIter = load_str_data([], "json") %}
+  {% set mpi = "" %}
 {% endif %}
 
 package:
@@ -17,7 +19,7 @@ source:
 
 build:
   number: {{ BUILD_NUMBER }}
-  string: {{% mpiBuildStr + "_" + environ.get("PFFT_VERSION_ALT") %}}
+  string: {{ mpi_prefix }}_h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
@@ -25,17 +27,13 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
     - fftw =={{ FFTW3_VERSION_ALT }}
-    {% for dep in mpiIter %}
-    - {{ dep }}
-    {% endfor %}
+    - {{ mpi }}
     
   host:
    
   run:  
     - fftw =={{ FFTW3_VERSION_ALT }}
-    {% for dep in mpiIter %}
-    - {{ dep }}
-    {% endfor %}
+    - {{ mpi }}
 
 about:
   home: https://github.com/mpip/pfft
