@@ -166,6 +166,8 @@ jobs:
 
       - name: Install Conda-Build and create target
         run: |
+          conda install -y -n base conda-libmamba-solver
+          conda config --set solver libmamba
           conda install conda-build conda-verify
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
       - name: Set linux64 as architecture
