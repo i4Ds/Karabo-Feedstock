@@ -3,7 +3,7 @@
 {% set mpi_prefix = "mpi_" + mpi_impl %}
 {% if mpi_impl == "mpich" or mpi_impl == "openmpi" %}
   # prefer nompi builds via a build number offset
-  {% set BUILD_NUMBER = BUILD_NUMBER + 100 %}
+  {% set BUILD_NUMBER = str(int(BUILD_NUMBER) + 100) %}
   {% set mpi = mpi_impl + " ==" + mpi_vers + ".*" %}
 {% else %}
   {% set mpi = "" %}
