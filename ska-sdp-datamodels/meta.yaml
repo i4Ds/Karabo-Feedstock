@@ -10,21 +10,21 @@ source:
 build:
   noarch: python
   number: {{ BUILD_NUMBER }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
   script_env:
     - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
   
 requirements:
   build:
-    - python
+    - python            {{ python }}
     - pip 
 
   host:
-    - python
+    - python            {{ python }}
     - pip
     
   run:
-    - python
+    - python            {{ python }}
     - pip
     - astroplan         >=0.8,          <0.9
     - astropy           >=5.1,          <6.0 

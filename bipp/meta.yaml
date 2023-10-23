@@ -8,7 +8,7 @@ source:
 
 build:
   number: {{ BUILD_NUMBER }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
@@ -18,8 +18,8 @@ requirements:
     - cmake
     - scikit-build
     - openblas
-    - python {{ python }}
-    - finufft {{ FINUFFT_VERSION_ALT }}
+    - python          {{ python }}
+    - finufft         {{ FINUFFT_VERSION_ALT }}
     
   host:
     - {{ compiler('c') }}
@@ -28,14 +28,14 @@ requirements:
     - cmake
     - scikit-build
     - openblas
-    - python {{ python }}
-    - finufft =={{ FINUFFT_VERSION_ALT }}
+    - python           {{ python }}
+    - finufft          =={{ FINUFFT_VERSION_ALT }}
 
   run:
     - openblas
-    - python {{ python }}
-    - finufft =={{ FINUFFT_VERSION_ALT }}
-    - numpy   >=1.21, !=1.24.0
+    - python           {{ python }}
+    - finufft          =={{ FINUFFT_VERSION_ALT }}
+    - numpy            >=1.21, !=1.24.0
     - scikit-learn
     - astropy
     - matplotlib

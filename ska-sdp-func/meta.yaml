@@ -8,27 +8,27 @@ source:
 
 build:
   number: {{ BUILD_NUMBER }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
   
 requirements:
   build:
     - libgcc-ng=11.3 # will fail with compiler version above
     - cmake
     - make
-    - python {{ python }}
+    - python  {{ python }}
     - pip 
 
   host:
     - libgcc-ng=11.3 # will fail with compiler version above
     - cmake
     - make
-    - python {{ python }}
+    - python  {{ python }}
     - pip
     
   run:
-    - python {{ python }}
+    - python  {{ python }}
     - pip
-    - numpy >=1.21, !=1.24.0
+    - numpy   >=1.21, !=1.24.0
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func/

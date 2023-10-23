@@ -26,13 +26,13 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - fftw =={{ FFTW3_VERSION_ALT }}
+    - fftw      =={{ FFTW3_VERSION_ALT }}
     - {{ mpi }}
     
   host:
    
   run:  
-    - fftw =={{ FFTW3_VERSION_ALT }}
+    - fftw      =={{ FFTW3_VERSION_ALT }}
     - {{ mpi }}
 
 about:

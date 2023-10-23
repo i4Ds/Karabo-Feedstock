@@ -8,7 +8,7 @@ source:
 
 build:
   number: {{ BUILD_NUMBER }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:

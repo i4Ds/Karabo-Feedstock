@@ -14,7 +14,7 @@ build:
     - FILE_NAME={{ fileName }}
     - FINUFFT_VERSION_ENV={{ FINUFFT_VERSION }}
   number: {{ BUILD_NUMBER }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
@@ -22,23 +22,23 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
     - pip
-    - python {{ python }}
+    - python          {{ python }}
     - make
     - cmake
-    - numpy >=1.21, !=1.24.0
-    - fftw =={{ FFTW3_VERSION_ALT }}
+    - numpy           >=1.21, !=1.24.0
+    - fftw            =={{ FFTW3_VERSION_ALT }}
     
   host:
     - pip
-    - python {{ python }}
-    - numpy >=1.21, !=1.24.0
-    - fftw =={{ FFTW3_VERSION_ALT }}
+    - python          {{ python }}
+    - numpy           >=1.21, !=1.24.0
+    - fftw            =={{ FFTW3_VERSION_ALT }}
 
   run:
     - pip
-    - python {{ python }}
-    - numpy >=1.21, !=1.24.0
-    - fftw =={{ FFTW3_VERSION_ALT }}
+    - python          {{ python }}
+    - numpy           >=1.21, !=1.24.0
+    - fftw            =={{ FFTW3_VERSION_ALT }}
 
 about:
   home: https://github.com/flatironinstitute/finufft

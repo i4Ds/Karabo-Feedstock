@@ -9,11 +9,11 @@ source:
 build:
   noarch: python
   number: {{ BUILD_NUMBER }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
-    - python
+    - python                  {{ python }}
     - pip
     - numpy                   >=1.21, !=1.24.0
     - scipy                   >=1.10.1
@@ -21,7 +21,7 @@ requirements:
     - future
 
   host:
-    - python
+    - python                  {{ python }}
     - pip
     - numpy                   >=1.21, !=1.24.0
     - scipy                   >=1.10.1
@@ -29,7 +29,7 @@ requirements:
     - future
 
   run:
-    - python
+    - python                  {{ python }}
     - pip
     - numpy                   >=1.21, !=1.24.0
     - scipy                   >=1.10.1

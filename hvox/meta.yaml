@@ -9,14 +9,15 @@ source:
 build:
   noarch: python
   number: {{ BUILD_NUMBER }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
-    - python
+    - python                {{ python }}
     - pip
 
   host:
+    - python                {{ python }}
     - astropy
     - matplotlib
     - numpy                 >=1.21, !=1.24.0
@@ -28,6 +29,7 @@ requirements:
     - ska-sdp-func-python   =={{ SKA_SDP_FUNC_PY_VERSION_ALT }}
 
   run:
+    - python                {{ python }}
     - astropy
     - matplotlib
     - numpy                 >=1.21, !=1.24.0

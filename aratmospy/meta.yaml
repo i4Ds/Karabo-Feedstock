@@ -9,11 +9,11 @@ source:
 build:
   noarch: python
   number: {{ BUILD_NUMBER }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
-    - python
+    - python                  {{ python }}
     - pip
 
   host:
@@ -23,7 +23,7 @@ requirements:
     - pyfftw
     - scipy                   >=1.10.1
     - pip
-    - python
+    - python                  {{ python }}
 
   run:
     - astropy
@@ -32,7 +32,7 @@ requirements:
     - pyfftw
     - scipy                   >=1.10.1
     - pip
-    - python
+    - python                  {{ python }}
 
 about:
   home: "https://github.com/i4Ds/ARatmospy"
