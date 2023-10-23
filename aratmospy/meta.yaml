@@ -25,7 +25,7 @@ requirements:
     - matplotlib
     - numpy                   >=1.21, !=1.24.0
     - pyfftw
-    - scipy                   >=1.10.1
+    - scipy                   >=1.9
     - pip
     - python                  {{ python }}
 
