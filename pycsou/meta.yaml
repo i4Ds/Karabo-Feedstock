@@ -18,15 +18,8 @@ requirements:
 
   host:
     - python      {{ python }}
+    - pip
     - numpy       >=1.21, !=1.24.0
-    - scipy
-    - dask
-    - matplotlib
-    - pandas
-    - joblib
-    - scikit-learn
-    - numba
-    - pylops
 
   run:
     - python      {{ python }}

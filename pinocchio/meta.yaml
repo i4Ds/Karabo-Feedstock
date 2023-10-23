@@ -32,6 +32,7 @@ requirements:
     - {{ mpi }}
     
   host:
+    - {{ mpi }}
  
   run:
     - fftw =={{ FFTW3_VERSION_ALT }}

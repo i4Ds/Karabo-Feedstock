@@ -19,15 +19,11 @@ requirements:
     - pip 
 
   host:
-    - libgcc-ng=11.3 # will fail with compiler version above
-    - cmake
-    - make
     - python  {{ python }}
     - pip
     
   run:
     - python  {{ python }}
-    - pip
     - numpy   >=1.21, !=1.24.0
 
 about:

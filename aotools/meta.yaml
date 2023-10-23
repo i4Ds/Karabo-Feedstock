@@ -16,20 +16,14 @@ requirements:
     - pip
 
   host:
-    - matplotlib
-    - numba
-    - numpy                 >=1.21, !=1.24.0
-    - pip
-    - pip
     - python                {{ python }}
-    - scipy                 >=1.10.1
+    - pip
 
   run:
+    - python                {{ python }}
     - matplotlib
     - numba
     - numpy                 >=1.21, !=1.24.0
-    - pip
-    - python                {{ python }}
     - scipy                 >=1.10.1
 
 about:

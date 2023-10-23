@@ -21,21 +21,18 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - pip
     - python          {{ python }}
+    - pip
     - make
     - cmake
     - numpy           >=1.21, !=1.24.0
     - fftw            =={{ FFTW3_VERSION_ALT }}
     
   host:
-    - pip
     - python          {{ python }}
-    - numpy           >=1.21, !=1.24.0
-    - fftw            =={{ FFTW3_VERSION_ALT }}
+    - pip
 
   run:
-    - pip
     - python          {{ python }}
     - numpy           >=1.21, !=1.24.0
     - fftw            =={{ FFTW3_VERSION_ALT }}

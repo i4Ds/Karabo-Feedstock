@@ -18,15 +18,8 @@ requirements:
 
   host:
     - python                {{ python }}
-    - astropy
-    - matplotlib
-    - numpy                 >=1.21, !=1.24.0
-    - healpy
+    - pip
     - ducc0
-    - pycsou                =={{ PYCSOU_VERSION_ALT }}
-    - rascil                =={{ RASCIL_VERSION_ALT }}
-    - ska-sdp-datamodels    =={{ SKA_SDP_DTMDL_VERSION_ALT }}
-    - ska-sdp-func-python   =={{ SKA_SDP_FUNC_PY_VERSION_ALT }}
 
   run:
     - python                {{ python }}
