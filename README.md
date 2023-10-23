@@ -54,7 +54,7 @@ Feedstock Dependencies:
 - eidos: 			        -
 - fftw3: 			        -
 - finufft: 		            fftw3
-- hvox: 			        pycsou, rascil(pybdsf), ska-sdp-datamodels, ska-sdp-func-python
+- hvox (in progress): 		pycsou, rascil(pybdsf), ska-sdp-datamodels, ska-sdp-func-python
 - katbeam: 		            -
 - montagepy: 		        -
 - oskar: 			        -
@@ -62,7 +62,7 @@ Feedstock Dependencies:
 - pfft: 			        fftw3
 - pinocchio: 		        pfft, fftw3
 - pybdsf: 		            -
-- pycsou: 		            -
+- pycsou (in progress):     -
 - rascil: 		            pybdsf, ska-sdp-datamodels, ska-sdp-func-python, ska-sdp-func
 - seqfile: 		            -
 - ska-gridder-nifty-cuda:	-
@@ -71,4 +71,4 @@ Feedstock Dependencies:
 - ska-sdp-func-python: 	    ska-sdp-datamodels, ska-sdp-func
 - tools21cm: 		        fftw3
 
-**Removed builds**: To know on which commit to look for just in case.
+**Removed builds**: This is useful for legacy support or just for lookup purpose. Please list here each deprecated build, the commit-date it got removed and the commit-hash (first 7 chars) of the removal commit and the commit-hash of the merge commit.
