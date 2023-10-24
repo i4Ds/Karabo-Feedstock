@@ -22,9 +22,11 @@ requirements:
     - finufft         {{ FINUFFT_VERSION_ALT }}
     
   host:
-    - python           {{ python }}
+    - python          {{ python }}
+    - cmake
     - scikit-build
     - openblas
+    - finufft         =={{ FINUFFT_VERSION_ALT }}
 
   run:
     - python           {{ python }}
