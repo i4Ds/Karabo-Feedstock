@@ -60,8 +60,6 @@ Feedstock Dependencies:
 - montagepy: 		        -
 - oskar: 			        -
 - oskar-py: 		        oskar
-- pfft: 			        fftw3
-- pinocchio: 		        pfft, fftw3
 - pybdsf: 		            -
 - pycsou (in progress):     -
 - rascil: 		            pybdsf, ska-sdp-datamodels, ska-sdp-func-python, ska-sdp-func
@@ -73,3 +71,5 @@ Feedstock Dependencies:
 - tools21cm: 		        fftw3
 
 **Removed builds**: This is useful for legacy support or just for lookup purpose. Please list here each deprecated build, the commit-date, 7-char-hash and the branch-name it got removed.
+- pfft: 	                26.10.23,   3b1c3f2,    remove-pinocchio-fftw
+- pinocchio: 		        26.10.23,   3b1c3f2,    remove-pinocchio-fftw
