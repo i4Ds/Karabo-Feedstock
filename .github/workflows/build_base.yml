@@ -4,11 +4,6 @@ env:
   # Native Global Libs
   BOOST_VERSION: 1.74 # casacore<--python-casacore<--rascil<--karabo needs boost 1.74
 
-  # MPI
-  MPI_VERSION: 4.1  # version MUST match `MPI` implementation if MPI is not "nompi"
-  # ONLY ALLOWED mpi's are: "nompi", "openmpi" & "mpich"
-  MPI: mpich  # mpich is CSCS-supported where openmpi isn't
-
   # Pinocchio Line
   PINOCCHIO_VERSION: 5.0.0
   PFFT_VERSION: 1.0.8

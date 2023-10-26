@@ -11,10 +11,6 @@ on:
         type: boolean
         required: false
         default: false
-      devDeps:
-        type: string
-        required: false
-        default: "FFTW3_VERSION"
       buildNumber:
         type: string
         required: false
@@ -29,10 +25,6 @@ on:
         type: boolean
         required: false
         default: false
-      devDeps:
-        type: string
-        required: false
-        default: "FFTW3_VERSION"
       buildNumber:
         type: string
         required: true
@@ -47,7 +39,6 @@ jobs:
       packageVersionName: TOOLS_21CM_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
-      devDeps: ${{ inputs.devDeps }}
       buildNumber: ${{ inputs.buildNumber }}
       pythonCall: import tools21cm
     secrets: inherit
