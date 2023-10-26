@@ -72,4 +72,4 @@ Feedstock Dependencies:
 - ska-sdp-func-python: 	    ska-sdp-datamodels, ska-sdp-func
 - tools21cm: 		        fftw3
 
-**Removed builds**: This is useful for legacy support or just for lookup purpose. Please list here each deprecated build, the commit-date it got removed and the commit-hash (first 7 chars) of the removal commit and the commit-hash of the merge commit.
+**Removed builds**: This is useful for legacy support or just for lookup purpose. Please list here each deprecated build, the commit-date, 7-char-hash and the branch-name it got removed.
