@@ -9,7 +9,8 @@ source:
   git_tag: {{ SKA_GRDR_NFTY_CU_VERSION }}
 
 build:
-  string: {{ SKA_GRDR_NFTY_CU_VERSION_ALT }}_{{ python }}
+  number: {{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build: 

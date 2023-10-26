@@ -1,3 +1,14 @@
+{% set mpi_impl = environ.get("MPI") %}
+{% set mpi_vers = environ.get("MPI_VERSION") %}
+{% set mpi_prefix = "mpi_" + mpi_impl %}
+{% if mpi_impl == "mpich" or mpi_impl == "openmpi" %}
+  # prefer nompi builds via a build number offset
+  {% set BUILD_NUMBER = BUILD_NUMBER|int + 100 %}
+  {% set mpi = mpi_impl + " ==" + mpi_vers + ".*" %}
+{% else %}
+  {% set mpi = "" %}
+{% endif %}
+
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ PINOCCHIO_VERSION_ALT }}
@@ -7,25 +18,27 @@ source:
   git_tag: fivedotzero
 
 build:
-  string: {{ PINOCCHIO_VERSION_ALT }}
+  number: {{ BUILD_NUMBER }}
+  string: {{ mpi_prefix }}_h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - fftw {{ FFTW3_VERSION_ALT }}.*
-    - pfft {{ PFFT_VERSION_ALT }}.*
+    - fftw =={{ FFTW3_VERSION_ALT }}
+    - pfft =={{ PFFT_VERSION_ALT }}
     - gsl=2.7=he838d99_0
-    - mpich {{ MPICH_VERSION_ALT }}
+    - {{ mpi }}
     
   host:
+    - {{ mpi }}
  
   run:
-    - fftw {{ FFTW3_VERSION_ALT }}.*
-    - pfft {{ PFFT_VERSION_ALT }}.*
+    - fftw =={{ FFTW3_VERSION_ALT }}
+    - pfft =={{ PFFT_VERSION_ALT }}
     - gsl=2.7=he838d99_0
-    - mpich {{ MPICH_VERSION_ALT }}
+    - {{ mpi }}
   
 about:
   home: https://github.com/i4Ds/Pinocchio

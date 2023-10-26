@@ -6,7 +6,8 @@ source:
   git_url: https://github.com/i4Ds/PyBDSF.git
 
 build:
-  string: {{ PYBDSF_VERSION_ALT }}_{{ python }}
+  number: {{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
@@ -17,7 +18,7 @@ requirements:
     - python        {{ python }}
     - pip
     - numpy         >=1.21, !=1.24.0
-    - boost         {{ BOOST_VERSION_ALT }}.*
+    - boost         =={{ BOOST_VERSION_ALT }}.*
     - setuptools    >=68
     - scikit-build  >=0.13
     
@@ -29,13 +30,13 @@ requirements:
     - python        {{ python }}
     - pip
     - numpy         >=1.21, !=1.24.0
-    - boost         {{ BOOST_VERSION_ALT }}.*
-    - setuptools     >=68
-    - scikit-build   >=0.13
+    - boost         =={{ BOOST_VERSION_ALT }}.*
+    - setuptools
+    - scikit-build
     
   run:
     - python        {{ python }}
-    - boost         {{ BOOST_VERSION_ALT }}.*
+    - boost         =={{ BOOST_VERSION_ALT }}.*
     - astropy
     - numpy         >=1.21, !=1.24.0
     - scipy         >=1.10.1

@@ -8,30 +8,26 @@ source:
 
 build:
   noarch: python
-  string: {{ ARATMOSPY_VERSION_ALT }}
+  number: {{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
-    - python
+    - python                  {{ python }}
     - pip
 
   host:
-    - astropy
-    - matplotlib
-    - numpy                   >=1.21, !=1.24.0
-    - pyfftw
-    - scipy                   >=1.10.1
+    - python                  {{ python }}
     - pip
-    - python
 
   run:
     - astropy
     - matplotlib
     - numpy                   >=1.21, !=1.24.0
     - pyfftw
-    - scipy                   >=1.10.1
+    - scipy                   >=1.9
     - pip
-    - python
+    - python                  {{ python }}
 
 about:
   home: "https://github.com/i4Ds/ARatmospy"

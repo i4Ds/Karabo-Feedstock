@@ -7,28 +7,23 @@ source:
 
 build:
   noarch: python
-  string: {{ AOTOOLS_VERSION_ALT }}
+  number: {{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build: 
-    - python
+    - python                {{ python }}
     - pip
 
   host:
-    - matplotlib
-    - numba
-    - numpy                 >=1.21, !=1.24.0
+    - python                {{ python }}
     - pip
-    - pip
-    - python
-    - scipy                 >=1.10.1
 
   run:
+    - python                {{ python }}
     - matplotlib
     - numba
     - numpy                 >=1.21, !=1.24.0
-    - pip
-    - python
     - scipy                 >=1.10.1
 
 about:

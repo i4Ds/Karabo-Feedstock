@@ -11,6 +11,10 @@ on:
         type: boolean
         required: false
         default: false
+      buildNumber:
+        type: string
+        required: false
+        default: "0"
         
   workflow_call:
     inputs:
@@ -21,6 +25,9 @@ on:
         type: boolean
         required: false
         default: false
+      buildNumber:
+        type: string
+        required: true
 
 jobs:
 
@@ -34,5 +41,6 @@ jobs:
       pythonCall: import bdsf.functions as func
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
       isNative: true
     secrets: inherit

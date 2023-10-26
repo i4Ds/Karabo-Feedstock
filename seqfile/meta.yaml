@@ -7,23 +7,22 @@ source:
 
 build:
   noarch: python
-  string: {{ SEQFILE_VERSION_ALT }}
+  number: {{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 #  entry_points:
 #    - seqfile = seqfile.seqfile:_run
 
 requirements:
   build:
-    - python
+    - python        {{ python }}
     - pip
 
   host:
-    - natsort       >=3.5.6
-    - nose          >=1.0
-    - pep8          >=1.6.2
+    - python        {{ python }}
     - pip
-    - python
 
   run:
+    - python        {{ python }}
     - natsort       >=3.5.6
     - nose          >=1.0
     - pep8          >=1.6.2

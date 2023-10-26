@@ -7,34 +7,32 @@ source:
   git_rev: "f13353bca7f4dbd9940eded3b96f98b75e98186e" 
 
 build:
-  string: {{ BLUEBILD_VERSION_ALT }}_{{ python }}
+  number: {{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
+    - python           {{ python }}
     - cmake
     - scikit-build
     - openblas
-    - python {{ python }}
-    - finufft {{ FINUFFT_VERSION_ALT }}
+    - finufft         {{ FINUFFT_VERSION_ALT }}
     
   host:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
-    - {{ compiler('gfortran') }}
+    - python          {{ python }}
     - cmake
     - scikit-build
     - openblas
-    - python {{ python }}
-    - finufft {{ FINUFFT_VERSION_ALT }}
+    - finufft         =={{ FINUFFT_VERSION_ALT }}
 
   run:
+    - python           {{ python }}
     - openblas
-    - python {{ python }}
-    - finufft {{ FINUFFT_VERSION_ALT }}
-    - numpy   >=1.21, !=1.24.0
+    - finufft          =={{ FINUFFT_VERSION_ALT }}
+    - numpy            >=1.21, !=1.24.0
     - scikit-learn
     - astropy
     - matplotlib

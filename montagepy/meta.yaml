@@ -7,7 +7,8 @@ source:
   sha256: {{ wheel_sha }}
 
 build:
-  string: {{ MONTAGEPY_VERSION_ALT }}_{{ python }}
+  number: {{ BUILD_NUMBER }}
+  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
 
 requirements:
   build:
@@ -17,7 +18,6 @@ requirements:
     
   host:
     - python {{ python }}
-    - {{ compiler('c') }}
     - pip
 
   run:
