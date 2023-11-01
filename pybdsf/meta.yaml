@@ -18,21 +18,22 @@ requirements:
     - python        {{ python }}
     - pip
     - numpy         >=1.21, !=1.24.0
-    - boost         =={{ BOOST_VERSION_ALT }}.*
+    - boost         >={{ BOOST_VERSION_ALT }}.*
     - setuptools    >=68
     - scikit-build  >=0.13
     
   host:
-    - cmake         >=3.18
     - python        {{ python }}
-    - numpy         >=1.21, !=1.24.0
-    - boost         =={{ BOOST_VERSION_ALT }}.*
+    - cmake
+    - pip
+    - numpy
+    - boost
     - setuptools
     - scikit-build
     
   run:
     - python        {{ python }}
-    - boost         =={{ BOOST_VERSION_ALT }}.*
+    - boost         >={{ BOOST_VERSION_ALT }}.*
     - astropy
     - numpy         >=1.21, !=1.24.0
     - scipy         >=1.10.1

@@ -2,7 +2,7 @@ name: Build Base
 
 env:
   # Native Global Libs
-  BOOST_VERSION: 1.74 # casacore<--python-casacore<--rascil<--karabo needs boost 1.74
+  BOOST_VERSION: 1.74 # casacore<--python-casacore<--rascil<--karabo needs boost
   FFTW3_VERSION: 3.3.10
   
   # Rascil Line
