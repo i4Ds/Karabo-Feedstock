@@ -19,19 +19,16 @@ requirements:
     - casacore
     - harp
     - hdf5
-    - pyopencl
 
   host:
     - casacore
     - harp
     - hdf5
-    - pyopencl
 
   run:
     - casacore
     - harp
     - hdf5
-    - pyopencl
 
 about:
   home: https://github.com/OxfordSKA/OSKAR
