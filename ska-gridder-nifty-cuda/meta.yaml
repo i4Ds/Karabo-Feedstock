@@ -23,7 +23,7 @@ requirements:
   host:
     - python    {{ python }}
     - pip
-    - numpy      >=1.21, !=1.24.0
+    - numpy
 
   run:
     - python    {{ python }}

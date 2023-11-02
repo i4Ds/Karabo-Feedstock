@@ -16,12 +16,19 @@ requirements:
     - {{ compiler('cxx') }}
     - cmake
     - make
+    - casacore
+    - harp
+    - hdf5
 
   host:
     - casacore
+    - harp
+    - hdf5
 
   run:
     - casacore
+    - harp
+    - hdf5
 
 about:
   home: https://github.com/OxfordSKA/OSKAR
