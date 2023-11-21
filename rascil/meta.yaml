@@ -21,7 +21,7 @@ requirements:
     - pip
     - git-lfs
     - git
-    - reproject             >=0.9,      <0.10
+    - reproject             >=0.9
     - seqfile               >=0.2
     - python-casacore       >=3.5
     - ska-sdp-datamodels    =={{ SKA_SDP_DTMDL_VERSION_ALT }}
@@ -46,7 +46,7 @@ requirements:
     - numpy                 >=1.21, !=1.24.0
     - pandas                >=1.5
     - python-casacore       >=3.5
-    - reproject             >=0.9,      <0.10
+    - reproject             >=0.9
     - scipy                 >=1.10.1
     - seqfile               >=0.2
     - ska-sdp-datamodels    =={{ SKA_SDP_DTMDL_VERSION_ALT }}
