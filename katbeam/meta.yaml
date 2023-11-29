@@ -15,15 +15,15 @@ requirements:
   build:
     - python            {{ python }}
     - pip
-    - numpy             >=1.21, !=1.24.0
+    - numpy
 
   host:
     - python            {{ python }}
-    - pip
+    - numpy
 
   run:
     - python            {{ python }}
-    - numpy             >=1.21, !=1.24.0
+    - {{ pin_compatible('numpy') }}
 
 about:
   home: https://github.com/i4Ds/katbeam

@@ -15,14 +15,16 @@ requirements:
     - python {{ python }}
     - {{ compiler('c') }}
     - pip
+    - numpy
     
   host:
     - python {{ python }}
-    - pip
+    - numpy
 
   run:
     - python {{ python }}
     - requests
+    - {{ pin_compatible('numpy') }}
 
 about:
   home: https://github.com/Caltech-IPAC/Montage

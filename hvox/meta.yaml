@@ -15,17 +15,18 @@ requirements:
   build:
     - python                {{ python }}
     - pip
+    - numpy
 
   host:
     - python                {{ python }}
-    - pip
     - ducc0
+    - numpy
 
   run:
     - python                {{ python }}
     - astropy
     - matplotlib
-    - numpy                 >=1.21, !=1.24.0
+    - {{ pin_compatible('numpy') }}
     - healpy
     - ducc0
     - pycsou                =={{ PYCSOU_VERSION_ALT }}

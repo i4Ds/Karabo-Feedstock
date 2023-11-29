@@ -15,27 +15,22 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
     - cmake         >=3.18
-    - python        {{ python }}
+    - numpy
     - pip
-    - numpy         >=1.21, !=1.24.0
-    - boost         >={{ BOOST_VERSION_ALT }}.*
+    - python        {{ python }}
     - setuptools    >=68
     - scikit-build  >=0.13
     
   host:
     - python        {{ python }}
-    - cmake
-    - pip
     - numpy
-    - boost
-    - setuptools
-    - scikit-build
+    - boost         >={{ BOOST_VERSION_ALT }}.*
     
   run:
     - python        {{ python }}
     - boost         >={{ BOOST_VERSION_ALT }}.*
     - astropy
-    - numpy         >=1.21, !=1.24.0
+    - {{ pin_compatible('numpy') }}
     - scipy         >=1.10.1
     - ipython
 

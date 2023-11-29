@@ -16,9 +16,6 @@ requirements:
     - {{ compiler('cxx') }}
     - cmake
     - make
-    - casacore
-    - harp
-    - hdf5
 
   host:
     - casacore

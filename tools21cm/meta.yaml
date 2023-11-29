@@ -15,9 +15,11 @@ requirements:
   build:
     - python       {{ python }}
     - setuptools
+    - numpy
 
   host:
     - python           {{ python }}
+    - numpy
 
   run:
     - python       {{ python }}
@@ -25,7 +27,7 @@ requirements:
     - joblib
     - matplotlib
     - numba
-    - numpy         >=1.21, !=1.24.0
+    - {{ pin_compatible('numpy') }}
     - fftw          =={{ FFTW3_VERSION_ALT }}
     - pyfftw
     - pytest

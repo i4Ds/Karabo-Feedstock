@@ -15,17 +15,17 @@ requirements:
   build:
     - python                  {{ python }}
     - pip
+    - numpy
 
   host:
     - python                  {{ python }}
-    - pip
+    - numpy
 
   run:
     - python                  {{ python }}
-    - pip
     - astropy
     - matplotlib
-    - numpy                   >=1.21, !=1.24.0
+    - {{ pin_compatible('numpy') }}
     - pyfftw
     - scipy                   >=1.9
 

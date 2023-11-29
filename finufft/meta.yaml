@@ -25,16 +25,16 @@ requirements:
     - pip
     - make
     - cmake
-    - numpy           >=1.21, !=1.24.0
-    - fftw            =={{ FFTW3_VERSION_ALT }}
+    - numpy
     
   host:
     - python          {{ python }}
-    - pip
+    - numpy
+    - fftw            =={{ FFTW3_VERSION_ALT }}
 
   run:
     - python          {{ python }}
-    - numpy           >=1.21, !=1.24.0
+    - {{ pin_compatible('numpy') }}
     - fftw            =={{ FFTW3_VERSION_ALT }}
 
 about:

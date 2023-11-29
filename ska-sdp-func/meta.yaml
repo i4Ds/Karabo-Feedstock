@@ -16,15 +16,16 @@ requirements:
     - cmake
     - make
     - python  {{ python }}
-    - pip 
+    - pip
+    - numpy
 
   host:
     - python  {{ python }}
-    - pip
+    - numpy
     
   run:
     - python  {{ python }}
-    - numpy   >=1.21, !=1.24.0
+    - {{ pin_compatible('numpy') }}
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func/

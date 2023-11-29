@@ -14,18 +14,16 @@ requirements:
   build:
     - python      {{ python }}
     - pip
-    - numpy       >=1.21, !=1.24.0
-    - oskar       =={{ OSKARPY_VERSION_ALT }}
+    - numpy
 
   host:
     - python      {{ python }}
-    - pip
-    - numpy       >=1.21, !=1.24.0
+    - numpy
     - oskar       =={{ OSKARPY_VERSION_ALT }}
 
   run:
     - python      {{ python }}
-    - numpy       >=1.21, !=1.24.0
+    - {{ pin_compatible('numpy') }}
     - oskar       =={{ OSKARPY_VERSION_ALT }}
 
 about:
