@@ -18,8 +18,10 @@ requirements:
     - numpy
     - pip
     - python        {{ python }}
-    - setuptools    >=68
+    - setuptools    <=65.6
+    - ninja
     - scikit-build  >=0.13
+    - wheel
     
   host:
     - python        {{ python }}

@@ -14,9 +14,9 @@ build:
 
 requirements:
   build: 
-    - git
     - {{ compiler('cxx') }}
     - python    {{ python }}
+    - git
     - pip
     - numpy
 

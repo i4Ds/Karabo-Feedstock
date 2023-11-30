@@ -16,10 +16,10 @@ requirements:
     - python                {{ python }}
     - pip
     - numpy
+    - setuptools            >=61.0
 
   host:
     - python                {{ python }}
-    - ducc0
     - numpy
 
   run:
