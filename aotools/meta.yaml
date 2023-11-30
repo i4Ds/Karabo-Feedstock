@@ -23,7 +23,7 @@ requirements:
   run:
     - python                {{ python }}
     - matplotlib
-    - numba
+    - numba                 >=0.55.1  # 0.53.1 is buggy
     - {{ pin_compatible('numpy') }}
     - scipy                 >=1.10.1
 
