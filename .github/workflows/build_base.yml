@@ -133,7 +133,7 @@ jobs:
           BUILD_NR=${{ inputs.buildNumber }}
           if [[ ${{ inputs.dev }} == "true" ]]
           then
-            BUILD_NR="$(($BUILD_NR + 999))"
+            BUILD_NR="$(($BUILD_NR + 1000))"
             PKG_VERSION=$(echo "${{ inputs.packageVersion }}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
             DEV_DEPS_LIST=$(echo "${{ inputs.packageVersionName }}, ${{ inputs.devDeps }}")
           else
