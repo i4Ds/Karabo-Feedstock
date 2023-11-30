@@ -21,14 +21,15 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - python          {{ python }}
-    - pip
+    - python
     - make
     - cmake
     - numpy
+    - fftw
     
   host:
     - python          {{ python }}
+    - pip
     - numpy
     - fftw            =={{ FFTW3_VERSION_ALT }}
 

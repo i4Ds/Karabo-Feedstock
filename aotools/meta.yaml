@@ -12,12 +12,12 @@ build:
 
 requirements:
   build: 
-    - python                {{ python }}
-    - pip
+    - python
     - numpy
 
   host:
     - python                {{ python }}
+    - pip
     - numpy
 
   run:

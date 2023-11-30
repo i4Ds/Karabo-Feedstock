@@ -15,14 +15,14 @@ build:
 requirements:
   build: 
     - {{ compiler('cxx') }}
-    - python    {{ python }}
+    - python
     - git
-    - pip
     - numpy
 
   host:
     - python    {{ python }}
     - numpy
+    - pip
 
   run:
     - python    {{ python }}

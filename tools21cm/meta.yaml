@@ -13,13 +13,13 @@ build:
 
 requirements:
   build:
-    - python       {{ python }}
-    - setuptools
+    - python
     - numpy
 
   host:
     - python           {{ python }}
     - numpy
+    - setuptools
 
   run:
     - python       {{ python }}

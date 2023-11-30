@@ -16,14 +16,14 @@ build:
   
 requirements:
   build:
-    - python            {{ python }}
-    - pip
-    - poetry-core       >=1.0.0
+    - python
     - numpy
 
   host:
     - python            {{ python }}
+    - pip
     - numpy
+    - poetry-core       >=1.0.0
     
   run:
     - python            {{ python }}

@@ -13,14 +13,14 @@ build:
 
 requirements:
   build:
+    - python
+    - numpy
+
+  host:
     - python                {{ python }}
     - pip
     - numpy
     - setuptools            >=61.0
-
-  host:
-    - python                {{ python }}
-    - numpy
 
   run:
     - python                {{ python }}

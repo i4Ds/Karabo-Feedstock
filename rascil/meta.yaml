@@ -13,17 +13,17 @@ build:
 
 requirements:
   build:
-    - python                {{ python }}
+    - python
     - curl
-    - pip
     - git-lfs
     - git
     - numpy
-    - setuptools
 
   host:
     - python                {{ python }}
+    - pip
     - numpy
+    - setuptools
 
   run:
     - python                {{ python }}

@@ -15,12 +15,12 @@ requirements:
     - libgcc-ng=11.3 # will fail with compiler version above
     - cmake
     - make
-    - python  {{ python }}
-    - pip
+    - python
     - numpy
 
   host:
     - python  {{ python }}
+    - pip
     - numpy
     
   run:

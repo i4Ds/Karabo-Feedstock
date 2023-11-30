@@ -12,13 +12,13 @@ build:
 
 requirements:
   build:
-    - python {{ python }}
     - {{ compiler('c') }}
-    - pip
+    - python
     - numpy
     
   host:
     - python {{ python }}
+    - pip
     - numpy
 
   run:

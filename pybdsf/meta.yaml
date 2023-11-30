@@ -14,19 +14,20 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
+    - python
     - cmake         >=3.18
     - numpy
-    - pip
-    - python        {{ python }}
-    - setuptools    <=65.6
     - ninja
-    - scikit-build  >=0.13
-    - wheel
     
   host:
     - python        {{ python }}
     - numpy
+    - pip
+    - setuptools    <=65.6
     - boost         >={{ BOOST_VERSION_ALT }}.*
+    - ninja
+    - scikit-build  >=0.13
+    - wheel
     
   run:
     - python        {{ python }}
