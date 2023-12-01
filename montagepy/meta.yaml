@@ -7,8 +7,8 @@ source:
   sha256: {{ wheel_sha }}
 
 build:
-  number: {{ BUILD_NUMBER }}
-  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  number: {{ build }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
 requirements:
   build:

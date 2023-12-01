@@ -2,7 +2,6 @@ name: Build Base
 
 env:
   # Native Global Libs
-  BOOST_VERSION: 1.74 # casacore<--python-casacore<--rascil<--karabo needs boost
   FFTW3_VERSION: 3.3.10
   
   # Rascil Line
@@ -140,7 +139,7 @@ jobs:
             PKG_VERSION=${{ inputs.packageVersion }}
             DEV_DEPS_LIST=""
           fi
-          echo "BUILD_NUMBER=$BUILD_NR" >> "$GITHUB_ENV"
+          echo "build=$BUILD_NR" >> "$GITHUB_ENV"
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
           PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')

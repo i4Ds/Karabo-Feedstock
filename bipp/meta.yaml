@@ -7,8 +7,8 @@ source:
   git_rev: "f13353bca7f4dbd9940eded3b96f98b75e98186e" 
 
 build:
-  number: {{ BUILD_NUMBER }}
-  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  number: {{ build }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
 requirements:
   build:

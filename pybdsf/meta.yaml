@@ -6,8 +6,8 @@ source:
   url: https://pypi.io/packages/source/b/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ PYBDSF_VERSION }}.tar.gz
 
 build:
-  number: {{ BUILD_NUMBER }}
-  string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  number: {{ build }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
 requirements:
   build:
@@ -15,26 +15,26 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
     - python
-    - cmake         >=3.18
+    - cmake                   >=3.18
     - numpy
     - ninja
     
   host:
-    - python        {{ python }}
+    - python                  {{ python }}
     - numpy
     - pip
-    - setuptools    <=65.6
-    - boost         >={{ BOOST_VERSION_ALT }}.*
+    - setuptools              <=65.6
+    - libboost-python-devel   >=1.74
     - ninja
-    - scikit-build  >=0.13
+    - scikit-build            >=0.13
     - wheel
     
   run:
-    - python        {{ python }}
-    - boost         >={{ BOOST_VERSION_ALT }}.*
+    - python                  {{ python }}
+    - boost                   >=1.74
     - astropy
     - {{ pin_compatible('numpy') }}
-    - scipy         >=1.10.1
+    - scipy                   >=1.10.1
     - ipython
 
 about:

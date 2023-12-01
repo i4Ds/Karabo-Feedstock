@@ -7,8 +7,8 @@ source:
   git_tag: {{ OSKAR_VERSION }}
 
 build:
-  number: {{ BUILD_NUMBER }}
-  string: h{{ PKG_HASH }}_{{ BUILD_NUMBER }}
+  number: {{ build }}
+  string: h{{ PKG_HASH }}_{{ build }}
 
 requirements:
   build:
