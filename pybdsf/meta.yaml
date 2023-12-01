@@ -14,27 +14,29 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - python
-    - cmake                   >=3.18
+    - cmake         >=3.18
+    - python        {{ python }}
+    - numpy         >=1.21
     - boost
-    - numpy
     - ninja
     
   host:
-    - python                  {{ python }}
-    - numpy
-    - pip
-    - setuptools              <=65.6
+    - python        {{ python }}
+    - cmake
     - ninja
-    - scikit-build            >=0.13
+    - pip
+    - numpy         >=1.21
+    - boost
+    - setuptools
+    - scikit-build  >=0.13
     - wheel
     
   run:
-    - python                  {{ python }}
-    - astropy
+    - python        {{ python }}
     - boost
+    - astropy
     - {{ pin_compatible('numpy') }}
-    - scipy                   >=1.10.1
+    - scipy         >=1.10.1
     - ipython
 
 about:
