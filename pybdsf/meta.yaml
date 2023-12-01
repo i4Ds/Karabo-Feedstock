@@ -15,20 +15,20 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
     - cmake         >=3.18
-    - python        {{ python }}
+    - python        {{ python }}*=*cpython*
     - numpy         >=1.21
     - boost
     - ninja
     
   host:
-    - python        {{ python }}
+    - python        {{ python }}*=*cpython*
     - cmake
     - ninja
     - pip
     - numpy         >=1.21
-    - boost
     - setuptools
     - scikit-build  >=0.13
+    - boost
     - wheel
     
   run:
