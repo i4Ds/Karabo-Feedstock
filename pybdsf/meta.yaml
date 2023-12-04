@@ -36,6 +36,7 @@ requirements:
     - boost
     - astropy
     - {{ pin_compatible('numpy') }}
+    - matplotlib-base
     - scipy         >=1.10.1
     - ipython
 
