@@ -4,7 +4,7 @@ package:
 
 source:
   git_url: https://github.com/i4Ds/eidos.git
-  git_rev: 6537d8487a19442633263b984deec3ac5ff3c575
+  git_rev: d7718196cbd4229620e44e0896b0524687ae942f
 
 build:
   noarch: python
