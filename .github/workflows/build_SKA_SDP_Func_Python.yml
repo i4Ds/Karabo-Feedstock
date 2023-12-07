@@ -17,8 +17,7 @@ on:
         default: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
       buildNumber:
         type: string
-        required: false
-        default: "0"
+        required: true
         
   workflow_call:
     inputs:

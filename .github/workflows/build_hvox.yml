@@ -17,8 +17,7 @@ on:
         default: "PYCSOU_VERSION, RASCIL_VERSION, SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_PY_VERSION"
       buildNumber:
         type: string
-        required: false
-        default: "0"
+        required: true
         
   workflow_call:
     inputs:

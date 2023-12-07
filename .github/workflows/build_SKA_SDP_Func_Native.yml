@@ -13,8 +13,7 @@ on:
         default: false
       buildNumber:
         type: string
-        required: false
-        default: "0"
+        required: true
         
   workflow_call:
     inputs:
