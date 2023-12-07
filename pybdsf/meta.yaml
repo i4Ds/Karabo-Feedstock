@@ -16,7 +16,7 @@ requirements:
     - {{ compiler('gfortran') }}
     - cmake         >=3.18
     - python        {{ python }}*=*cpython*
-    - numpy         >=1.21
+    - numpy         >=1.21, !=1.24.0
     - boost
     - ninja
     
@@ -25,7 +25,7 @@ requirements:
     - cmake
     - ninja
     - pip
-    - numpy         >=1.21
+    - numpy         >=1.21, !=1.24.0
     - setuptools
     - scikit-build  >=0.13
     - boost
@@ -36,6 +36,7 @@ requirements:
     - boost
     - astropy
     - {{ pin_compatible('numpy') }}
+    - numpy         >=1.21, !=1.24.0
     - matplotlib-base
     - scipy         >=1.10.1
     - ipython
