@@ -4,6 +4,8 @@ This repository builds the conda-dependencies for the [Karabo pipeline](https://
 
 **Note**: The builds of the feedstock are from 3th party repositories or forked repositories to make them compatible with the Karabo pipeline. This means that the respective builds may not have correct dpendency resolvements because we cannot test this properly. So the main goal is to make sure that the builds related to a Karabo installation have a correct dependency resolvement. If the constraints of a build are too tight or too loose, we can correct this. We ask to open an issue in such a case.
 
+**Important**: DON'T TRIGGER ANY WORKFLOW HERE UNLESS YOU KNOW WHAT YOU'RE DOING!!! If you don't know what you're doing, you could disturb active conda-wheels and make an installation of karabo and it's dependency buggy or even impossible.
+
 ## Main builds
 Main builds are Conda wheels which are needed for a Karabo build. These packages should have the `main` label, so that they can be installed without additional referencing of another channel. This means, unless there is a very good reason, we always should provide wheels through the main-label. If the release number is greater than previous releases , the package automatically becomes `latest`.
 
