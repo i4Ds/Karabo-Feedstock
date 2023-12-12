@@ -15,13 +15,13 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
     - cmake         >=3.18
-    - python        {{ python }}*=*cpython*
+    - python        {{ python }}
     - numpy         >=1.21, !=1.24.0
     - boost
     - ninja
     
   host:
-    - python        {{ python }}*=*cpython*
+    - python        {{ python }}
     - cmake
     - ninja
     - pip
