@@ -22,12 +22,12 @@ requirements:
     - python          {{ python }}
     - openblas
     - scikit-build
-    - finufft         ={{ FINUFFT_VERSION_ALT }}=*_0
+    - finufft         ={{ FINUFFT_VERSION_ALT }}
 
   run:
     - python           {{ python }}
     - openblas
-    - finufft          ={{ FINUFFT_VERSION_ALT }}=*_0
+    - finufft          ={{ FINUFFT_VERSION_ALT }}
     - {{ pin_compatible('numpy') }}
     - scikit-learn
     - astropy

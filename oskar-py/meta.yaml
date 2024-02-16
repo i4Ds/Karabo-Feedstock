@@ -20,12 +20,12 @@ requirements:
     - python      {{ python }}
     - pip
     - numpy
-    - oskar       ={{ OSKARPY_VERSION_ALT }}=*_0
+    - oskar       ={{ OSKARPY_VERSION_ALT }}
 
   run:
     - python      {{ python }}
     - {{ pin_compatible('numpy') }}
-    - oskar       ={{ OSKARPY_VERSION_ALT }}=*_0
+    - oskar       ={{ OSKARPY_VERSION_ALT }}
 
 about:
   home: https://github.com/OxfordSKA/OSKAR

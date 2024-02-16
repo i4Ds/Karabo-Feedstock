@@ -29,10 +29,10 @@ requirements:
     - {{ pin_compatible('numpy') }}
     - healpy
     - ducc0
-    - pycsou                ={{ PYCSOU_VERSION_ALT }}=*_0
-    - rascil                ={{ RASCIL_VERSION_ALT }}=*_0
-    - ska-sdp-datamodels    ={{ SKA_SDP_DTMDL_VERSION_ALT }}=*_0
-    - ska-sdp-func-python   ={{ SKA_SDP_FUNC_PY_VERSION_ALT }}=*_0
+    - pycsou                ={{ PYCSOU_VERSION_ALT }}
+    - rascil                ={{ RASCIL_VERSION_ALT }}
+    - ska-sdp-datamodels    ={{ SKA_SDP_DTMDL_VERSION_ALT }}
+    - ska-sdp-func-python   ={{ SKA_SDP_FUNC_PY_VERSION_ALT }}
 
 about:
   home: "https://github.com/matthieumeo/hvox"
