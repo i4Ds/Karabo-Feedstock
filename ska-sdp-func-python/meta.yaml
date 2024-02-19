@@ -34,7 +34,7 @@ requirements:
     - scipy                 >=1.10.1
     - ska-sdp-datamodels    ={{ SKA_SDP_DTMDL_VERSION_ALT }}
     - ska-sdp-func          ={{ SKA_SDP_FUNC_VERSION_ALT }}
-    - xarray                <=2023.2  # see issue #542 of Karabo
+    - xarray                =2023.2  # see issue #542 of Karabo
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-func-python/
