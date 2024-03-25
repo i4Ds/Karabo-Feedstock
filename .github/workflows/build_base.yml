@@ -3,6 +3,7 @@ name: Build Base
 env:
   # Native Global Libs
   FFTW3_VERSION: 3.3.10
+  FFTW3F_VERSION: 3.3.10
   
   # Rascil Line
   PYBDSF_VERSION: 1.10.2

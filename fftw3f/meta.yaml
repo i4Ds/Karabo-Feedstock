@@ -1,0 +1,26 @@
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ FFTW3F_VERSION_ALT }}
+
+source:
+  url: https://fftw.org/fftw-{{ FFTW3F_VERSION }}.tar.gz
+
+build:
+  number: {{ build }}
+  string: "h{{ PKG_HASH }}_{{ build }}"
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - make
+
+about:
+  home: https://fftw.org
+  license: GPL
+  summary: 'FFTW single precision'
+  doc_url: https://fftw.org/index.html#documentation
+  dev_url: https://github.com/FFTW/fftw3
+
+extra:
+  recipe-maintainers:
+    - michel.pluess@fhnw.ch
