@@ -29,8 +29,7 @@ on:
         required: true
 
 jobs:
-
-  Oskar:
+  FFTW3F:
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: fftw3f
