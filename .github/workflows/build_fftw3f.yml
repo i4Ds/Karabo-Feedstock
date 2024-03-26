@@ -1,0 +1,43 @@
+name: FFTW3F
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
+      buildNumber:
+        type: string
+        required: true
+        
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
+      buildNumber:
+        type: string
+        required: true
+
+jobs:
+  FFTW3F:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: fftw3f
+      packageVersion: $FFTW3F_VERSION
+      packageVersionName: FFTW3F_VERSION
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+      useCuda: false
+      isNative: true
+    secrets: inherit
