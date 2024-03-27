@@ -11,6 +11,7 @@ source:
 
 {% if mpi == 'nompi' %}
 # prioritize nompi variant via build number
+build = !!int build
 {% set build = build + 100 %}
 {% endif %}
 
