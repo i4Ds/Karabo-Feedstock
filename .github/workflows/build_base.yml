@@ -20,6 +20,9 @@ env:
   HVOX_VERSION: 0.0.1.dev48  # `pbr` version because they don't have an official release tag yet
   PYCSOU_VERSION: 1.0.7.dev1679  # `pbr` version because they just refer to `v2-dev` branch which has this version
 
+  # WSClean
+  IDG_VERSION: 1.2.0
+
   # additional karabo dependencies
   AOTOOLS_VERSION: 1.0.6
   SEQFILE_VERSION: 0.2.0

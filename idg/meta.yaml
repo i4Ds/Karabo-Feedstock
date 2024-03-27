@@ -1,0 +1,61 @@
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ IDG_VERSION_ALT }}
+
+source:
+  git_url: https://gitlab.com/astron-idg/idg.git
+  git_tag: {{ IDG_VERSION }}
+
+# ensure mpi is defined (needed for conda-smithy recipe-lint)
+{% set mpi = mpi or 'nompi' %}
+
+{% if mpi == 'nompi' %}
+# prioritize nompi variant via build number
+{% set build = build + 100 %}
+{% endif %}
+
+build:
+  number: {{ build }}
+
+  {% if mpi != 'nompi' %}
+  {% set mpi_prefix = "mpi_" + mpi %}
+  {% else %}
+  {% set mpi_prefix = "nompi" %}
+  {% endif %}
+  string: "{{ mpi_prefix }}_h{{ PKG_HASH }}_{{ build }}"
+
+  {% if mpi != 'nompi' %}
+  run_exports:
+    - {{ PACKAGE_NAME|lower }} * {{ mpi_prefix }}_*
+  {% endif %}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake
+    - make
+    - fftw3f
+    - libblas
+    - libcblas
+
+  host:
+    - fftw3f
+    - libblas
+    - libcblas
+    - {{ mpi }}  # [mpi != 'nompi']
+
+  run:
+    - fftw3f
+    - {{ mpi }}  # [mpi != 'nompi']
+
+about:
+  home: https://idg.readthedocs.io
+  license: GPLv3
+  summary: 'Image Domain Gridding'
+  doc_url: https://idg.readthedocs.io
+  dev_url: https://gitlab.com/astron-idg/idg
+
+extra:
+  recipe-maintainers:
+    - michel.pluess@fhnw.ch
