@@ -47,25 +47,29 @@ External dependencies & which mpi-wheels they provide:
 
 ## Feedstock Build Dependencies
 **Active builds**: In case you intend to create a new build which also needs underlying changes of other builds, it's useful to know all feedstock-dependencies to know which one(s) to build first. The following provides an overview of the dependencies. In the brackets are the transversal dependencies if they're not already present as direct dependency. Please keep the list updated so that only karabo-latest builds are listed and that they have the correct direct and transversal dependencies:
-- aotools: 		            -
-- aratmospy: 		        -
-- bipp: 			        finufft
-- eidos: 			        -
-- finufft: 		            -
-- hvox (in progress): 		pycsou, rascil(pybdsf), ska-sdp-datamodels, ska-sdp-func-python
-- katbeam: 		            -
-- montagepy: 		        -
-- oskar: 			        -
-- oskar-py: 		        oskar
-- pybdsf: 		            -
-- pycsou (in progress):     -
-- rascil: 		            pybdsf, ska-sdp-datamodels, ska-sdp-func-python, ska-sdp-func
-- seqfile: 		            -
+- aotools: -
+- aratmospy: -
+- bipp: finufft
+- eidos: -
+- everybeam: -
+- fftw3f: -
+- finufft: -
+- hvox (in progress): pycsou, rascil(pybdsf), ska-sdp-datamodels, ska-sdp-func-python
+- idg: fftw3f
+- katbeam: -
+- montagepy: -
+- oskar: -
+- oskar-py: oskar
+- pybdsf: -
+- pycsou (in progress): -
+- rascil: pybdsf, ska-sdp-datamodels, ska-sdp-func-python, ska-sdp-func
+- seqfile: -
 - ska-gridder-nifty-cuda:	-
-- ska-sdp-datamodels: 	    -
-- ska-sdp-func: 		    -
-- ska-sdp-func-python: 	    ska-sdp-datamodels, ska-sdp-func
-- tools21cm: 		        -
+- ska-sdp-datamodels: -
+- ska-sdp-func: -
+- ska-sdp-func-python: ska-sdp-datamodels, ska-sdp-func
+- tools21cm: -
+- wsclean: idg, everybeam
 
 **Removed builds**: This is useful for legacy support or just for lookup purpose. Please list here each deprecated build, the commit-date, 7-char-hash and the branch-name it got removed.
 - fftw3:                    26.10.23,   e4ec4e2,    remove-pinocchio-fftw
