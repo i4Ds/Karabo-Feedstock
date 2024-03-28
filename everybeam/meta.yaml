@@ -1,0 +1,63 @@
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ EVERYBEAM_VERSION_ALT }}
+
+source:
+  git_url: https://git.astron.nl/RD/EveryBeam.git
+  git_tag: "v{{ EVERYBEAM_VERSION }}"
+
+build:
+  number: {{ build }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake
+    - make
+    - boost
+    - hdf5
+    - fftw
+    - libblas
+    - liblapack
+    - libxml2
+    - python
+    - casacore
+    - cfitsio
+    - wcslib
+
+  host:
+    - boost
+    - hdf5
+    - fftw
+    - libblas
+    - liblapack
+    - libxml2
+    - python
+    - casacore
+    - cfitsio
+    - wcslib
+  
+  run:
+    - boost
+    - hdf5
+    - fftw
+    - libblas
+    - liblapack
+    - libxml2
+    - python
+    - casacore
+    - cfitsio
+    - wcslib
+
+about:
+  home: https://everybeam.readthedocs.io
+  license: GPLv3
+  summary: 'The EveryBeam library is a library that provides the antenna response pattern for several instruments, such as LOFAR (and LOBES), SKA (OSKAR), MWA, JVLA, etc.'
+  doc_url: https://everybeam.readthedocs.io
+  dev_url: https://git.astron.nl/RD/EveryBeam
+
+extra:
+  recipe-maintainers:
+    - michel.pluess@fhnw.ch
