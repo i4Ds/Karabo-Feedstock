@@ -1,0 +1,67 @@
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ WSCLEAN_VERSION_ALT }}
+
+source:
+  git_url: https://gitlab.com/aroffringa/wsclean.git
+  # Cut off the .0 part in e.g. 3.4.0 we added just for conda build
+  git_tag: "v{{ WSCLEAN_VERSION[:-2] }}"
+
+build:
+  number: {{ build }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake
+    - make
+    - boost
+    - casacore
+    - cfitsio
+    - everybeam
+    - fftw
+    - gsl
+    - hdf5
+    - idg
+    - libblas
+    - liblapack
+    - python
+
+  host:
+    - boost
+    - casacore
+    - cfitsio
+    - everybeam
+    - fftw
+    - gsl
+    - hdf5
+    - idg
+    - libblas
+    - liblapack
+    - python
+
+  run:
+    - boost
+    - casacore
+    - cfitsio
+    - everybeam
+    - fftw
+    - gsl
+    - hdf5
+    - idg
+    - libblas
+    - liblapack
+    - python
+
+about:
+  home: https://wsclean.readthedocs.io
+  license: GPLv3
+  summary: 'WSClean (w-stacking clean) is a fast generic widefield imager'
+  doc_url: https://wsclean.readthedocs.io
+  dev_url: https://gitlab.com/aroffringa/wsclean
+
+extra:
+  recipe-maintainers:
+    - michel.pluess@fhnw.ch
