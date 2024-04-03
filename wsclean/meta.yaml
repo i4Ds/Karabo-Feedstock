@@ -21,12 +21,13 @@ requirements:
     - casacore
     - cfitsio
     - everybeam
-    - fftw
+    - conda-forge::fftw=*=mpi_mpich*
     - gsl
-    - hdf5
-    - idg
+    - hdf5=*=mpi_mpich*
+    - idg=*=mpi_mpich*
     - libblas
     - liblapack
+    - libcufft
     - python
 
   host:
@@ -34,12 +35,13 @@ requirements:
     - casacore
     - cfitsio
     - everybeam
-    - fftw
+    - conda-forge::fftw=*=mpi_mpich*
     - gsl
-    - hdf5
-    - idg
+    - hdf5=*=mpi_mpich*
+    - idg=*=mpi_mpich*
     - libblas
     - liblapack
+    - libcufft
     - python
 
   run:
@@ -47,12 +49,13 @@ requirements:
     - casacore
     - cfitsio
     - everybeam
-    - fftw
+    - conda-forge::fftw=*=mpi_mpich*
     - gsl
-    - hdf5
-    - idg
+    - hdf5=*=mpi_mpich*
+    - idg=*=mpi_mpich*
     - libblas
     - liblapack
+    - libcufft
     - python
 
 about:
