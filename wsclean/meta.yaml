@@ -21,10 +21,10 @@ requirements:
     - casacore
     - cfitsio
     - everybeam
-    - conda-forge::fftw=*=mpi_mpich*
+    - fftw
     - gsl
-    - hdf5=*=mpi_mpich*
-    - idg=*=mpi_mpich*
+    - hdf5
+    - idg
     - libblas
     - liblapack
     - libcufft
@@ -35,10 +35,10 @@ requirements:
     - casacore
     - cfitsio
     - everybeam
-    - conda-forge::fftw=*=mpi_mpich*
+    - fftw
     - gsl
-    - hdf5=*=mpi_mpich*
-    - idg=*=mpi_mpich*
+    - hdf5
+    - idg
     - libblas
     - liblapack
     - libcufft
@@ -49,10 +49,10 @@ requirements:
     - casacore
     - cfitsio
     - everybeam
-    - conda-forge::fftw=*=mpi_mpich*
+    - fftw
     - gsl
-    - hdf5=*=mpi_mpich*
-    - idg=*=mpi_mpich*
+    - hdf5
+    - idg
     - libblas
     - liblapack
     - libcufft

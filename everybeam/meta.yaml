@@ -17,8 +17,8 @@ requirements:
     - cmake
     - make
     - boost
-    - hdf5=*=mpi_mpich*
-    - conda-forge::fftw=*=mpi_mpich*
+    - hdf5
+    - fftw
     - libblas
     - liblapack
     - libxml2
@@ -29,8 +29,8 @@ requirements:
 
   host:
     - boost
-    - hdf5=*=mpi_mpich*
-    - conda-forge::fftw=*=mpi_mpich*
+    - hdf5
+    - fftw
     - libblas
     - liblapack
     - libxml2
@@ -41,8 +41,8 @@ requirements:
   
   run:
     - boost
-    - hdf5=*=mpi_mpich*
-    - conda-forge::fftw=*=mpi_mpich*
+    - hdf5
+    - fftw
     - libblas
     - liblapack
     - libxml2
