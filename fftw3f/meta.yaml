@@ -1,8 +1,3 @@
-{% set PACKAGE_NAME = 'fftw3f' %}
-{% set FFTW3F_VERSION = '3.3.10' %}
-{% set FFTW3F_VERSION_ALT = '3.3.10' %}
-{% set build = '1' %}
-
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ FFTW3F_VERSION_ALT }}
