@@ -1,3 +1,8 @@
+{% set PACKAGE_NAME = 'fftw3f' %}
+{% set FFTW3F_VERSION = '3.3.10' %}
+{% set FFTW3F_VERSION_ALT = '3.3.10' %}
+{% set build = '1' %}
+
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ FFTW3F_VERSION_ALT }}
@@ -5,14 +10,39 @@ package:
 source:
   url: https://fftw.org/fftw-{{ FFTW3F_VERSION }}.tar.gz
 
+# ensure mpi is defined (needed for conda-smithy recipe-lint)
+{% set mpi = mpi or 'nompi' %}
+
+{% if mpi == 'nompi' %}
+# prioritize nompi variant via build number
+{% set build = build | int + 100 %}
+{% endif %}
+
 build:
   number: {{ build }}
-  string: "h{{ PKG_HASH }}_{{ build }}"
+
+  {% if mpi != 'nompi' %}
+  {% set mpi_prefix = "mpi_" + mpi %}
+  {% else %}
+  {% set mpi_prefix = "nompi" %}
+  {% endif %}
+  string: "{{ mpi_prefix }}_h{{ PKG_HASH }}_{{ build }}"
+
+  {% if mpi != 'nompi' %}
+  run_exports:
+    - {{ PACKAGE_NAME|lower }} * {{ mpi_prefix }}_*
+  {% endif %}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - make
+
+  host:
+    - {{ mpi }}  # [mpi != 'nompi']
+
+  run:
+    - {{ mpi }}  # [mpi != 'nompi']
 
 about:
   home: https://fftw.org
