@@ -21,7 +21,7 @@ requirements:
     - casacore
     - cfitsio
     - everybeam
-    - fftw
+    - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
     - idg
@@ -35,7 +35,7 @@ requirements:
     - casacore
     - cfitsio
     - everybeam
-    - fftw
+    - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
     - idg

@@ -19,7 +19,7 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - fftw
+    - conda-forge::fftw=*=mpi_mpich*
     - hdf5
     - libblas
     - liblapack
@@ -31,7 +31,7 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - fftw
+    - conda-forge::fftw=*=mpi_mpich*
     - hdf5
     - libblas
     - liblapack
