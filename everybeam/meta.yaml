@@ -17,38 +17,38 @@ requirements:
     - cmake
     - make
     - boost
-    - hdf5
+    - casacore
+    - cfitsio
     - fftw
+    - hdf5
     - libblas
     - liblapack
     - libxml2
     - python
-    - casacore
-    - cfitsio
     - wcslib
 
   host:
     - boost
-    - hdf5
+    - casacore
+    - cfitsio
     - fftw
+    - hdf5
     - libblas
     - liblapack
     - libxml2
     - python
-    - casacore
-    - cfitsio
     - wcslib
   
   run:
     - boost
-    - hdf5
+    - casacore
+    - cfitsio
     - fftw
+    - hdf5
     - libblas
     - liblapack
     - libxml2
     - python
-    - casacore
-    - cfitsio
     - wcslib
 
 about:

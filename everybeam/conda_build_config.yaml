@@ -1,16 +1,33 @@
 python:
   - 3.9
 
+# For reasons that are not entirely clear to me, conda build
+# constrains the cfitsio and hdf5 run dependencies to a specific patch.
+# Here, we make sure the boost / cfitsio / hdf5 combination that fits
+# the Karabo environment, 1.82 / 4.3.1 / 1.14.2, is built.
+# And we build more boost / cfitsio / hdf5 combinations, one for each
+# boost version that is compatible with this library and its dependencies.
 boost:
   - 1.74
   - 1.78
   - 1.82
   - 1.84
-
+cfitsio:
+  - 4.1.0
+  - 4.3.0
+  - 4.3.1
+  - 4.4.0
 hdf5:
+  - 1.12.1
+  - 1.14.1
   - 1.14.2
   - 1.14.3
+zip_keys:
+  - boost
+  - cfitsio
+  - hdf5
 
 pin_run_as_build:
   boost: x.x
+  cfitsio: x.x.x
   hdf5: x.x.x
