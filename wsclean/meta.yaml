@@ -24,10 +24,8 @@ requirements:
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
-    - idg
     - libblas
     - liblapack
-    - libcufft
     - python
 
   host:
@@ -38,10 +36,8 @@ requirements:
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
-    - idg
     - libblas
     - liblapack
-    - libcufft
     - python
 
   run:
@@ -52,10 +48,8 @@ requirements:
     - fftw
     - gsl
     - hdf5
-    - idg
     - libblas
     - liblapack
-    - libcufft
     - python
 
 about:
