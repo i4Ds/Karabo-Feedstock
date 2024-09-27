@@ -4,14 +4,14 @@ env:
   # Native Global Libs
   FFTW3_VERSION: 3.3.10
   FFTW3F_VERSION: 3.3.10
-  
+
   # Rascil Line
   PYBDSF_VERSION: 1.10.2
   RASCIL_VERSION: 1.0.0
   SKA_SDP_DTMDL_VERSION: 0.1.3
   SKA_SDP_FUNC_PY_VERSION: 0.1.4
   SKA_SDP_FUNC_VERSION: 0.0.6
-  
+
   # Oskar Line
   OSKAR_VERSION: 2.8.3
   OSKARPY_VERSION: 2.8.3  # oskarpy should have same version as `OSKAR_VERSION`
@@ -23,8 +23,8 @@ env:
   # WSClean
   IDG_VERSION: 1.2.0
   EVERYBEAM_VERSION: 0.6.1  #  0.5.7
-  WSCLEAN_VERSION: 3.5.0 #3.4.0 
-  
+  WSCLEAN_VERSION: 3.5.0 #3.4.0
+
 
   # additional karabo dependencies
   AOTOOLS_VERSION: 1.0.6
@@ -35,7 +35,7 @@ env:
   TOOLS_21CM_VERSION: 2.0.3 # actual version 2.0, patch needed for correct scipy version
   ARATMOSPY_VERSION: 1.0.0
   MONTAGEPY_VERSION: 6.0.0 # version is pinned through python-wheel in conda_build_config.yaml
-  
+
   # SKACH contributions
   FINUFFT_VERSION: 2.1.0
   BLUEBILD_VERSION: 0.1.0
@@ -43,15 +43,15 @@ env:
   # Other
   PACKAGE_NAME: ${{ inputs.packageName }}
   CHANNEL_LABEL: ${{ inputs.label }}
-  
+
 on:
   workflow_call:
     inputs:
-      
+
       packageName:
         required: true
         type: string
-      
+
       packageVersion:
         required: true
         type: string
@@ -67,12 +67,12 @@ on:
       customPath:
         required: false
         type: string
-      
+
       pythonCall:
         required: false
         default: ""
         type: string
-      
+
       label:
         required: false
         default: "main"
@@ -87,23 +87,23 @@ on:
         required: false
         default: ""  # set matching packages-names for dev to use
         type: string
-      
+
       useCuda:
         required: false
         default: false
         type: boolean
-      
+
       isNative:
         required: false
         default: false
         type: boolean
-      
+
       skipTest:
         required: false
         default: false
         type: boolean
-        
-jobs:   
+
+jobs:
   build_base:
     runs-on: ubuntu-latest
     outputs:
@@ -115,12 +115,13 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
+
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda }}
-        uses: Jimver/cuda-toolkit@v0.2.11
+        uses: Jimver/cuda-toolkit@v0.2.22
         id: cuda-toolkit
         with:
-          cuda: '11.7.0'
+          cuda: '12.8.1'
       - name: Set custom path to recipe
         if: inputs.customPath != ''
         run: |
@@ -149,7 +150,7 @@ jobs:
           echo "build=$BUILD_NR" >> "$GITHUB_ENV"
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
-        
+
           PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
           for PKG_KEY in $PKG_KEYS; do
             if [[ $DEV_DEPS_LIST == *"$PKG_KEY"* ]]
@@ -161,13 +162,12 @@ jobs:
             NAME_ALT=${PKG_KEY}_ALT
             echo "$NAME_ALT=$VERSION_ALT" >> "$GITHUB_ENV"
           done
-        # install conda-build is changed with version 25. the target is swtiched to .conda  instead of .tar.bz2  
-      - name: Install Conda-Build and create target 
+        # install conda-build is changed with version 25. the target is swtiched to .conda  instead of .tar.bz2
+      - name: Install Conda-Build and create target
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
           conda install "conda-build>=25"
-          
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
 
       - name: Set linux64 as architecture
@@ -183,7 +183,7 @@ jobs:
         run: |
           conda activate base
           conda install anaconda-client
-          anaconda -t ${{ secrets.ANACONDA_SECRET }} upload /usr/share/miniconda/conda-bld/${{ env.arch }}/${{ inputs.packageName }}*.conda --label ${{ inputs.label }} 
+          anaconda -t ${{ secrets.ANACONDA_SECRET }} upload /usr/share/miniconda/conda-bld/${{ env.arch }}/${{ inputs.packageName }}*.conda --label ${{ inputs.label }}
 
 
   test_base:
@@ -193,22 +193,22 @@ jobs:
       - name: Checkout repository
         if: ${{ !inputs.skipTest }}
         uses: actions/checkout@v4
-      
+
       - name: Install Conda
         if: ${{ !inputs.skipTest }}
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-      
+
       - name: Install Mamba Solver
         if: ${{ !inputs.skipTest }}
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
-      
+
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda && !inputs.skipTest }}
-        uses: Jimver/cuda-toolkit@v0.2.11
+        uses: Jimver/cuda-toolkit@v0.2.22
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
@@ -222,7 +222,7 @@ jobs:
           conda activate testenv9
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
           python -c "${{ inputs.pythonCall }}"
-      
+
       - name: Install Package and test with Python 3.10
         if: ${{ !inputs.skipTest }}
         continue-on-error: true
@@ -232,10 +232,10 @@ jobs:
           conda activate testenv10
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
           python -c "${{ inputs.pythonCall }}"
-      
+
       - name: Install Package and test with Python 3.11
         if: ${{ !inputs.skipTest }}
-        continue-on-error: true 
+        continue-on-error: true
         shell: bash -l {0}
         run: |
           conda create -y -n testenv11 python=3.11
