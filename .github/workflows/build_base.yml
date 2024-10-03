@@ -210,7 +210,9 @@ jobs:
         if: ${{ !inputs.skipTest }}
         shell: bash -l {0}
         run: |   # Upgraded to Python 3.10
+          conda create -y -n testenv python=3.9
           conda create -y -n testenv python=3.10 
+          conda create -y -n testenv python=3.11
           conda activate testenv
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
           python -c "${{ inputs.pythonCall }}"
