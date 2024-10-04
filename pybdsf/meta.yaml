@@ -41,7 +41,7 @@ requirements:
     - matplotlib-base
     - scipy         >=1.10.1
     - ipython
-    - distutils  #add distutils to handle missing module error
+
 
 about:
   home: "https://github.com/lofar-astron/PyBDSF"
