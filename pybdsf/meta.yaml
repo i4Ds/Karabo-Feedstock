@@ -19,6 +19,7 @@ requirements:
     - numpy         >=1.21, !=1.24.0
     - boost
     - ninja
+    - setuptools    <60.0
     
   host:
     - python        {{ python }}
@@ -26,7 +27,7 @@ requirements:
     - ninja
     - pip
     - numpy         >=1.21, !=1.24.0
-    - setuptools
+    - setuptools    <60.0 #pinning setuptools 
     - scikit-build  >=0.13
     - boost
     - wheel
@@ -40,6 +41,7 @@ requirements:
     - matplotlib-base
     - scipy         >=1.10.1
     - ipython
+    - distutils  #add distutils to handle missing module error
 
 about:
   home: "https://github.com/lofar-astron/PyBDSF"
