@@ -1,17 +1,14 @@
 python:
   - 3.9
   - 3.10
-  - 3.11
 
 wheel_url:
   - https://files.pythonhosted.org/packages/e8/00/fbb4468dec62ec0b9e7152588c14ded838298fe370fa70d1d59ee4041f81/MontagePy-1.2.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl
   - https://files.pythonhosted.org/packages/01/82/d92658b37d8f9dcf1bf137344e39964b2f4c4b1825a3acdc777cd355372a/MontagePy-1.2.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl
-  - https://files.pythonhosted.org/packages/f5/23/80f0ac8f1c029c0bc45b53103e9e6b24f3bda1f0077a9e11c579e703aa5c/MontagePy-1.2.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl
 
 wheel_sha:
   - 570716d6b32d5a72fb40079461707b900809c58938efa99d691636fb837b31df
   - a9005a0d838b59258c8ce3e83ec8f1a21b4d5013f8b296dd00a1a0e9add8496f
-  - 9876c5e890fe7988f9e4de6c214fc44a2e8eae1896ff97d198212c4397dcf4ef
 
 zip_keys:
   - python
