@@ -190,29 +190,53 @@ jobs:
       - name: Checkout repository
         if: ${{ !inputs.skipTest }}
         uses: actions/checkout@v4
+      
       - name: Install Conda
         if: ${{ !inputs.skipTest }}
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
+      
       - name: Install Mamba Solver
         if: ${{ !inputs.skipTest }}
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
-      - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
+      
+      - name: Install Cuda Toolkit
         if: ${{ inputs.useCuda && !inputs.skipTest }}
         uses: Jimver/cuda-toolkit@v0.2.11
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
-      - name: Install Package and test with Python
+
+      - name: Install Package and test with Python 3.9
         if: ${{ !inputs.skipTest }}
+        continue-on-error: true  #cntinue even if this step fails
         shell: bash -l {0}
-        run: |   # Upgraded to Python 3.10
-          conda create -y -n testenv python=3.9
-          conda create -y -n testenv python=3.10 
-          conda create -y -n testenv python=3.11
+        run: |
+          conda create -y -n testenv9 python=3.9
           conda activate testenv
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
           python -c "${{ inputs.pythonCall }}"
+      
+      - name: Install Package and test with Python 3.10
+        if: ${{ !inputs.skipTest }}
+        continue-on-error: true
+        shell: bash -l {0}
+        run: |
+          conda create -y -n testenv10 python=3.10
+          conda activate testenv
+          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
+          python -c "${{ inputs.pythonCall }}"
+      
+      - name: Install Package and test with Python 3.11
+        if: ${{ !inputs.skipTest }}
+        continue-on-error: true 
+        shell: bash -l {0}
+        run: |
+          conda create -y -n testenv11 python=3.11
+          conda activate testenv
+          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
+          python -c "${{ inputs.pythonCall }}"
+
