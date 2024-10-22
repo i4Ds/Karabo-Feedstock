@@ -27,17 +27,14 @@ hdf5:
   - 1.14.2
   - 1.14.3
 
-casacore:
-  - 3.6.1
 
 zip_keys:
   - boost
   - cfitsio
   - hdf5
-  - casacore
 
 pin_run_as_build:
   boost: x.x
   cfitsio: x.x.x
   hdf5: x.x.x
-  casacore: x.x.x
+
