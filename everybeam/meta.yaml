@@ -1,6 +1,6 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ EVERYBEAM_VERSION_ALT }}
+  version: {{ environ.get('EVERYBEAM_VERSION_ALT', '0.0.0') }}
 
 source:
   git_url: https://git.astron.nl/RD/EveryBeam.git
