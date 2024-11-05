@@ -22,17 +22,16 @@ env:
 
   # WSClean
   IDG_VERSION: 1.2.0
+  EVERYBEAM_VERSION: 0.6.1 # 0.5.7
   WSCLEAN_VERSION: 3.4.0 # actual version 3.4
+  
 
-  # Dynamically fetched EveryBeam version
-  EVERYBEAM_VERSION: ${{ inputs.packageVersion }}
-
-  # Additional karabo dependencies
+  # additional karabo dependencies
   AOTOOLS_VERSION: 1.0.6
   SEQFILE_VERSION: 0.2.0
   EIDOS_VERSION: 1.1.0
   SKA_GRDR_NFTY_CU_VERSION: 0.3.0
-  KATBEAM_VERSION: 0.1.0 # actual version 0.1 and has no patch, needed for conda-build
+  KATBEAM_VERSION: 0.1.0 # acutal version 0.1 and has therefore no patch, but is needed for conda-build
   TOOLS_21CM_VERSION: 2.0.2
   ARATMOSPY_VERSION: 1.0.0
   MONTAGEPY_VERSION: 6.0.0 # version is pinned through python-wheel in conda_build_config.yaml
@@ -48,6 +47,7 @@ env:
 on:
   workflow_call:
     inputs:
+      
       packageName:
         required: true
         type: string
@@ -130,6 +130,10 @@ jobs:
         run: |
           echo "recipePath=${{ inputs.packageName }}/." >> "$GITHUB_ENV"
       - name: Prepare Setup
+        # In case ${{ inputs.dev }}="true", ${{ inputs.packageVersion }} of ${{ inputs.packageVersion }}
+        # gets a PEP440 dev-version added at position "patch".
+        # In case ${{ inputs.dev }}="true" & ${{ inputs.devDeps }} is not empty, the in `env` declared variables
+        # included in `devDeps` gets a PEP440 dev-version added and exported for the underlying conda-build process.
         id: pkgv
         run: |
           BUILD_NR=${{ inputs.buildNumber }}
@@ -145,7 +149,7 @@ jobs:
           echo "build=$BUILD_NR" >> "$GITHUB_ENV"
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
-          #Export EVERYBEAM_VERSION_ALT to the environment for use in meta.yaml
+          # Export EVERYBEAM_VERSION_ALT to the environment for use in meta.yaml
           echo "EVERYBEAM_VERSION_ALT=$PKG_VERSION" >> "$GITHUB_ENV"
 
           PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
@@ -180,7 +184,6 @@ jobs:
           conda activate base
           conda install anaconda-client
           anaconda -t ${{ secrets.ANACONDA_SECRET }} upload /usr/share/miniconda/conda-bld/${{ env.arch }}/${{ inputs.packageName }}*.tar.bz2 --label ${{ inputs.label }}
-
 
 
   test_base:
