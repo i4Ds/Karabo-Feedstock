@@ -145,6 +145,9 @@ jobs:
           echo "build=$BUILD_NR" >> "$GITHUB_ENV"
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
+          #Export EVERYBEAM_VERSION_ALT to the environment for use in meta.yaml
+          echo "EVERYBEAM_VERSION_ALT=$PKG_VERSION" >> "$GITHUB_ENV"
+
           PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
           for PKG_KEY in $PKG_KEYS; do
             if [[ $DEV_DEPS_LIST == *"$PKG_KEY"* ]]
