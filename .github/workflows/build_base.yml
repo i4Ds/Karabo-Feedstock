@@ -22,8 +22,8 @@ env:
 
   # WSClean
   IDG_VERSION: 1.2.0
-  EVERYBEAM_VERSION: 0.6.1 # 0.5.7
-  WSCLEAN_VERSION: 3.4.0 # actual version 3.4
+  EVERYBEAM_VERSION: 0.5.7 # 0.6.1
+  WSCLEAN_VERSION: 3.6.1 #3.4.0 # actual version 3.4
   
 
   # additional karabo dependencies
