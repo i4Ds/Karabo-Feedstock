@@ -5,7 +5,8 @@ package:
 source:
   git_url: https://gitlab.com/aroffringa/wsclean.git
   # Cut off the .0 part in e.g. 3.4.0 we added just for conda build
-  git_tag: "v{{ WSCLEAN_VERSION[:-2] }}"
+  # git_tag: "v{{ WSCLEAN_VERSION[:-2] }}"
+  git_tag: "v3.6.1"
 
 build:
   number: {{ build }}
@@ -20,7 +21,7 @@ requirements:
     - boost
     - casacore=3.5.0
     - cfitsio
-    - everybeam # =0.5.7 # WSClean needs EveryBeam version 0.5.x with x>=2 - but found version 0.6.1 which is not compatible 
+    - everybeam=0.5.7 # WSClean needs EveryBeam version 0.5.x with x>=2 - but found version 0.6.1 which is not compatible 
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
@@ -32,7 +33,7 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - everybeam # =0.5.7
+    - everybeam=0.5.7
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
@@ -44,7 +45,7 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - everybeam=
+    - everybeam=0.5.7
     - fftw
     - gsl
     - hdf5
