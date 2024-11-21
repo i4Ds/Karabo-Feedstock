@@ -21,7 +21,7 @@ requirements:
     - boost
     - casacore=3.5.0
     - cfitsio
-    - everybeam=0.5.7 # WSClean needs EveryBeam version 0.5.x with x>=2 - but found version 0.6.1 which is not compatible 
+    - everybeam={{ EVERYNEAM_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
@@ -33,7 +33,7 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - everybeam=0.5.7
+    - everybeam={{ EVERYNEAM_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
@@ -45,7 +45,7 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - everybeam=0.5.7
+    - everybeam={{ EVERYNEAM_VERSION_ALT }}
     - fftw
     - gsl
     - hdf5
