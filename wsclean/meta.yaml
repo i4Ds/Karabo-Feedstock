@@ -21,7 +21,7 @@ requirements:
     - boost
     - casacore=3.5.0
     - cfitsio
-    - everybeam={{ EVERYNEAM_VERSION }}
+    - everybeam={{ EVERYBEAM_VERSION  }}
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
@@ -33,7 +33,7 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - everybeam={{ EVERYNEAM_VERSION }}
+    - everybeam={{ EVERYBEAM_VERSION  }}
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
     - hdf5
@@ -45,7 +45,7 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - everybeam={{ EVERYNEAM_VERSION }}
+    - everybeam={{ EVERYBEAM_VERSION  }}
     - fftw
     - gsl
     - hdf5
