@@ -1,7 +1,7 @@
 python:
   - 3.9
-  - 3.10
-  - 3.11
+ # - 3.10
+ # - 3.11
 
 # For reasons that are not entirely clear to me, conda build
 # constrains the cfitsio and hdf5 run dependencies to a specific patch.
