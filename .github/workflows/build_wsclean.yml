@@ -14,7 +14,7 @@ on:
       devDeps: # I have added this part to reference to the dev lable for everybeam
         type: string
         required: false
-        default: "EVERYBEAM_VERSION_ALT" 
+        default: "EVERYBEAM_VERSION" 
       buildNumber:
         type: string
         required: true
@@ -31,7 +31,7 @@ on:
       devDeps:
         type: string
         required: false
-        default: "EVERYBEAM_VERSION_ALT"
+        default: "EVERYBEAM_VERSION"
       buildNumber:
         type: string
         required: true
