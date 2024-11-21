@@ -11,6 +11,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps: # I have added this part to reference to the dev lable for everybeam
+        type: string
+        required: false
+        default: "EVERYNEAM_VERSION" 
       buildNumber:
         type: string
         required: true
@@ -24,6 +28,10 @@ on:
         type: boolean
         required: false
         default: false
+      devDeps:
+        type: string
+        required: false
+        default: "EVERYNEAM_VERSION"
       buildNumber:
         type: string
         required: true
