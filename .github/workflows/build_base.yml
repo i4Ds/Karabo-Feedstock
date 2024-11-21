@@ -171,7 +171,9 @@ jobs:
           conda install conda-build conda-verify
           
           
-          conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
+         
+          conda build -c i4ds/label/dev -c i4ds -c conda-forge ${{ env.recipePath }}
+
       - name: Set linux64 as architecture
         if: ${{ inputs.isNative }}
         run: |
