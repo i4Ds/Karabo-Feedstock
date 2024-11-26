@@ -46,6 +46,7 @@ jobs:
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
+      devDeps: ${{ inputs.devDeps }}
       useCuda: false
       isNative: true
     secrets: inherit
