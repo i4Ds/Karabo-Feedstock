@@ -6,7 +6,7 @@ source:
   git_url: https://gitlab.com/aroffringa/wsclean.git
   # Cut off the .0 part in e.g. 3.4.0 we added just for conda build
   #git_tag: "v{{ WSCLEAN_VERSION[:-2] }}"
-  git_tag: "v3.4"
+  git_tag: "v3.5"
 
 build:
   number: {{ build }}
@@ -19,7 +19,7 @@ requirements:
     - cmake
     - make
     - boost
-    - casacore=3.5.0
+    - casacore
     - cfitsio
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
