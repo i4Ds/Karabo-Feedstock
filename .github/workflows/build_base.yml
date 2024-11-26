@@ -219,7 +219,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda create -y -n testenv9 python=3.9
-          conda activate testenv
+          conda activate testenv9
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
           python -c "${{ inputs.pythonCall }}"
       
@@ -229,7 +229,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda create -y -n testenv10 python=3.10
-          conda activate testenv
+          conda activate testenv10
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
           python -c "${{ inputs.pythonCall }}"
       
@@ -239,7 +239,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda create -y -n testenv11 python=3.11
-          conda activate testenv
+          conda activate testenv11
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
           python -c "${{ inputs.pythonCall }}"
 
