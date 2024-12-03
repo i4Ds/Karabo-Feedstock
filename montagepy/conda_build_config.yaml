@@ -1,6 +1,7 @@
 python:
   - 3.9
   - 3.10
+  - 3.11
 
 wheel_url:
   - https://files.pythonhosted.org/packages/e8/00/fbb4468dec62ec0b9e7152588c14ded838298fe370fa70d1d59ee4041f81/MontagePy-1.2.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl
