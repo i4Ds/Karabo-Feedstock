@@ -27,7 +27,7 @@ requirements:
 
 
   run:
-     - python                {{ python }}
+    - python                {{ python }}
     - astropy               >=5.1,      <5.2  # <5.2 for RASCIL <= 1.0 (private import error)
     - bdsf                  ={{ PYBDSF_VERSION_ALT }}
     - dask                  >=2022.12
