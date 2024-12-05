@@ -25,7 +25,7 @@ requirements:
     - numpy
     - setuptools
 
-  requirements:
+
   run:
     - python {{ python }}
     - astropy >=5.1, <5.2  # <5.2 for RASCIL <= 1.0 (private import error)
