@@ -22,27 +22,27 @@ requirements:
     - cmake
     - make
     - boost
-    - casacore=3.5.0
+    - casacore
     - cfitsio
     - conda-forge::fftw=3.3.10=mpi_mpich*
     - hdf5
-    - libblas=3.9.0
-    - liblapack=3.9.0
-    - libxml2=2.12.7
+    - libblas
+    - liblapack
+    - libxml2
     - python
-    - wcslib=8.2.2
+    - wcslib
 
   host:
     - boost
-    - casacore=3.5.0
+    - casacore=
     - cfitsio
     - conda-forge::fftw=3.3.10=mpi_mpich*
     - hdf5
-    - libblas=3.9.0
+    - libblas
     - liblapack 
-    - libxml2=2.12.7
+    - libxml2
     - python
-    - wcslib=8.2.2
+    - wcslib
   
   run:
     - boost
