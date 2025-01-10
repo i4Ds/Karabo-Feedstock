@@ -11,8 +11,13 @@ python:
 # the Karabo environment, 1.82 / 4.3.1 / 1.14.2, is built.
 # And we build more boost / cfitsio / hdf5 combinations, one for each
 # boost version that is compatible with this library and its dependencies.
+
+# Python Version Constraints: 
+# The boost package, especially version 1.74, has strict compatibility requirements for Python versions (e.g., >=3.10,<3.11.0a0). This means it cannot work with Python 3.1
+
+
 boost:
-  #- 1.74
+  #- 1.74  # package boost-1.74.0-py310h7c3ba0c_4 requires python >=3.10,<3.11.0a0
   #- 1.78
   - 1.82
   #- 1.84
