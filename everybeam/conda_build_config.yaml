@@ -12,7 +12,7 @@ python:
 # And we build more boost / cfitsio / hdf5 combinations, one for each
 # boost version that is compatible with this library and its dependencies.
 boost:
-  - 1.74
+  #- 1.74
   - 1.78
   - 1.82
   - 1.84
