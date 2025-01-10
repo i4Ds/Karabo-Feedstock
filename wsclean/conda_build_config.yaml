@@ -9,9 +9,11 @@ python:
 # the Karabo environment, 1.82 / 4.3.1 / 1.14.2, is built.
 # And we build more boost / cfitsio / hdf5 combinations, one for each
 # boost version that is compatible with this library and its dependencies.
+
+
 boost:
- # - 1.74
- # - 1.78
+ # - 1.74  # python 3.11.*  is not installable because it conflicts.
+ # - 1.78 
   - 1.82
   #- 1.84
 cfitsio:
