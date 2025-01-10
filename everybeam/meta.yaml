@@ -1,15 +1,12 @@
 package:
   name: {{ PACKAGE_NAME|lower }}
-  version: {{ environ.get('EVERYBEAM_VERSION_ALT', '0.0.0') }}
+  version: {{ EVERYBEAM_VERSION_ALT }}
 
 source:
   git_url: https://git.astron.nl/RD/EveryBeam.git
-  #git_rev: 49b61d96785f700cbc200b220478a66b4fedf2d0
- 
-  git_tag: "v{{ EVERYBEAM_VERSION }}"
+  git_rev: 49b61d96785f700cbc200b220478a66b4fedf2d0
+  #git_tag: "v{{ EVERYBEAM_VERSION }}"
 
- # patches:
-  #  - fix_recursive_lock.patch
 
 build:
   number: {{ build }}
@@ -22,7 +19,7 @@ requirements:
     - cmake
     - make
     - boost
-    - casacore=3.5.0
+    - casacore
     - cfitsio
     - conda-forge::fftw=3.3.10=mpi_mpich*
     - hdf5
@@ -34,7 +31,7 @@ requirements:
 
   host:
     - boost
-    - casacore=3.5.0
+    - casacore
     - cfitsio
     - conda-forge::fftw=3.3.10=mpi_mpich*
     - hdf5
