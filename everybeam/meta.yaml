@@ -21,7 +21,7 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - conda-forge::fftw=3.3.10=mpi_mpich*
+    - conda-forge::fftw=*=mpi_mpich*
     - hdf5
     - libblas
     - liblapack
@@ -33,9 +33,9 @@ requirements:
     - boost
     - casacore
     - cfitsio
-    - conda-forge::fftw=3.3.10=mpi_mpich*
+    - conda-forge::fftw=*=mpi_mpich*
     - hdf5
-    - libblas=
+    - libblas
     - liblapack 
     - libxml2
     - python
