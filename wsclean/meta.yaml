@@ -5,8 +5,8 @@ package:
 source:
   git_url: https://gitlab.com/aroffringa/wsclean.git
   # Cut off the .0 part in e.g. 3.4.0 we added just for conda build
-  #git_tag: "v{{ WSCLEAN_VERSION[:-2] }}"
-  git_tag: "v3.5"
+  git_tag: "v{{ WSCLEAN_VERSION[:-2] }}"
+ 
 
 build:
   number: {{ build }}
