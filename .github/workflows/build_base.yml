@@ -206,7 +206,7 @@ jobs:
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
       
-      - name: Install Cuda Toolkit
+      - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda && !inputs.skipTest }}
         uses: Jimver/cuda-toolkit@v0.2.11
         id: cuda-toolkit
