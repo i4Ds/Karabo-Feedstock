@@ -23,7 +23,7 @@ env:
   # WSClean
   IDG_VERSION: 1.2.0
   EVERYBEAM_VERSION: 0.6.1  #  0.5.7
-  WSCLEAN_VERSION: 3.5.0 #3.4.0 # actual version 3.4 , 3.6.1
+  WSCLEAN_VERSION: 3.5.0 #3.4.0 
   
 
   # additional karabo dependencies
@@ -166,7 +166,7 @@ jobs:
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
-          conda install conda-build conda-verify
+          conda install conda-build>=25 conda-verify
           
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
 
