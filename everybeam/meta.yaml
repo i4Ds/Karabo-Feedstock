@@ -4,7 +4,8 @@ package:
 
 source:
   git_url: https://git.astron.nl/RD/EveryBeam.git
-  git_tag: "v{{ EVERYBEAM_VERSION }}"
+  git_rev: 49b61d96785f700cbc200b220478a66b4fedf2d0
+
 
 build:
   number: {{ build }}
