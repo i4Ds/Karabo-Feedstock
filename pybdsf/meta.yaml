@@ -19,23 +19,21 @@ requirements:
     - numpy         >=1.21, !=1.24.0
     - boost
     - ninja
-    - setuptools    
-    
+
+
   host:
     - python        {{ python }}
-    - python-setuptools
     - cmake
     - ninja
     - pip
     - numpy         >=1.21, !=1.24.0
-    #- setuptools    <60.0 # Use <60.0 to avoid setuptools compatibility issues with distutils.
+    - setuptools   <60.0 # Use <60.0 to avoid setuptools compatibility issues with distutils. 
     - scikit-build  >=0.13
     - boost
     - wheel
     
   run:
     - python        {{ python }}
-    - python-setuptools
     - boost
     - astropy
     - {{ pin_compatible('numpy') }}
