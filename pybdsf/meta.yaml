@@ -27,7 +27,7 @@ requirements:
     - ninja
     - pip
     - numpy         >=1.21, !=1.24.0
-    - setuptools   <60.0 # Use <60.0 to avoid setuptools compatibility issues with distutils. 
+    - setuptools   <60.0 # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12 
     - scikit-build  >=0.13
     - boost
     - wheel
