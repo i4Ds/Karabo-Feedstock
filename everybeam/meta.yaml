@@ -36,7 +36,7 @@ requirements:
     - conda-forge::fftw=*=mpi_mpich*
     - hdf5
     - libblas
-    - liblapack 
+    - liblapack
     - libxml2
     - python
     - wcslib
