@@ -115,17 +115,9 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-      - name: Install compatible GCC for CUDA
-        if: ${{ inputs.useCuda }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-10 g++-10
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
-
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda }}
-        uses: Jimver/cuda-toolkit@v0.2.11
+        uses: Jimver/cuda-toolkit@v0.2.2
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
@@ -213,16 +205,9 @@ jobs:
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
-      - name: Install compatible GCC for CUDA
-        if: ${{ inputs.useCuda && !inputs.skipTest }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-10 g++-10
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda && !inputs.skipTest }}
-        uses: Jimver/cuda-toolkit@v0.2.11
+        uses: Jimver/cuda-toolkit@v0.2.22
         id: cuda-toolkit
         with:
           cuda: '11.7.0'
