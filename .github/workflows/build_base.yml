@@ -117,10 +117,10 @@ jobs:
           auto-update-conda: true
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda }}
-        uses: Jimver/cuda-toolkit@v0.2.2
+        uses: Jimver/cuda-toolkit@v0.2.22
         id: cuda-toolkit
         with:
-          cuda: '11.7.0'
+          cuda: '12.8.1'
       - name: Set custom path to recipe
         if: inputs.customPath != ''
         run: |
@@ -205,12 +205,13 @@ jobs:
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
+          
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda && !inputs.skipTest }}
         uses: Jimver/cuda-toolkit@v0.2.22
         id: cuda-toolkit
         with:
-          cuda: '11.7.0'
+          cuda: '12.8.1'
 
       - name: Install Package and test with Python 3.9
         if: ${{ !inputs.skipTest }}
