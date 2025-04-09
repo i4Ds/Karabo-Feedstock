@@ -116,12 +116,6 @@ jobs:
         with:
           auto-update-conda: true
 
-      - name: "Workaround: Create missing cupti.h for CUDA installer"
-        if: ${{ inputs.useCuda }}
-        run: |
-          mkdir -p builds/cuda_cupti/extras/CUPTI/include
-          echo "// dummy cupti.h to bypass installer crash" > builds/cuda_cupti/extras/CUPTI/include/cupti.h
-  
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda }}
         uses: Jimver/cuda-toolkit@v0.2.22
