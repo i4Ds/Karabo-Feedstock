@@ -7,7 +7,6 @@ source:
   git_rev: "bb9619ed33c782a76d2be32ca1f145d216425643"  # corresponds to 0.0.1.dev48
 
 build:
-  noarch: python
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
@@ -38,7 +37,7 @@ about:
   home: "https://github.com/matthieumeo/hvox"
   license: MIT License or MIT
   license_family: MIT
-  license_file: 
+  license_file:
   summary: "Python reference implementation of the HVOX gridder for mesh-agnostic wide-field interferometry."
   doc_url: "https://github.com/matthieumeo/hvox"
   dev_url: "https://github.com/matthieumeo/hvox"

@@ -9,7 +9,6 @@ source:
 build:
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
-  noarch: python
 
 requirements:
   build:

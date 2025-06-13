@@ -6,12 +6,11 @@ source:
   url: "https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ AOTOOLS_VERSION }}.tar.gz"
 
 build:
-  noarch: python
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
 requirements:
-  build: 
+  build:
     - python
     - numpy
 
@@ -31,7 +30,7 @@ about:
   home: "https://github.com/aotools/aotools"
   license: UNKNOWN
   license_family: OTHER
-  license_file: 
+  license_file:
   summary: "A set of useful functions for Adaptive Optics in Python"
   doc_url: https://aotools.readthedocs.io/en/v1.0.1/
   dev_url: https://github.com/aotools/aotools

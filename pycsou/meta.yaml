@@ -7,7 +7,6 @@ source:
   git_rev: "ad5d54268d1a752fc2c0c3f3e5becab29bf3afac"  # corresponds to 1.0.7.dev1679
 
 build:
-  noarch: python
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
@@ -37,7 +36,7 @@ about:
   home: "https://github.com/matthieumeo/pycsou"
   license: MIT License or MIT
   license_family: MIT
-  license_file: 
+  license_file:
   summary: "Pycsou is a Python 3 package for solving linear inverse problems with state-of-the-art proximal algorithms. The software implements in a highly modular way the main building blocks -cost functionals, penalty terms and linear operators- of generic penalised convex optimisation problems."
   doc_url: "https://github.com/matthieumeo/pycsou"
   dev_url: "https://github.com/matthieumeo/pycsou"

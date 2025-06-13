@@ -7,7 +7,6 @@ source:
   git_rev: 74ffe0552079486aef9b413efdf91756096e93e7
 
 build:
-  noarch: python
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
