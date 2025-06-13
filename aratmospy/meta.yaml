@@ -7,7 +7,6 @@ source:
   git_rev: "67c302a136beb40a1cc88b054d7b62ccd927d64f"
 
 build:
-  noarch: python
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
@@ -33,7 +32,7 @@ about:
   home: "https://github.com/i4Ds/ARatmospy"
   license: MIT License or MIT
   license_family: MIT
-  license_file: 
+  license_file:
   summary: "Python version of autoregressive atmosphere generator."
   doc_url: "https://github.com/i4Ds/ARatmospy"
   dev_url: "https://github.com/i4Ds/ARatmospy"

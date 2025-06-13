@@ -18,7 +18,7 @@ on:
       buildNumber:
         type: string
         required: true
-        
+
   workflow_call:
     inputs:
       label:
@@ -49,4 +49,5 @@ jobs:
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
       devDeps: ${{ inputs.devDeps }}
+      isNative: true
     secrets: inherit

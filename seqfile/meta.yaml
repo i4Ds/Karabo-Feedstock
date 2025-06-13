@@ -6,7 +6,6 @@ source:
   url: "https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ SEQFILE_VERSION }}.tar.gz"
 
 build:
-  noarch: python
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 #  entry_points:
@@ -30,10 +29,10 @@ about:
   home: "https://github.com/musically-ut/seqfile"
   license: MIT License or MIT
   license_family: MIT
-  license_file: 
+  license_file:
   summary: "Find the next file in a sequence of files in a thread-safe way."
-  doc_url: 
-  dev_url: 
+  doc_url:
+  dev_url:
 
 extra:
   recipe-maintainers:

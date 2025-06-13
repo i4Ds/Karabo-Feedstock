@@ -8,12 +8,11 @@ source:
    url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_SDP_DTMDL_VERSION }}/{{ uNameAndVers }}.tar.gz
 
 build:
-  noarch: python
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
   script_env:
     - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
-  
+
 requirements:
   build:
     - python
@@ -24,7 +23,7 @@ requirements:
     - pip
     - numpy
     - poetry-core       >=1.0.0
-    
+
   run:
     - python            {{ python }}
     - astroplan         >=0.8

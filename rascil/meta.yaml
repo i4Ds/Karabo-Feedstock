@@ -7,7 +7,6 @@ source:
   git_tag: {{ RASCIL_VERSION }}
 
 build:
-  noarch: python
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
@@ -45,9 +44,6 @@ requirements:
     - ska-sdp-func-python   ={{ SKA_SDP_FUNC_PY_VERSION_ALT }}
     - tabulate              >=0.9
     - xarray                >=2022.12
-
-    
-   
 
 about:
   home: https://gitlab.com/ska-telescope/external/rascil-main
