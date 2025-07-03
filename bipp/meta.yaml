@@ -4,7 +4,7 @@ package:
 
 source:
   git_url: "https://github.com/epfl-radio-astro/bipp"
-  git_rev: "f13353bca7f4dbd9940eded3b96f98b75e98186e" 
+  git_rev: "f13353bca7f4dbd9940eded3b96f98b75e98186e"
 
 build:
   number: {{ build }}
@@ -16,8 +16,8 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
     - python
-    - cmake
-    
+    - cmake >=3.10,<4
+
   host:
     - python          {{ python }}
     - openblas
