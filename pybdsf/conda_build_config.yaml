@@ -15,5 +15,8 @@ boost:
 pin_run_as_build:
   boost: x.x
 
+numpy:
+  - 1.23
+
 c_compiler_version: 11
 cxx_compiler_version: 11
