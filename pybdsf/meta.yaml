@@ -11,12 +11,12 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
+    - gcc_linux-64 >=8,<12
+    - gxx_linux-64 >=8,<12
     - {{ compiler('gfortran') }}
     - cmake         >=3.18, <4
     - python        {{ python }}
-    - numpy         {{ numpy }}
+    - numpy         =1.26.4
     - boost         {{ boost }}
     - ninja
 
@@ -26,7 +26,7 @@ requirements:
     - cmake         >=3.18, <4
     - ninja
     - pip
-    - numpy         {{ numpy }}
+    - numpy         =1.26.4
     - setuptools    <60.0 # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12
     - scikit-build  >=0.13
     - boost         {{ boost }}
@@ -36,7 +36,7 @@ requirements:
     - python        {{ python }}
     - boost         {{ boost }}
     - astropy
-    - numpy         {{ numpy }}
+    - numpy         =1.26.4
     - matplotlib-base
     - scipy         >=1.10.1
     - ipython

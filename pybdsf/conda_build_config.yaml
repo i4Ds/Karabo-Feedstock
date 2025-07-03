@@ -5,11 +5,5 @@ python:
 
 boost:
   - 1.84
-numpy:
-  - 1.23
 pin_run_as_build:
   boost: x.x
-  numpy: x.x
-
-c_compiler_version: 11
-cxx_compiler_version: 11
