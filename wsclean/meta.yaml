@@ -14,8 +14,10 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
+    # older compiler version required, ambiguous call
+    # '(ducc0::detail_mav::vmav<unsigned char, 2>) (long unsigned int&, uint32_t&)'
+    - gcc_linux-64 >=8,<12
+    - gxx_linux-64 >=8,<12
     - cmake >=3.10,<4
     - make
     - boost
