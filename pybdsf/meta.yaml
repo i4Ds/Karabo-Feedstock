@@ -16,7 +16,7 @@ requirements:
     - {{ compiler('gfortran') }}
     - cmake         >=3.18
     - python        {{ python }}
-    - {{ pin_compatible('numpy') }}
+    - numpy         {{ numpy }}
     - boost
     - ninja
 
@@ -26,7 +26,7 @@ requirements:
     - cmake
     - ninja
     - pip
-    - {{ pin_compatible('numpy') }}
+    - numpy         {{ numpy }}
     - setuptools   <60.0 # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12
     - scikit-build  >=0.13
     - boost
@@ -36,7 +36,7 @@ requirements:
     - python        {{ python }}
     - boost
     - astropy
-    - {{ pin_compatible('numpy') }}
+    - numpy         {{ numpy }}
     - matplotlib-base
     - scipy         >=1.10.1
     - ipython
