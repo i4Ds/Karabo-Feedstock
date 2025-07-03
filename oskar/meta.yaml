@@ -12,8 +12,9 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
+    # specific compiler version required, use of nullptr keyword in oskar 2.8.3
+    - gcc_linux-64 >=8,<12
+    - gxx_linux-64 >=8,<12
     - cmake >=3.10,<4
     - make
 
