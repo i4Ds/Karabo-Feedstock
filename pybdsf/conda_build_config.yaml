@@ -11,5 +11,6 @@ boost:
   - 1.80
   - 1.82
   - 1.83
+  - 1.84
 pin_run_as_build:
   boost: x.x
