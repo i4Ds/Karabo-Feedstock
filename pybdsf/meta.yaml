@@ -17,7 +17,7 @@ requirements:
     - cmake         >=3.18
     - python        {{ python }}
     - numpy         {{ numpy }}
-    - boost
+    - boost         {{ boost }}
     - ninja
 
 
@@ -29,12 +29,12 @@ requirements:
     - numpy         {{ numpy }}
     - setuptools   <60.0 # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12
     - scikit-build  >=0.13
-    - boost
+    - boost         {{ boost }}
     - wheel
 
   run:
     - python        {{ python }}
-    - boost
+    - boost         {{ boost }}
     - astropy
     - numpy         {{ numpy }}
     - matplotlib-base
