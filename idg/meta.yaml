@@ -33,7 +33,7 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - cmake
+    - cmake >=3.10,<4
     - make
     - fftw3f
     - libblas
