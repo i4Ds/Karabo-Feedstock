@@ -12,20 +12,20 @@ python:
 
 
 boost:
- # - 1.74  # python 3.11.*  is not installable because it conflicts.
- # - 1.78 
+  # - 1.74  # python 3.11.*  is not installable because it conflicts.
+  # - 1.78
   - 1.82
-  #- 1.84
+  # - 1.84
 cfitsio:
- # - 4.1.0
- # - 4.3.0
+  # - 4.1.0
+  # - 4.3.0
   - 4.3.1
- # - 4.4.0
+  # - 4.4.0
 hdf5:
- # - 1.12.1
-  #- 1.14.1
-  - 1.14.2
-#  - 1.14.3
+  # - 1.12.1
+  # - 1.14.1
+  # - 1.14.2
+  - 1.14.3
 zip_keys:
   - boost
   - cfitsio
