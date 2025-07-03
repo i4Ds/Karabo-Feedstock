@@ -19,12 +19,12 @@ requirements:
     - make
 
   host:
-    - casacore
+    - casacore={{ CASACORE_VERSION_ALT }}
     - harp
     - hdf5
 
   run:
-    - casacore
+    - casacore={{ CASACORE_VERSION_ALT }}
     - harp
     - hdf5
 

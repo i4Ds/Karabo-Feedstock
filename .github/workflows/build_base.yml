@@ -15,6 +15,7 @@ env:
   # Oskar Line
   OSKAR_VERSION: 2.8.3
   OSKARPY_VERSION: 2.8.3  # oskarpy should have same version as `OSKAR_VERSION`
+  CASACORE_VERSION: 3.5.0
 
   # hvox Line -> don't add dev-label through ci-options because the setup is not ready for that.
   HVOX_VERSION: 0.0.1.dev48  # `pbr` version because they don't have an official release tag yet
@@ -22,8 +23,8 @@ env:
 
   # WSClean
   IDG_VERSION: 1.2.0
-  EVERYBEAM_VERSION: 0.6.1  #  0.5.7
-  WSCLEAN_VERSION: 3.5.0 #3.4.0
+  EVERYBEAM_VERSION: 0.6.1
+  WSCLEAN_VERSION: 3.5.0
 
 
   # additional karabo dependencies

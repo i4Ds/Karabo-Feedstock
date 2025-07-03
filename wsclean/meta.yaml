@@ -21,7 +21,7 @@ requirements:
     - cmake >=3.10,<4
     - make
     - boost
-    - casacore
+    - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
@@ -33,7 +33,7 @@ requirements:
 
   host:
     - boost
-    - casacore
+    - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
@@ -45,7 +45,7 @@ requirements:
 
   run:
     - boost
-    - casacore
+    - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
     - fftw

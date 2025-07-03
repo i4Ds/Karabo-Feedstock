@@ -18,7 +18,7 @@ requirements:
     - cmake
     - make
     - boost
-    - casacore
+    - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio
     - conda-forge::fftw=*=mpi_mpich*
     - hdf5
@@ -30,7 +30,7 @@ requirements:
 
   host:
     - boost
-    - casacore
+    - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio
     - conda-forge::fftw=*=mpi_mpich*
     - hdf5
@@ -39,10 +39,10 @@ requirements:
     - libxml2
     - python
     - wcslib
-  
+
   run:
     - boost
-    - casacore
+    - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio
     - fftw
     - hdf5
