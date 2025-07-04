@@ -3,11 +3,6 @@ python:
   - 3.10
   - 3.11
 
-boost:
-  - 1.84
-pin_run_as_build:
-  boost: x.x
-
 numpy: 1.23
 c_compiler_version: 11
 cxx_compiler_version: 11
