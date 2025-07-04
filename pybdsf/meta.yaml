@@ -14,30 +14,29 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - cmake         >=3.18
+    - cmake         >=3.18, <4
     - python        {{ python }}
-    - numpy         >=1.21, !=1.24.0
-    - boost
+    - numpy         {{ numpy }}
+    - boost={{ BOOST_VERSION_ALT }}
     - ninja
 
 
   host:
     - python        {{ python }}
-    - cmake
+    - cmake         >=3.18, <4
     - ninja
     - pip
-    - numpy         >=1.21, !=1.24.0
-    - setuptools   <60.0 # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12 
+    - {{ pin_compatible('numpy') }}
+    - setuptools    <60.0 # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12
     - scikit-build  >=0.13
-    - boost
+    - boost={{ BOOST_VERSION_ALT }}
     - wheel
-    
+
   run:
     - python        {{ python }}
-    - boost
+    - boost={{ BOOST_VERSION_ALT }}
     - astropy
     - {{ pin_compatible('numpy') }}
-    - numpy         >=1.21, !=1.24.0
     - matplotlib-base
     - scipy         >=1.10.1
     - ipython

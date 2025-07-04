@@ -17,11 +17,11 @@ requirements:
     - {{ compiler('cxx') }}
     - cmake
     - make
-    - boost
-    - casacore
-    - cfitsio
+    - boost={{ BOOST_VERSION_ALT }}
+    - casacore={{ CASACORE_VERSION_ALT }}
+    - cfitsio={{ CFITSIO_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
-    - hdf5
+    - hdf5={{ HDF5_VERSION_ALT }}
     - libblas
     - liblapack
     - libxml2
@@ -29,23 +29,23 @@ requirements:
     - wcslib
 
   host:
-    - boost
-    - casacore
-    - cfitsio
+    - boost={{ BOOST_VERSION_ALT }}
+    - casacore={{ CASACORE_VERSION_ALT }}
+    - cfitsio={{ CFITSIO_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
-    - hdf5
+    - hdf5={{ HDF5_VERSION_ALT }}
     - libblas
     - liblapack
     - libxml2
     - python
     - wcslib
-  
+
   run:
-    - boost
-    - casacore
-    - cfitsio
+    - boost={{ BOOST_VERSION_ALT }}
+    - casacore={{ CASACORE_VERSION_ALT }}
+    - cfitsio={{ CFITSIO_VERSION_ALT }}
     - fftw
-    - hdf5
+    - hdf5={{ HDF5_VERSION_ALT }}
     - libblas
     - liblapack
     - libxml2

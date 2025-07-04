@@ -16,41 +16,41 @@ requirements:
   build:
     # older compiler version required, ambiguous call
     # '(ducc0::detail_mav::vmav<unsigned char, 2>) (long unsigned int&, uint32_t&)'
-    - gcc_linux-64 >=8,<12
-    - gxx_linux-64 >=8,<12
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
     - cmake >=3.10,<4
     - make
-    - boost
-    - casacore
-    - cfitsio
+    - boost={{ BOOST_VERSION_ALT }}
+    - casacore={{ CASACORE_VERSION_ALT }}
+    - cfitsio={{ CFITSIO_VERSION_ALT }}
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
-    - hdf5
+    - hdf5={{ HDF5_VERSION_ALT }}
     - libblas
     - liblapack
     - python
 
   host:
-    - boost
-    - casacore
-    - cfitsio
+    - boost={{ BOOST_VERSION_ALT }}
+    - casacore={{ CASACORE_VERSION_ALT }}
+    - cfitsio={{ CFITSIO_VERSION_ALT }}
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
     - gsl
-    - hdf5
+    - hdf5={{ HDF5_VERSION_ALT }}
     - libblas
     - liblapack
     - python
 
   run:
-    - boost
-    - casacore
-    - cfitsio
+    - boost={{ BOOST_VERSION_ALT }}
+    - casacore={{ CASACORE_VERSION_ALT }}
+    - cfitsio={{ CFITSIO_VERSION_ALT }}
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
     - fftw
     - gsl
-    - hdf5
+    - hdf5={{ HDF5_VERSION_ALT }}
     - libblas
     - liblapack
     - python
