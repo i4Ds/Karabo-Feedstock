@@ -20,6 +20,7 @@ requirements:
 
   host:
     - python          {{ python }}
+    - numpy           
     - openblas
     - scikit-build
     - finufft         ={{ FINUFFT_VERSION_ALT }}
@@ -28,7 +29,7 @@ requirements:
     - python           {{ python }}
     - openblas
     - finufft          ={{ FINUFFT_VERSION_ALT }}
-    - {{ pin_compatible('numpy') }}
+    - {{ pin_compatible('numpy', max_pin='x') }}
     - scikit-learn
     - astropy
     - matplotlib
