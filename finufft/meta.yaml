@@ -35,7 +35,7 @@ requirements:
 
   run:
     - python          {{ python }}
-    - {{ pin_compatible('numpy') }}
+    - {{ pin_compatible('numpy', max_pin='x') }}
     - fftw            =={{ FFTW3_VERSION_ALT }}
 
 about:
