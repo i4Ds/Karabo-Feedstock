@@ -135,15 +135,15 @@ jobs:
         if: ${{ inputs.useCuda }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-9 g++-9
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
+          sudo apt-get install -y gcc-11 g++-11
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda }}
         uses: Jimver/cuda-toolkit@v0.2.25
         id: cuda-toolkit
         with:
-          cuda: '11.7.0'
+          cuda: '12.0.1' #'11.7.0'
           log-file-suffix: 'build'
       - name: Set custom path to recipe
         if: inputs.customPath != ''
@@ -234,15 +234,15 @@ jobs:
         if: ${{ inputs.useCuda && !inputs.skipTest }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-9 g++-9
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
+          sudo apt-get install -y gcc-11 g++-11
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
       - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
         if: ${{ inputs.useCuda && !inputs.skipTest }}
         uses: Jimver/cuda-toolkit@v0.2.25
         id: cuda-toolkit
         with:
-          cuda: '11.7.0'
+          cuda: '12.0.1'  #'11.7.0'
           log-file-suffix: 'test'
 
       - name: Install Package and test with Python 3.9
