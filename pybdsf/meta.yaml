@@ -16,7 +16,7 @@ requirements:
     - {{ compiler('gfortran') }}
     - cmake         >=3.18, <4
     - python        {{ python }}
-    - numpy         {{ numpy }}
+    # - numpy         {{ numpy }} I removed from here becuase it belongs to host
     - boost={{ BOOST_VERSION_ALT }}
     - ninja
 
@@ -37,6 +37,7 @@ requirements:
     - boost={{ BOOST_VERSION_ALT }}
     - astropy
     - {{ pin_compatible('numpy') }}
+    - numpy         {{ numpy }}
     - matplotlib-base
     - scipy         >=1.10.1
     - ipython
