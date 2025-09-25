@@ -3,6 +3,6 @@ python:
   - 3.11
   - 3.12
 
-numpy: 2.2
+numpy: 2.0
 c_compiler_version: 11
 cxx_compiler_version: 11
