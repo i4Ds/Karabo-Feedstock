@@ -1,8 +1,11 @@
 python:
-  - 3.9
   - 3.10
   - 3.11
 
-numpy: 2.0
+numpy:
+  - 1.26
+  - 2.0
+  - 2.1
+
 c_compiler_version: 11
 cxx_compiler_version: 11
