@@ -17,7 +17,7 @@ requirements:
 
   host:
     - python           {{ python }}
-    - numpy
+    - {{ pin_compatible('numpy', max_pin='x') }}  
     - setuptools
 
   run:
@@ -25,8 +25,8 @@ requirements:
     - astropy
     - joblib
     - matplotlib
-    - numba         >=0.61.1 # Numba 0.61.1+ is the first version with official NumPy 2.x support  Numba 0.61.1+ is the first version with official NumPy 2.x support https://github.com/numba/numba/issues/9838?
-    - {{ pin_compatible('numpy', max_pin='x') }} 
+    - numba         # >=0.61.1 #   Numba 0.61.1+ is the first version with official NumPy 2.x support https://github.com/numba/numba/issues/9838?
+    - numpy       => 2.0
     - fftw          =={{ FFTW3_VERSION_ALT }}
     - pyfftw
     - pytest
