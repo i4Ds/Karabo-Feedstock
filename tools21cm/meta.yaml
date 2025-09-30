@@ -13,11 +13,11 @@ build:
 requirements:
   build:
     - python
-    - numpy {{ numpy }}
+   # - numpy {{ numpy }}
 
   host:
     - python           {{ python }}
-    - {{ pin_compatible('numpy', max_pin='x') }}  
+ #  - {{ pin_compatible('numpy', max_pin='x') }}  
     - setuptools
 
   run:
@@ -26,7 +26,7 @@ requirements:
     - joblib
     - matplotlib
     - numba         # >=0.61.1 #   Numba 0.61.1+ is the first version with official NumPy 2.x support https://github.com/numba/numba/issues/9838?
-    - numpy       => 2.0
+    - numpy         >=2.0,<3
     - fftw          =={{ FFTW3_VERSION_ALT }}
     - pyfftw
     - pytest
