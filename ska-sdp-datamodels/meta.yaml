@@ -1,17 +1,18 @@
-{% set uNameAndVers = PACKAGE_NAME|replace("-", "_") + "-" + SKA_SDP_DTMDL_VERSION %} # naming convention needs this
+{% set sdist_filename = PACKAGE_NAME|replace("-", "_") ~ "-" ~ SKA_SDP_DTMDL_VERSION ~ ".tar.gz" %}  # naming convention needs this
 
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ SKA_SDP_DTMDL_VERSION_ALT }}
 
 source:
-   url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_SDP_DTMDL_VERSION }}/{{ uNameAndVers }}.tar.gz
+  url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_SDP_DTMDL_VERSION }}/{{ sdist_filename }}
 
 build:
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
   script_env:
-    - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
+    - INTERNAL_FOLDER_NAME={{ PACKAGE_NAME|replace("-", "_") }}-{{ SKA_SDP_DTMDL_VERSION }}
+  script: bash build.sh
 
 requirements:
   build:
@@ -26,20 +27,20 @@ requirements:
 
   run:
     - python            {{ python }}
-    - astroplan         >=0.8
-    - astropy           >=5.1
-    - h5py              >=3.7.0
+    - astroplan         >=0.10
+    - astropy           >=6.1
+    - h5py              >=3.12
     - {{ pin_compatible('numpy') }}
-    - pandas            >=1.5.0
-    - xarray            >=2022.10.0
+    - pandas            >=2.2
+    - xarray            >=2024.9,<2024.11
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels
   license: Apache 2.0
-  license_file: "{{ uNameAndVers }}/LICENSE"
+  license_file: LICENSE
   summary: 'SKA SDP Datamodels'
   description: |
-   SKA SDP Datamodels
+    SKA SDP Datamodels
   doc_url: https://developer.skao.int/projects/ska-sdp-datamodels/en/latest/
   dev_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels
 
