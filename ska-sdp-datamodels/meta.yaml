@@ -36,7 +36,7 @@ requirements:
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels
   license: Apache 2.0
-  license_file: {{ uNameAndVers }}/LICENSE
+  license_file: "{{ uNameAndVers }}/LICENSE"
   summary: 'SKA SDP Datamodels'
   description: |
    SKA SDP Datamodels
