@@ -1,13 +1,11 @@
 {% set uNameAndVers = PACKAGE_NAME|replace("-", "_") + "-" + SKA_SDP_FUNC_PY_VERSION %} # naming convention needs this
-{% set sdist_dash = PACKAGE_NAME + "-" + SKA_SDP_FUNC_PY_VERSION %}
 
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ SKA_SDP_FUNC_PY_VERSION_ALT }}
 
 source:
-  url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_SDP_FUNC_PY_VERSION }}/{{ sdist_dash }}.tar.gz
-  folder: {{ uNameAndVers }}
+  url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_SDP_FUNC_PY_VERSION }}/{{ uNameAndVers }}.tar.gz
 
 build:
   number: {{ build }}
