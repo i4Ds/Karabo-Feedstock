@@ -32,10 +32,10 @@ requirements:
     - dask                  >=2022.12
     - dask-memusage         >=1.1
     - distributed           >=2022.12
-    - matplotlib            >=3.6
-    - numpy                 >=2
+    - matplotlib            >=3.8
+    - numpy                 >=2.1,<2.3
     - pandas                >=1.5
-    - python-casacore       >=3.5
+    - python-casacore       >=3.7.1
     - reproject             >=0.9
     - scipy                 >=1.15
     - seqfile               >=0.2
@@ -43,7 +43,7 @@ requirements:
     - ska-sdp-func          ={{ SKA_SDP_FUNC_VERSION_ALT }}
     - ska-sdp-func-python   ={{ SKA_SDP_FUNC_PY_VERSION_ALT }}
     - tabulate              >=0.9
-    - xarray                >=2024.9,<2024.11
+    - xarray                >=2024.11
 
 about:
   home: https://gitlab.com/ska-telescope/external/rascil-main
