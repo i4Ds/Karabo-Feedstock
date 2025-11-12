@@ -33,7 +33,7 @@ requirements:
     - dask-memusage         >=1.1
     - distributed           >=2022.12
     - matplotlib            >=3.6
-    - {{ pin_compatible('numpy', max_pin='x.x') }} 
+    - numpy                 >=2
     - pandas                >=1.5
     - python-casacore       >=3.5
     - reproject             >=0.9
