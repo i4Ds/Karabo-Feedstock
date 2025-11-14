@@ -1,7 +1,8 @@
 python:
-  - 3.11
+  - 3.10
 
 numpy:
+  - 2.1
   - 2.2            
 
 # (optional) keep your compiler versions as-is
