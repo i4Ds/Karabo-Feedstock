@@ -22,6 +22,10 @@ requirements:
     - python                {{ python }}
     - pip
     - numpy                 {{ numpy }}
+    # Required because pyproject.toml uses Poetry backend:
+    # build-backend = "poetry.core.masonry.api"
+    # Without this, conda-build fails with:
+    # "BackendUnavailable: Cannot import 'poetry.core.masonry.api'"
     - poetry-core           >=2.0.0,<3.0.0
     - setuptools
 
