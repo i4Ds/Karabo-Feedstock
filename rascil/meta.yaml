@@ -29,13 +29,13 @@ requirements:
     - python                {{ python }}
     - astropy               >=6.1  #>=5.1,      <5.2  # <5.2 for RASCIL <= 1.0 (private import error)
     - bdsf                  ={{ PYBDSF_VERSION_ALT }}
-    - dask                  >=2022.12
+    - dask                  >=2023.6.* 
     - dask-memusage         >=1.1
     - distributed           >=2022.12
     - matplotlib            >=3.8
     - {{ pin_compatible('numpy') }}
     - pandas                >=1.5
-    - python-casacore       >=3.7.1
+    - python-casacore       >=3.5.1
     - reproject             >=0.9
     - scipy                 >=1.15
     - seqfile               >=0.2
