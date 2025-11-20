@@ -39,7 +39,7 @@ requirements:
     - libboost-devel  # For boost headers
     - libboost-python
     - astropy
-    - {{ pin_compatible('numpy', lower_bound='2.2.6') }}
+    - {{ pin_compatible('numpy') }}
     - matplotlib-base
     - scipy         >=1.15
     - ipython
