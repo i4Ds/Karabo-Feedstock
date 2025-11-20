@@ -3,9 +3,8 @@ python:
   - 3.11
 
 numpy:
- - 2.2.6
-
-
-
+  - 1.26      # NumPy 1.x line (works with python-casacore)
+  - 2.2.6     # NumPy 2.x line
+               
 c_compiler_version: 11
 cxx_compiler_version: 11
