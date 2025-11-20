@@ -18,6 +18,7 @@ requirements:
     - python        {{ python }}
     - numpy         {{ numpy }}
     - libboost-devel  # For boost headers
+    - libboost-python-devel
     - ninja
 
 
@@ -30,11 +31,13 @@ requirements:
     - setuptools    >=65 # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12
     - scikit-build  >=0.13
     - libboost-devel  # For boost headers
+    - libboost-python-devel
     - wheel
 
   run:
     - python        {{ python }}
     - libboost-devel  # For boost headers
+    - libboost-python
     - astropy
     - {{ pin_compatible('numpy', lower_bound='2.2.6') }}
     - matplotlib-base
