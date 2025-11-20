@@ -3,8 +3,9 @@ python:
   - 3.11
 
 numpy:
-  - 2.1
-  - 2.2
+ - 2.2.6
+
+
 
 c_compiler_version: 11
 cxx_compiler_version: 11

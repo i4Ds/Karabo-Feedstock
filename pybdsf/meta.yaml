@@ -36,7 +36,7 @@ requirements:
     - python        {{ python }}
     - boost={{ BOOST_VERSION_ALT }}
     - astropy
-    - {{ pin_compatible('numpy') }}
+    - {{ pin_compatible('numpy', lower_bound='2.2.6') }}
     - matplotlib-base
     - scipy         >=1.15
     - ipython
