@@ -201,6 +201,11 @@ jobs:
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
+
+          conda config --add channels i4ds/label/${{ inputs.label }}
+          conda config --add channels i4ds
+          conda config --add channels conda-forge
+          conda config --set channel_priority strict
           conda install "conda-build>=25"
 
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
