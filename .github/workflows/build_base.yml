@@ -208,7 +208,7 @@ jobs:
           conda config --add channels i4ds/label/${{ inputs.label }}
           conda config --add channels i4ds
           conda config --add channels defaults
-          conda config --set channel_priority strict
+          conda config --set channel_priority flexible
 
           conda install "conda-build>=25"
 
