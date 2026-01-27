@@ -9,7 +9,7 @@ env:
   PYBDSF_VERSION: 1.13.0.post2 #1.10.2
   RASCIL_VERSION: 2.1.0 #1.0.0
   SKA_SDP_DTMDL_VERSION: 1.0.0 #0.1.3
-  SKA_SDP_FUNC_PY_VERSION: 1.0.0  #0.1.4 
+  SKA_SDP_FUNC_PY_VERSION: 1.0.0  #0.1.4
   SKA_SDP_FUNC_VERSION: 1.0.0 #0.0.6
 
   # Oskar Line
@@ -202,7 +202,6 @@ jobs:
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
-          
           conda config --remove-key channels || true # remove all existing channels
 
           conda config --add channels conda-forge
@@ -210,7 +209,6 @@ jobs:
           conda config --add channels i4ds
           conda config --add channels defaults
           conda config --set channel_priority flexible
-          
           conda install "conda-build>=25"
 
           conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
