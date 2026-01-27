@@ -17,7 +17,9 @@ requirements:
     - {{ compiler('cxx') }}
     - cmake
     - make
-    - boost={{ BOOST_VERSION_ALT }}
+    # Boost headers + libs (like in PyBDSF)
+    - libboost-devel        ={{ BOOST_VERSION_ALT }}
+    - libboost-python-devel ={{ BOOST_VERSION_ALT }}
     - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio={{ CFITSIO_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
@@ -29,7 +31,9 @@ requirements:
     - wcslib
 
   host:
-    - boost={{ BOOST_VERSION_ALT }}
+    # host env also needs headers & libs
+    - libboost-devel        ={{ BOOST_VERSION_ALT }}
+    - libboost-python-devel ={{ BOOST_VERSION_ALT }}
     - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio={{ CFITSIO_VERSION_ALT }}
     - conda-forge::fftw=*=mpi_mpich*
@@ -41,7 +45,9 @@ requirements:
     - wcslib
 
   run:
-    - boost={{ BOOST_VERSION_ALT }}
+    # runtime only needs the libs
+    - libboost              ={{ BOOST_VERSION_ALT }}
+    - libboost-python       ={{ BOOST_VERSION_ALT }}
     - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio={{ CFITSIO_VERSION_ALT }}
     - fftw
