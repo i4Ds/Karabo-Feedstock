@@ -9,6 +9,9 @@ build:
   number: {{ build }}
   string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
+#libboost-python-devel (host): needed at build time so CMake can find Boost.Python headers and config files and link the C++ extension.
+#libboost-python (run): needed at runtime because the compiled Python module is dynamically linked against libboost_python*.so.
+# Without them: build fails (CMake can’t find Boost.Python), or runtime fails (missing shared library).
 requirements:
   build:
     - {{ compiler('c') }}
@@ -18,7 +21,6 @@ requirements:
     - python        {{ python }}
     - numpy         {{ numpy }}
     - libboost-devel        ={{ BOOST_VERSION }}
-    - libboost-python-devel ={{ BOOST_VERSION }}
     - setuptools    <60.0     # <— NEW: avoid latest setuptools/distutils breakage # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12
     - ninja
 
