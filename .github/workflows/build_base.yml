@@ -38,8 +38,8 @@ env:
 
   # WSClean
   IDG_VERSION: 1.2.0
-  EVERYBEAM_VERSION: 0.6.1
-  WSCLEAN_VERSION: 3.5.0
+  EVERYBEAM_VERSION: 0.8.0
+  WSCLEAN_VERSION: 3.6.0
 
 
   # additional karabo dependencies
