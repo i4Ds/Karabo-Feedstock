@@ -13,8 +13,8 @@ env:
   SKA_SDP_FUNC_VERSION: 1.0.0 #0.0.6
 
   # Oskar Line
-  OSKAR_VERSION: 2.8.3
-  OSKARPY_VERSION: 2.8.3  # oskarpy should have same version as `OSKAR_VERSION`
+  OSKAR_VERSION: 2.12.2
+  OSKARPY_VERSION: 2.12.2  # oskarpy should have same version as `OSKAR_VERSION`
 
   # casacore possible combinations from https://anaconda.org/conda-forge/casacore/files
   # | casacore | build     | boost   | hdf5    | numpy    | cfitsio |
