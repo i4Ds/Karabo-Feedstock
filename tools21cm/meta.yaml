@@ -32,7 +32,7 @@ requirements:
     - pytest
     - scikit-image
     - scikit-learn
-    - scipy         - scipy  >=1.15 # see https://github.com/i4Ds/Karabo-Feedstock/issues/30  # SciPy 1.13+ is also required for NumPy 2 compatibility
+    - scipy         >=1.15 # see https://github.com/i4Ds/Karabo-Feedstock/issues/30  # SciPy 1.13+ is also required for NumPy 2 compatibility
     - tqdm
     - numexpr
     - tensorflow
