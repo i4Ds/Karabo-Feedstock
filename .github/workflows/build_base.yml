@@ -53,7 +53,7 @@ env:
   MONTAGEPY_VERSION: 6.0.0 # version is pinned through python-wheel in conda_build_config.yaml
 
   # SKACH contributions
-  FINUFFT_VERSION: 2.1.0
+  FINUFFT_VERSION: 2.2.0
   BLUEBILD_VERSION: 0.1.0
 
   # Other
@@ -289,6 +289,16 @@ jobs:
         run: |
           conda create -y -n testenv11 python=3.11
           conda activate testenv11
+          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
+          python -c "${{ inputs.pythonCall }}"
+
+      - name: Install Package and test with Python 3.12
+        if: ${{ !inputs.skipTest }}
+        continue-on-error: true
+        shell: bash -l {0}
+        run: |
+          conda create -y -n testenv12 python=3.12
+          conda activate testenv12
           conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
           python -c "${{ inputs.pythonCall }}"
 
