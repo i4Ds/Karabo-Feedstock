@@ -21,7 +21,8 @@ requirements:
     - python        {{ python }}
     - numpy         {{ numpy }}
     - libboost-devel        ={{ BOOST_VERSION }}
-    - setuptools    <60.0     # <— NEW: avoid latest setuptools/distutils breakage # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12
+    - setuptools    <60.0     # [py<312]
+    - setuptools    >=61.0    # [py>=312]
     - ninja
 
 
@@ -31,7 +32,8 @@ requirements:
     - ninja
     - pip
     - numpy         {{ numpy }}
-    - setuptools    <60.0     # <— NEW: avoid latest setuptools/distutils breakage # Use <60.0 to avoid setuptools compatibility issues with distutils. distutils is deprecated and it will be removed in Python 3.12., for older version of python it will remain present. this should be changed later for 3.12
+    - setuptools    <60.0     # [py<312]
+    - setuptools    >=61.0    # [py>=312]
     - scikit-build  >=0.13
     - libboost-devel        ={{ BOOST_VERSION }}
     - libboost-python-devel ={{ BOOST_VERSION }}  
