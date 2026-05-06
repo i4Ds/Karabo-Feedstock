@@ -24,6 +24,7 @@ requirements:
     - setuptools    <60.0     # [py<312]
     - setuptools    >=61.0    # [py>=312]
     - ninja
+    - meson   # f2py drops distutils backend for py>=3.12 and requires meson instead
 
 
   host:
