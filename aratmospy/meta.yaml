@@ -26,7 +26,7 @@ requirements:
     - matplotlib
     - {{ pin_compatible('numpy') }}
     - pyfftw
-    - scipy                   >=1.9
+    - scipy                   >=1.13.0 # numpy 2.x + py3.12 support
 
 about:
   home: "https://github.com/i4Ds/ARatmospy"
