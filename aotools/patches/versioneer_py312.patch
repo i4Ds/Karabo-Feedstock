@@ -1,5 +1,0 @@
---- a/versioneer.py
-+++ b/versioneer.py
-@@ -342,1 +342,1 @@
--    parser = configparser.SafeConfigParser()
-+    parser = configparser.RawConfigParser()  # SafeConfigParser removed in Python 3.12
