@@ -231,74 +231,70 @@ jobs:
 
   test_base:
     needs: build_base
+    if: ${{ !inputs.skipTest }}
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+
     steps:
       - name: Checkout repository
-        if: ${{ !inputs.skipTest }}
         uses: actions/checkout@v4
 
       - name: Install Conda
-        if: ${{ !inputs.skipTest }}
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
 
       - name: Install Mamba Solver
-        if: ${{ !inputs.skipTest }}
+        shell: bash -l {0}
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
 
       - name: Install GCC 11 for CUDA 12
-        if: ${{ inputs.useCuda && !inputs.skipTest }}
+        if: ${{ inputs.useCuda }}
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-11 g++-11
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
 
-      - name: Free disk space on runner (test)
-        if: ${{ inputs.useCuda && !inputs.skipTest }}
+      - name: Free disk space on runner
+        if: ${{ inputs.useCuda }}
         run: |
           sudo rm -rf /usr/local/lib/android /opt/ghc /usr/share/dotnet || true
           docker system prune -af || true
           df -h
 
-      - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
-        if: ${{ inputs.useCuda && !inputs.skipTest }}
+      - name: Install CUDA Toolkit
+        if: ${{ inputs.useCuda }}
         uses: Jimver/cuda-toolkit@v0.2.25
         id: cuda-toolkit
         with:
-          cuda: '12.0.1'
-          log-file-suffix: 'test'
+          cuda: "12.0.1"
+          log-file-suffix: "test-${{ matrix.python-version }}"
 
-      - name: Install Package and test with Python 3.10
-        if: ${{ !inputs.skipTest }}
-        continue-on-error: true
+      - name: Install and test package with Python ${{ matrix.python-version }}
         shell: bash -l {0}
         run: |
-          conda create -y -n testenv10 python=3.10
-          conda activate testenv10
-          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
-          python -c "${{ inputs.pythonCall }}"
+          conda create -y \
+            -n testenv \
+            "python=${{ matrix.python-version }}"
 
-      - name: Install Package and test with Python 3.11
-        if: ${{ !inputs.skipTest }}
-        continue-on-error: true
-        shell: bash -l {0}
-        run: |
-          conda create -y -n testenv11 python=3.11
-          conda activate testenv11
-          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
-          python -c "${{ inputs.pythonCall }}"
+          conda activate testenv
 
-      - name: Install Package and test with Python 3.12
-        if: ${{ !inputs.skipTest }}
-        continue-on-error: true
-        shell: bash -l {0}
-        run: |
-          conda create -y -n testenv12 python=3.12
-          conda activate testenv12
-          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
-          python -c "${{ inputs.pythonCall }}"
+          conda install -y \
+            -c i4ds/label/${{ inputs.label }} \
+            -c i4ds \
+            -c conda-forge \
+            "${{ inputs.packageName }}=${{ needs.build_base.outputs.pkgv }}"
 
+          if [[ -n "${{ inputs.pythonCall }}" ]]; then
+            python -c "${{ inputs.pythonCall }}"
+          fi
