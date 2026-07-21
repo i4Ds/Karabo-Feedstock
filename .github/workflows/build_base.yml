@@ -121,118 +121,178 @@ on:
 
 jobs:
   build_base:
-    runs-on: ubuntu-latest
+    name: Build ${{ inputs.packageName }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+
     outputs:
       pkgv: ${{ steps.pkgv.outputs.version }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
+
       - name: Install GCC 11 for CUDA 12
         if: ${{ inputs.useCuda }}
+        shell: bash
         run: |
+          set -euo pipefail
+
           sudo apt-get update
           sudo apt-get install -y gcc-11 g++-11
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+
       - name: Free disk space on runner
         if: ${{ inputs.useCuda }}
+        shell: bash
         run: |
           sudo rm -rf /usr/local/lib/android /opt/ghc /usr/share/dotnet || true
           docker system prune -af || true
           df -h
 
-      - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
+      - name: Install CUDA Toolkit
         if: ${{ inputs.useCuda }}
         uses: Jimver/cuda-toolkit@v0.2.25
-        id: cuda-toolkit
         with:
-          cuda: '12.0.1'
-          log-file-suffix: 'build'
+          cuda: "12.0.1"
+          log-file-suffix: "build"
+
       - name: Set custom path to recipe
         if: inputs.customPath != ''
+        shell: bash
         run: |
           echo "recipePath=${{ inputs.customPath }}" >> "$GITHUB_ENV"
+
       - name: Set default path to recipe
         if: inputs.customPath == ''
+        shell: bash
         run: |
           echo "recipePath=${{ inputs.packageName }}/." >> "$GITHUB_ENV"
-      - name: Prepare Setup
-        # In case ${{ inputs.dev }}="true", ${{ inputs.packageVersion }} of ${{ inputs.packageVersion }}
-        # gets a PEP440 dev-version added at position "patch".
-        # In case ${{ inputs.dev }}="true" & ${{ inputs.devDeps }} is not empty, the in `env` declared variables
-        # included in `devDeps` gets a PEP440 dev-version added and exported for the underlying conda-build process.
+
+      - name: Prepare setup
         id: pkgv
+        shell: bash
         run: |
+          set -euo pipefail
+
           BUILD_NR=${{ inputs.buildNumber }}
-          if [[ ${{ inputs.dev }} == "true" ]]
-          then
-            BUILD_NR="$(($BUILD_NR + 1000))"
+
+          if [[ "${{ inputs.dev }}" == "true" ]]; then
+            BUILD_NR=$((BUILD_NR + 1000))
             PKG_VERSION=$(echo "${{ inputs.packageVersion }}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
-            DEV_DEPS_LIST=$(echo "${{ inputs.packageVersionName }}, ${{ inputs.devDeps }}")
+            DEV_DEPS_LIST="${{ inputs.packageVersionName }}, ${{ inputs.devDeps }}"
           else
-            PKG_VERSION=${{ inputs.packageVersion }}
+            PKG_VERSION="${{ inputs.packageVersion }}"
             DEV_DEPS_LIST=""
           fi
-          echo "build=$BUILD_NR" >> "$GITHUB_ENV"
-          echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
+          echo "build=$BUILD_NR" >> "$GITHUB_ENV"
+          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
 
           PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
+
           for PKG_KEY in $PKG_KEYS; do
-            if [[ $DEV_DEPS_LIST == *"$PKG_KEY"* ]]
-            then
+            if [[ "$DEV_DEPS_LIST" == *"$PKG_KEY"* ]]; then
               VERSION_ALT=$(echo "${!PKG_KEY}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
             else
               VERSION_ALT=${!PKG_KEY}
             fi
+
             NAME_ALT=${PKG_KEY}_ALT
             echo "$NAME_ALT=$VERSION_ALT" >> "$GITHUB_ENV"
           done
-        # install conda-build is changed with version 25. the target is swtiched to .conda  instead of .tar.bz2
-        # We explicitly add conda-forge and i4ds to the global conda config.
-        # Reason: Since conda-build 25, the solver no longer automatically inherits
-        # channels from the CLI `conda build -c ...` call when resolving *pinned*
-        # dependencies inside the build environment.
-        # Conda-build 25 no longer inherits CLI channels → we now configure channels explicitly
-      - name: Install Conda-Build and create target
+
+      - name: Configure Conda build environment
+        shell: bash -l {0}
         run: |
+          set -euo pipefail
+
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
-          conda config --remove-key channels || true # remove all existing channels
+          conda config --remove-key channels || true
 
           conda config --add channels conda-forge
-          conda config --add channels i4ds/label/${{ inputs.label }}
+          conda config --add channels "i4ds/label/${{ inputs.label }}"
           conda config --add channels i4ds
           conda config --add channels defaults
           conda config --set channel_priority flexible
-          conda install "conda-build>=25"
 
-          conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
+          conda install -y -n base "conda-build>=25"
 
-      - name: Set linux64 as architecture
-        if: ${{ inputs.isNative }}
-        run: |
-          echo "arch=linux-64" >> $GITHUB_ENV
-      - name: Set python as architecture
-        if: ${{ !inputs.isNative }}
-        run: |
-          echo "arch=noarch" >> $GITHUB_ENV
-      - name: Install and publish to Conda
+      - name: Determine package output path
+        id: package-output
         shell: bash -l {0}
         run: |
-          conda activate base
-          conda install anaconda-client
-          anaconda -t ${{ secrets.ANACONDA_SECRET }} upload /usr/share/miniconda/conda-bld/${{ env.arch }}/${{ inputs.packageName }}*.conda --label ${{ inputs.label }}
+          set -euo pipefail
 
+          PACKAGE_PATH="$(
+            conda build \
+              --output \
+              -c "i4ds/label/${{ inputs.label }}" \
+              -c i4ds \
+              -c conda-forge \
+              "${{ env.recipePath }}" |
+            tail -n 1
+          )"
+
+          if [[ -z "$PACKAGE_PATH" ]]; then
+            echo "Could not determine the Conda package output path."
+            exit 1
+          fi
+
+          echo "package_path=$PACKAGE_PATH" >> "$GITHUB_OUTPUT"
+          echo "Expected package: $PACKAGE_PATH"
+
+      - name: Build Conda package
+        shell: bash -l {0}
+        run: |
+          set -euo pipefail
+
+          conda build \
+            -c "i4ds/label/${{ inputs.label }}" \
+            -c i4ds \
+            -c conda-forge \
+            "${{ env.recipePath }}"
+
+      - name: Stage built package
+        shell: bash -l {0}
+        env:
+          PACKAGE_PATH: ${{ steps.package-output.outputs.package_path }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f "$PACKAGE_PATH" ]]; then
+            echo "Built package was not found:"
+            echo "$PACKAGE_PATH"
+            exit 1
+          fi
+
+          mkdir -p dist
+          cp "$PACKAGE_PATH" dist/
+
+          echo "Staged package:"
+          ls -lh dist
+
+      - name: Upload built Conda package
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-package-${{ inputs.packageName }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
 
   test_base:
+    name: Test ${{ inputs.packageName }} with Python ${{ matrix.python-version }}
     needs: build_base
     if: ${{ !inputs.skipTest }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
@@ -243,23 +303,25 @@ jobs:
           - "3.12"
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
 
-      - name: Install Mamba Solver
+      - name: Configure Mamba solver
         shell: bash -l {0}
         run: |
+          set -euo pipefail
+
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
 
       - name: Install GCC 11 for CUDA 12
         if: ${{ inputs.useCuda }}
+        shell: bash
         run: |
+          set -euo pipefail
+
           sudo apt-get update
           sudo apt-get install -y gcc-11 g++-11
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
@@ -267,6 +329,7 @@ jobs:
 
       - name: Free disk space on runner
         if: ${{ inputs.useCuda }}
+        shell: bash
         run: |
           sudo rm -rf /usr/local/lib/android /opt/ghc /usr/share/dotnet || true
           docker system prune -af || true
@@ -275,14 +338,48 @@ jobs:
       - name: Install CUDA Toolkit
         if: ${{ inputs.useCuda }}
         uses: Jimver/cuda-toolkit@v0.2.25
-        id: cuda-toolkit
         with:
           cuda: "12.0.1"
           log-file-suffix: "test-${{ matrix.python-version }}"
 
-      - name: Install and test package with Python ${{ matrix.python-version }}
-        shell: bash -l {0}
+      - name: Download built Conda package
+        uses: actions/download-artifact@v4
+        with:
+          name: conda-package-${{ inputs.packageName }}
+          path: dist
+
+      - name: Locate downloaded package
+        id: downloaded-package
+        shell: bash
         run: |
+          set -euo pipefail
+
+          mapfile -t PACKAGES < <(
+            find dist -type f \
+              \( -name "*.conda" -o -name "*.tar.bz2" \)
+          )
+
+          if [[ "${#PACKAGES[@]}" -eq 0 ]]; then
+            echo "No Conda package was found in the artifact."
+            exit 1
+          fi
+
+          if [[ "${#PACKAGES[@]}" -gt 1 ]]; then
+            echo "Expected one package but found:"
+            printf '%s\n' "${PACKAGES[@]}"
+            exit 1
+          fi
+
+          echo "package_path=${PACKAGES[0]}" >> "$GITHUB_OUTPUT"
+          echo "Testing package: ${PACKAGES[0]}"
+
+      - name: Install and test package
+        shell: bash -l {0}
+        env:
+          PACKAGE_PATH: ${{ steps.downloaded-package.outputs.package_path }}
+        run: |
+          set -euo pipefail
+
           conda create -y \
             -n testenv \
             "python=${{ matrix.python-version }}"
@@ -290,11 +387,83 @@ jobs:
           conda activate testenv
 
           conda install -y \
-            -c i4ds/label/${{ inputs.label }} \
+            --override-channels \
+            -c "i4ds/label/${{ inputs.label }}" \
             -c i4ds \
             -c conda-forge \
-            "${{ inputs.packageName }}=${{ needs.build_base.outputs.pkgv }}"
+            "$PACKAGE_PATH"
+
+          python --version
+          python -c "import sys; print(sys.executable)"
 
           if [[ -n "${{ inputs.pythonCall }}" ]]; then
             python -c "${{ inputs.pythonCall }}"
           fi
+
+      - name: Show installed environment
+        if: always()
+        shell: bash -l {0}
+        run: |
+          conda info
+          conda list -n testenv || true
+
+  publish:
+    name: Publish ${{ inputs.packageName }} to Anaconda
+    needs:
+      - build_base
+      - test_base
+    if: ${{ success() }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Install Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+
+      - name: Download tested Conda package
+        uses: actions/download-artifact@v4
+        with:
+          name: conda-package-${{ inputs.packageName }}
+          path: dist
+
+      - name: Locate package for publishing
+        id: publish-package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t PACKAGES < <(
+            find dist -type f \
+              \( -name "*.conda" -o -name "*.tar.bz2" \)
+          )
+
+          if [[ "${#PACKAGES[@]}" -eq 0 ]]; then
+            echo "No Conda package was found for publishing."
+            exit 1
+          fi
+
+          if [[ "${#PACKAGES[@]}" -gt 1 ]]; then
+            echo "Expected one package but found:"
+            printf '%s\n' "${PACKAGES[@]}"
+            exit 1
+          fi
+
+          echo "package_path=${PACKAGES[0]}" >> "$GITHUB_OUTPUT"
+          echo "Publishing package: ${PACKAGES[0]}"
+
+      - name: Publish package to Anaconda
+        shell: bash -l {0}
+        env:
+          ANACONDA_TOKEN: ${{ secrets.ANACONDA_SECRET }}
+          PACKAGE_PATH: ${{ steps.publish-package.outputs.package_path }}
+        run: |
+          set -euo pipefail
+
+          conda install -y -n base anaconda-client
+
+          anaconda \
+            --token "$ANACONDA_TOKEN" \
+            upload "$PACKAGE_PATH" \
+            --label "${{ inputs.label }}"
