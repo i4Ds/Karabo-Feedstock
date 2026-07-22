@@ -7,8 +7,8 @@ source:
   git_rev: "67c302a136beb40a1cc88b054d7b62ccd927d64f"
 
 build:
+  noarch: python
   number: {{ build }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
 
 requirements:
   build:
@@ -16,12 +16,12 @@ requirements:
     - numpy
 
   host:
-    - python                  {{ python }}
+    - python
     - pip
     - numpy
 
   run:
-    - python                  {{ python }}
+    - python
     - astropy
     - matplotlib
     - {{ pin_compatible('numpy') }}
