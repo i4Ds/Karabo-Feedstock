@@ -39,6 +39,6 @@ jobs:
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
-      pythonCall: import aratmospy
+      pythonCall: import ARatmospy
       isNative: true
     secrets: inherit

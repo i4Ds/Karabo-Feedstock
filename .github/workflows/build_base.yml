@@ -6,51 +6,40 @@ env:
   FFTW3F_VERSION: 3.3.10
 
   # Rascil Line
-  PYBDSF_VERSION: 1.13.0.post2 #1.10.2
-  RASCIL_VERSION: 2.1.0 #1.0.0
-  SKA_SDP_DTMDL_VERSION: 1.0.0 #0.1.3
-  SKA_SDP_FUNC_PY_VERSION: 1.0.0  #0.1.4
-  SKA_SDP_FUNC_VERSION: 1.0.0 #0.0.6
+  PYBDSF_VERSION: 1.13.0.post2
+  RASCIL_VERSION: 2.1.0
+  SKA_SDP_DTMDL_VERSION: 1.0.0
+  SKA_SDP_FUNC_PY_VERSION: 1.0.0
+  SKA_SDP_FUNC_VERSION: 1.0.0
 
   # Oskar Line
   OSKAR_VERSION: 2.12.2
-  OSKARPY_VERSION: 2.12.2  # oskarpy should have same version as `OSKAR_VERSION`
+  OSKARPY_VERSION: 2.12.2
 
-  # casacore possible combinations from https://anaconda.org/conda-forge/casacore/files
-  # | casacore | build     | boost   | hdf5    | numpy    | cfitsio |
-  # |    3.7.1 |           |   =1.86 | =1.14.6 |   >=1.19 |  =4.6.2 |
-  # |    3.7.0 | _0        |   =1.86 | =1.14.3 |   >=1.19 |  =4.5.0 |
-  # |    3.6.1 | _4        |   =1.86 | =1.14.4 |   >=1.19 |  =4.5.0 |
-  # |    3.6.1 | _0        |   =1.86 | =1.14.3 |   >=1.19 |  =4.4.1 |
-  # |    3.5.0 | _0        | =1.74.1 | =1.12.1 | >=1.21.6 |  =4.0.0 |
-  # |    3.5.0 | nompi_117 |   =1.84 | =1.14.3 | >=1.22.4 |  =4.4.0 |
-  # |    3.5.0 | nompi_115 |   =1.82 | =1.14.3 | >=1.22.4 |  =4.4.0 |
-  # |    3.5.0 | nompi_114 |   =1.82 | =1.14.2 | >=1.22.4 |  =4.3.1 | *this one!
-  # |    3.5.0 | nompi_110 |   =1.78 | =1.14.1 | >=1.21.6 |  =4.3.0 |
+  # Casacore
   CASACORE_VERSION: 3.7.1
-  BOOST_VERSION:    1.88.0
-  HDF5_VERSION:     1.14.6
-  CFITSIO_VERSION:  4.6.2
+  BOOST_VERSION: 1.88.0
+  HDF5_VERSION: 1.14.6
+  CFITSIO_VERSION: 4.6.2
 
-  # hvox Line -> don't add dev-label through ci-options because the setup is not ready for that.
-  HVOX_VERSION: 0.0.1.dev48  # `pbr` version because they don't have an official release tag yet
-  PYCSOU_VERSION: 1.0.7.dev1679  # `pbr` version because they just refer to `v2-dev` branch which has this version
+  # hvox Line
+  HVOX_VERSION: 0.0.1.dev48
+  PYCSOU_VERSION: 1.0.7.dev1679
 
   # WSClean
   IDG_VERSION: 1.2.0
   EVERYBEAM_VERSION: 0.8.0
   WSCLEAN_VERSION: 3.6.0
 
-
-  # additional karabo dependencies
+  # Additional Karabo dependencies
   AOTOOLS_VERSION: 1.0.7
   SEQFILE_VERSION: 0.2.0
   EIDOS_VERSION: 1.1.0
   SKA_GRDR_NFTY_CU_VERSION: 0.3.0
-  KATBEAM_VERSION: 0.1.0 # acutal version 0.1 and has therefore no patch, but is needed for conda-build
-  TOOLS_21CM_VERSION: 2.0.3 # actual version 2.0, patch needed for correct scipy version
+  KATBEAM_VERSION: 0.1.0
+  TOOLS_21CM_VERSION: 2.0.3
   ARATMOSPY_VERSION: 1.0.0
-  MONTAGEPY_VERSION: 6.0.0 # version is pinned through python-wheel in conda_build_config.yaml
+  MONTAGEPY_VERSION: 6.0.0
 
   # SKACH contributions
   FINUFFT_VERSION: 2.2.0
@@ -63,7 +52,6 @@ env:
 on:
   workflow_call:
     inputs:
-
       packageName:
         required: true
         type: string
@@ -72,7 +60,7 @@ on:
         required: true
         type: string
 
-      packageVersionName:  # env.VAR_NAME of the corresponding build
+      packageVersionName:
         required: true
         type: string
 
@@ -82,6 +70,7 @@ on:
 
       customPath:
         required: false
+        default: ""
         type: string
 
       pythonCall:
@@ -91,7 +80,7 @@ on:
 
       label:
         required: false
-        default: "main"
+        default: main
         type: string
 
       dev:
@@ -99,9 +88,9 @@ on:
         default: false
         type: boolean
 
-      devDeps:  # string of dev-deps with ", " as delimiter
+      devDeps:
         required: false
-        default: ""  # set matching packages-names for dev to use
+        default: ""
         type: string
 
       useCuda:
@@ -161,31 +150,32 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.25
         with:
           cuda: "12.0.1"
-          log-file-suffix: "build"
+          log-file-suffix: build
 
-      - name: Set custom path to recipe
-        if: inputs.customPath != ''
+      - name: Set custom recipe path
+        if: ${{ inputs.customPath != '' }}
         shell: bash
         run: |
           echo "recipePath=${{ inputs.customPath }}" >> "$GITHUB_ENV"
 
-      - name: Set default path to recipe
-        if: inputs.customPath == ''
+      - name: Set default recipe path
+        if: ${{ inputs.customPath == '' }}
         shell: bash
         run: |
           echo "recipePath=${{ inputs.packageName }}/." >> "$GITHUB_ENV"
 
-      - name: Prepare setup
+      - name: Prepare package variables
         id: pkgv
         shell: bash
         run: |
           set -euo pipefail
 
-          BUILD_NR=${{ inputs.buildNumber }}
+          BUILD_NR="${{ inputs.buildNumber }}"
 
           if [[ "${{ inputs.dev }}" == "true" ]]; then
             BUILD_NR=$((BUILD_NR + 1000))
-            PKG_VERSION=$(echo "${{ inputs.packageVersion }}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
+            PKG_VERSION="$(echo "${{ inputs.packageVersion }}" |
+              sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')"
             DEV_DEPS_LIST="${{ inputs.packageVersionName }}, ${{ inputs.devDeps }}"
           else
             PKG_VERSION="${{ inputs.packageVersion }}"
@@ -195,17 +185,17 @@ jobs:
           echo "build=$BUILD_NR" >> "$GITHUB_ENV"
           echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
 
-          PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
+          PKG_KEYS="$(echo '${{ toJSON(env) }}' | jq -r 'keys[]')"
 
           for PKG_KEY in $PKG_KEYS; do
             if [[ "$DEV_DEPS_LIST" == *"$PKG_KEY"* ]]; then
-              VERSION_ALT=$(echo "${!PKG_KEY}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
+              VERSION_ALT="$(echo "${!PKG_KEY}" |
+                sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')"
             else
-              VERSION_ALT=${!PKG_KEY}
+              VERSION_ALT="${!PKG_KEY}"
             fi
 
-            NAME_ALT=${PKG_KEY}_ALT
-            echo "$NAME_ALT=$VERSION_ALT" >> "$GITHUB_ENV"
+            echo "${PKG_KEY}_ALT=$VERSION_ALT" >> "$GITHUB_ENV"
           done
 
       - name: Configure Conda build environment
@@ -225,31 +215,35 @@ jobs:
 
           conda install -y -n base "conda-build>=25"
 
-      - name: Determine package output path
-        id: package-output
+      - name: Determine package output paths
         shell: bash -l {0}
         run: |
           set -euo pipefail
 
-          PACKAGE_PATH="$(
+          mkdir -p package-paths
+
+          mapfile -t PACKAGE_PATHS < <(
             conda build \
               --output \
               -c "i4ds/label/${{ inputs.label }}" \
               -c i4ds \
               -c conda-forge \
               "${{ env.recipePath }}" |
-            tail -n 1
-          )"
+            grep -E '\.(conda|tar\.bz2)$'
+          )
 
-          if [[ -z "$PACKAGE_PATH" ]]; then
-            echo "Could not determine the Conda package output path."
+          if [[ "${#PACKAGE_PATHS[@]}" -eq 0 ]]; then
+            echo "No Conda package outputs were detected."
             exit 1
           fi
 
-          echo "package_path=$PACKAGE_PATH" >> "$GITHUB_OUTPUT"
-          echo "Expected package: $PACKAGE_PATH"
+          printf '%s\n' "${PACKAGE_PATHS[@]}" |
+            sort -u > package-paths/packages.txt
 
-      - name: Build Conda package
+          echo "Detected package outputs:"
+          sed 's/^/ - /' package-paths/packages.txt
+
+      - name: Build Conda packages
         shell: bash -l {0}
         run: |
           set -euo pipefail
@@ -260,29 +254,43 @@ jobs:
             -c conda-forge \
             "${{ env.recipePath }}"
 
-      - name: Stage built package
+      - name: Stage built Conda packages
         shell: bash -l {0}
-        env:
-          PACKAGE_PATH: ${{ steps.package-output.outputs.package_path }}
         run: |
           set -euo pipefail
 
-          if [[ ! -f "$PACKAGE_PATH" ]]; then
-            echo "Built package was not found:"
-            echo "$PACKAGE_PATH"
+          mkdir -p dist
+
+          while IFS= read -r PACKAGE_PATH; do
+            [[ -n "$PACKAGE_PATH" ]] || continue
+
+            if [[ ! -f "$PACKAGE_PATH" ]]; then
+              echo "Expected package was not found:"
+              echo "$PACKAGE_PATH"
+              exit 1
+            fi
+
+            cp "$PACKAGE_PATH" dist/
+          done < package-paths/packages.txt
+
+          mapfile -t STAGED_PACKAGES < <(
+            find dist -maxdepth 1 -type f \
+              \( -name "*.conda" -o -name "*.tar.bz2" \) |
+            sort
+          )
+
+          if [[ "${#STAGED_PACKAGES[@]}" -eq 0 ]]; then
+            echo "No Conda packages were staged."
             exit 1
           fi
 
-          mkdir -p dist
-          cp "$PACKAGE_PATH" dist/
+          echo "Staged packages:"
+          printf ' - %s\n' "${STAGED_PACKAGES[@]}"
 
-          echo "Staged package:"
-          ls -lh dist
-
-      - name: Upload built Conda package
+      - name: Upload built Conda packages
         uses: actions/upload-artifact@v4
         with:
-          name: conda-package-${{ inputs.packageName }}
+          name: conda-packages-${{ inputs.packageName }}
           path: dist/
           if-no-files-found: error
           retention-days: 7
@@ -308,13 +316,20 @@ jobs:
         with:
           auto-update-conda: true
 
-      - name: Configure Mamba solver
+      - name: Configure Conda test environment
         shell: bash -l {0}
         run: |
           set -euo pipefail
 
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
+          conda config --remove-key channels || true
+
+          conda config --add channels conda-forge
+          conda config --add channels "i4ds/label/${{ inputs.label }}"
+          conda config --add channels i4ds
+          conda config --add channels defaults
+          conda config --set channel_priority flexible
 
       - name: Install GCC 11 for CUDA 12
         if: ${{ inputs.useCuda }}
@@ -340,43 +355,95 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.25
         with:
           cuda: "12.0.1"
-          log-file-suffix: "test-${{ matrix.python-version }}"
+          log-file-suffix: test-${{ matrix.python-version }}
 
-      - name: Download built Conda package
+      - name: Download built Conda packages
         uses: actions/download-artifact@v4
         with:
-          name: conda-package-${{ inputs.packageName }}
+          name: conda-packages-${{ inputs.packageName }}
           path: dist
 
-      - name: Locate downloaded package
+      - name: Locate matching Conda package
         id: downloaded-package
         shell: bash
         run: |
           set -euo pipefail
 
-          mapfile -t PACKAGES < <(
+          PYTHON_TAG="${{ matrix.python-version }}"
+          PYTHON_TAG="${PYTHON_TAG/.}"
+
+          mapfile -t ALL_PACKAGES < <(
             find dist -type f \
-              \( -name "*.conda" -o -name "*.tar.bz2" \)
+              \( -name "*.conda" -o -name "*.tar.bz2" \) |
+            sort
           )
 
-          if [[ "${#PACKAGES[@]}" -eq 0 ]]; then
-            echo "No Conda package was found in the artifact."
+          if [[ "${#ALL_PACKAGES[@]}" -eq 0 ]]; then
+            echo "No Conda packages were found in the artifact."
             exit 1
           fi
 
-          if [[ "${#PACKAGES[@]}" -gt 1 ]]; then
-            echo "Expected one package but found:"
-            printf '%s\n' "${PACKAGES[@]}"
+          mapfile -t VERSIONED_PACKAGES < <(
+            printf '%s\n' "${ALL_PACKAGES[@]}" |
+            grep -E -- "-py${PYTHON_TAG}[^/]*\.(conda|tar\.bz2)$" || true
+          )
+
+          if [[ "${#VERSIONED_PACKAGES[@]}" -eq 1 ]]; then
+            PACKAGE_PATH="${VERSIONED_PACKAGES[0]}"
+          elif [[ "${#VERSIONED_PACKAGES[@]}" -gt 1 ]]; then
+            echo "Multiple packages match Python ${{ matrix.python-version }}:"
+            printf ' - %s\n' "${VERSIONED_PACKAGES[@]}"
             exit 1
+          else
+            mapfile -t NOARCH_PACKAGES < <(
+              printf '%s\n' "${ALL_PACKAGES[@]}" |
+              grep -E -- "-pyh[^/]*\.(conda|tar\.bz2)$" || true
+            )
+
+            if [[ "${#NOARCH_PACKAGES[@]}" -eq 1 ]]; then
+              PACKAGE_PATH="${NOARCH_PACKAGES[0]}"
+            elif [[ "${#ALL_PACKAGES[@]}" -eq 1 ]] &&
+                 [[ "$(basename "${ALL_PACKAGES[0]}")" != *-py3[0-9][0-9]* ]]; then
+              PACKAGE_PATH="${ALL_PACKAGES[0]}"
+            else
+              echo "No unique package matched Python ${{ matrix.python-version }}."
+              echo "Available packages:"
+              printf ' - %s\n' "${ALL_PACKAGES[@]}"
+              exit 1
+            fi
           fi
 
-          echo "package_path=${PACKAGES[0]}" >> "$GITHUB_OUTPUT"
-          echo "Testing package: ${PACKAGES[0]}"
+          echo "package_path=$PACKAGE_PATH" >> "$GITHUB_OUTPUT"
+          echo "Testing package: $PACKAGE_PATH"
+
+      - name: Validate selected package
+        shell: bash
+        env:
+          PACKAGE_PATH: ${{ steps.downloaded-package.outputs.package_path }}
+        run: |
+          set -euo pipefail
+
+          PYTHON_TAG="${{ matrix.python-version }}"
+          PYTHON_TAG="${PYTHON_TAG/.}"
+          PACKAGE_FILE="$(basename "$PACKAGE_PATH")"
+
+          if [[ "$PACKAGE_FILE" == *"-pyh"* ]]; then
+            echo "Selected noarch Python package: $PACKAGE_FILE"
+          elif [[ "$PACKAGE_FILE" == *"-py${PYTHON_TAG}"* ]]; then
+            echo "Selected matching Python package: $PACKAGE_FILE"
+          elif [[ "$PACKAGE_FILE" != *-py3[0-9][0-9]* ]]; then
+            echo "Selected non-Python-specific package: $PACKAGE_FILE"
+          else
+            echo "Package does not match Python ${{ matrix.python-version }}:"
+            echo "$PACKAGE_FILE"
+            exit 1
+          fi
 
       - name: Install and test package
         shell: bash -l {0}
         env:
           PACKAGE_PATH: ${{ steps.downloaded-package.outputs.package_path }}
+          PYTHON_CALL: ${{ inputs.pythonCall }}
         run: |
           set -euo pipefail
 
@@ -396,12 +463,12 @@ jobs:
           python --version
           python -c "import sys; print(sys.executable)"
 
-          if [[ -n "${{ inputs.pythonCall }}" ]]; then
-            python -c "${{ inputs.pythonCall }}"
+          if [[ -n "$PYTHON_CALL" ]]; then
+            python -c "$PYTHON_CALL"
           fi
 
       - name: Show installed environment
-        if: always()
+        if: ${{ always() }}
         shell: bash -l {0}
         run: |
           conda info
@@ -422,48 +489,38 @@ jobs:
         with:
           auto-update-conda: true
 
-      - name: Download tested Conda package
+      - name: Download tested Conda packages
         uses: actions/download-artifact@v4
         with:
-          name: conda-package-${{ inputs.packageName }}
+          name: conda-packages-${{ inputs.packageName }}
           path: dist
 
-      - name: Locate package for publishing
-        id: publish-package
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mapfile -t PACKAGES < <(
-            find dist -type f \
-              \( -name "*.conda" -o -name "*.tar.bz2" \)
-          )
-
-          if [[ "${#PACKAGES[@]}" -eq 0 ]]; then
-            echo "No Conda package was found for publishing."
-            exit 1
-          fi
-
-          if [[ "${#PACKAGES[@]}" -gt 1 ]]; then
-            echo "Expected one package but found:"
-            printf '%s\n' "${PACKAGES[@]}"
-            exit 1
-          fi
-
-          echo "package_path=${PACKAGES[0]}" >> "$GITHUB_OUTPUT"
-          echo "Publishing package: ${PACKAGES[0]}"
-
-      - name: Publish package to Anaconda
+      - name: Publish packages to Anaconda
         shell: bash -l {0}
         env:
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_SECRET }}
-          PACKAGE_PATH: ${{ steps.publish-package.outputs.package_path }}
         run: |
           set -euo pipefail
 
           conda install -y -n base anaconda-client
 
-          anaconda \
-            --token "$ANACONDA_TOKEN" \
-            upload "$PACKAGE_PATH" \
-            --label "${{ inputs.label }}"
+          mapfile -t PACKAGES < <(
+            find dist -type f \
+              \( -name "*.conda" -o -name "*.tar.bz2" \) |
+            sort
+          )
+
+          if [[ "${#PACKAGES[@]}" -eq 0 ]]; then
+            echo "No Conda packages were found for publishing."
+            exit 1
+          fi
+
+          echo "Publishing ${#PACKAGES[@]} package(s):"
+          printf ' - %s\n' "${PACKAGES[@]}"
+
+          for PACKAGE_PATH in "${PACKAGES[@]}"; do
+            anaconda \
+              -t "$ANACONDA_TOKEN" \
+              upload "$PACKAGE_PATH" \
+              --label "${{ inputs.label }}"
+          done
