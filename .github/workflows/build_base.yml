@@ -468,48 +468,57 @@ jobs:
             exit 1
           fi
 
-      - name: Read selected package metadata
+      - name: Create exact package specification
         id: package-metadata
-        shell: bash -l {0}
+        shell: bash
         env:
           PACKAGE_PATH: ${{ steps.downloaded-package.outputs.package_path }}
+          PACKAGE_NAME: ${{ inputs.packageName }}
         run: |
           set -euo pipefail
 
-          conda install -y -n base conda-package-handling jq
+          PACKAGE_FILE="$(basename "$PACKAGE_PATH")"
+          PACKAGE_SUBDIR="$(basename "$(dirname "$PACKAGE_PATH")")"
 
-          METADATA_DIR="$RUNNER_TEMP/package-metadata"
-          rm -rf "$METADATA_DIR"
-          mkdir -p "$METADATA_DIR"
+          case "$PACKAGE_FILE" in
+            *.conda)
+              PACKAGE_FILENAME="${PACKAGE_FILE%.conda}"
+              ;;
+            *.tar.bz2)
+              PACKAGE_FILENAME="${PACKAGE_FILE%.tar.bz2}"
+              ;;
+            *)
+              echo "Unsupported Conda package format: $PACKAGE_FILE"
+              exit 1
+              ;;
+          esac
 
-          cph x "$PACKAGE_PATH" --dest "$METADATA_DIR"
+          # packageName is already a required workflow input. Remove that
+          # known prefix, then split the remainder from the right:
+          #   <version>-<build>
+          PACKAGE_PREFIX="${PACKAGE_NAME}-"
 
-          INDEX_JSON="$(
-            find "$METADATA_DIR" \
-              -path "*/info/index.json" \
-              -type f \
-              -print \
-              -quit
-          )"
-
-          if [[ -z "$INDEX_JSON" || ! -f "$INDEX_JSON" ]]; then
-            echo "Could not find info/index.json in $PACKAGE_PATH"
+          if [[ "$PACKAGE_FILENAME" != "$PACKAGE_PREFIX"* ]]; then
+            echo "Selected package does not match packageName '$PACKAGE_NAME':"
+            echo "$PACKAGE_FILE"
             exit 1
           fi
 
-          PACKAGE_NAME="$(jq -r '.name' "$INDEX_JSON")"
-          PACKAGE_VERSION="$(jq -r '.version' "$INDEX_JSON")"
-          PACKAGE_BUILD="$(jq -r '.build' "$INDEX_JSON")"
-          PACKAGE_SUBDIR="$(jq -r '.subdir // empty' "$INDEX_JSON")"
+          VERSION_AND_BUILD="${PACKAGE_FILENAME#"$PACKAGE_PREFIX"}"
 
-          for VALUE_NAME in PACKAGE_NAME PACKAGE_VERSION PACKAGE_BUILD; do
-            VALUE="${!VALUE_NAME}"
+          if [[ "$VERSION_AND_BUILD" != *-* ]]; then
+            echo "Could not determine version and build from:"
+            echo "$PACKAGE_FILE"
+            exit 1
+          fi
 
-            if [[ -z "$VALUE" || "$VALUE" == "null" ]]; then
-              echo "$VALUE_NAME is missing from $INDEX_JSON"
-              exit 1
-            fi
-          done
+          PACKAGE_BUILD="${VERSION_AND_BUILD##*-}"
+          PACKAGE_VERSION="${VERSION_AND_BUILD%-*}"
+
+          if [[ -z "$PACKAGE_VERSION" || -z "$PACKAGE_BUILD" ]]; then
+            echo "Invalid Conda package filename: $PACKAGE_FILE"
+            exit 1
+          fi
 
           PACKAGE_SPEC="${PACKAGE_NAME}=${PACKAGE_VERSION}=${PACKAGE_BUILD}"
 
@@ -521,7 +530,8 @@ jobs:
             echo "spec=$PACKAGE_SPEC"
           } >> "$GITHUB_OUTPUT"
 
-          echo "Selected package metadata:"
+          echo "Selected package:"
+          echo "  File:    $PACKAGE_FILE"
           echo "  Name:    $PACKAGE_NAME"
           echo "  Version: $PACKAGE_VERSION"
           echo "  Build:   $PACKAGE_BUILD"
