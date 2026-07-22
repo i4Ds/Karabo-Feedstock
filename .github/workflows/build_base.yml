@@ -259,7 +259,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          mkdir -p dist
+          # Preserve the standard Conda channel layout. This allows the same
+          # artifact bundle to support both platform-specific and noarch outputs.
+          mkdir -p dist/linux-64 dist/noarch
 
           while IFS= read -r PACKAGE_PATH; do
             [[ -n "$PACKAGE_PATH" ]] || continue
@@ -270,11 +272,23 @@ jobs:
               exit 1
             fi
 
-            cp "$PACKAGE_PATH" dist/
+            SUBDIR="$(basename "$(dirname "$PACKAGE_PATH")")"
+
+            case "$SUBDIR" in
+              linux-64|noarch)
+                ;;
+              *)
+                echo "Unsupported Conda output subdirectory: $SUBDIR"
+                echo "Package: $PACKAGE_PATH"
+                exit 1
+                ;;
+            esac
+
+            cp "$PACKAGE_PATH" "dist/$SUBDIR/"
           done < package-paths/packages.txt
 
           mapfile -t STAGED_PACKAGES < <(
-            find dist -maxdepth 1 -type f \
+            find dist -type f \
               \( -name "*.conda" -o -name "*.tar.bz2" \) |
             sort
           )
@@ -363,6 +377,21 @@ jobs:
           name: conda-packages-${{ inputs.packageName }}
           path: dist
 
+      - name: Create temporary local Conda channel
+        shell: bash -l {0}
+        run: |
+          set -euo pipefail
+
+          conda install -y -n base "conda-build>=25"
+
+          # actions/download-artifact preserves the uploaded subdirectories.
+          # Ensure both standard subdirectories exist before indexing.
+          mkdir -p dist/linux-64 dist/noarch
+          conda index dist
+
+          echo "Temporary local Conda channel contents:"
+          find dist -maxdepth 2 -type f | sort
+
       - name: Locate matching Conda package
         id: downloaded-package
         shell: bash
@@ -439,32 +468,141 @@ jobs:
             exit 1
           fi
 
-      - name: Install and test package
+      - name: Read selected package metadata
+        id: package-metadata
         shell: bash -l {0}
         env:
           PACKAGE_PATH: ${{ steps.downloaded-package.outputs.package_path }}
+        run: |
+          set -euo pipefail
+
+          conda install -y -n base conda-package-handling jq
+
+          METADATA_DIR="$RUNNER_TEMP/package-metadata"
+          rm -rf "$METADATA_DIR"
+          mkdir -p "$METADATA_DIR"
+
+          cph x "$PACKAGE_PATH" --dest "$METADATA_DIR"
+
+          INDEX_JSON="$(
+            find "$METADATA_DIR" \
+              -path "*/info/index.json" \
+              -type f \
+              -print \
+              -quit
+          )"
+
+          if [[ -z "$INDEX_JSON" || ! -f "$INDEX_JSON" ]]; then
+            echo "Could not find info/index.json in $PACKAGE_PATH"
+            exit 1
+          fi
+
+          PACKAGE_NAME="$(jq -r '.name' "$INDEX_JSON")"
+          PACKAGE_VERSION="$(jq -r '.version' "$INDEX_JSON")"
+          PACKAGE_BUILD="$(jq -r '.build' "$INDEX_JSON")"
+          PACKAGE_SUBDIR="$(jq -r '.subdir // empty' "$INDEX_JSON")"
+
+          for VALUE_NAME in PACKAGE_NAME PACKAGE_VERSION PACKAGE_BUILD; do
+            VALUE="${!VALUE_NAME}"
+
+            if [[ -z "$VALUE" || "$VALUE" == "null" ]]; then
+              echo "$VALUE_NAME is missing from $INDEX_JSON"
+              exit 1
+            fi
+          done
+
+          PACKAGE_SPEC="${PACKAGE_NAME}=${PACKAGE_VERSION}=${PACKAGE_BUILD}"
+
+          {
+            echo "name=$PACKAGE_NAME"
+            echo "version=$PACKAGE_VERSION"
+            echo "build=$PACKAGE_BUILD"
+            echo "subdir=$PACKAGE_SUBDIR"
+            echo "spec=$PACKAGE_SPEC"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Selected package metadata:"
+          echo "  Name:    $PACKAGE_NAME"
+          echo "  Version: $PACKAGE_VERSION"
+          echo "  Build:   $PACKAGE_BUILD"
+          echo "  Subdir:  $PACKAGE_SUBDIR"
+          echo "  Spec:    $PACKAGE_SPEC"
+
+      - name: Install and test freshly built package
+        shell: bash -l {0}
+        env:
+          PACKAGE_SPEC: ${{ steps.package-metadata.outputs.spec }}
           PYTHON_CALL: ${{ inputs.pythonCall }}
         run: |
           set -euo pipefail
 
+          LOCAL_CHANNEL="file://${PWD}/dist"
+
+          echo "Installing exact freshly built package:"
+          echo "  $PACKAGE_SPEC"
+          echo "Local channel:"
+          echo "  $LOCAL_CHANNEL"
+
+          # Solve Python, the fresh package and all runtime dependencies in one
+          # transaction. The exact name=version=build specification prevents
+          # Conda from selecting an older package from a published channel.
           conda create -y \
             -n testenv \
-            "python=${{ matrix.python-version }}"
-
-          conda activate testenv
-
-          conda install -y \
             --override-channels \
+            --strict-channel-priority \
+            -c "$LOCAL_CHANNEL" \
             -c "i4ds/label/${{ inputs.label }}" \
             -c i4ds \
             -c conda-forge \
-            "$PACKAGE_PATH"
+            "python=${{ matrix.python-version }}" \
+            "$PACKAGE_SPEC"
+
+          conda activate testenv
 
           python --version
           python -c "import sys; print(sys.executable)"
 
           if [[ -n "$PYTHON_CALL" ]]; then
             python -c "$PYTHON_CALL"
+          fi
+
+      - name: Verify installed package build
+        shell: bash -l {0}
+        env:
+          PACKAGE_NAME: ${{ steps.package-metadata.outputs.name }}
+          EXPECTED_VERSION: ${{ steps.package-metadata.outputs.version }}
+          EXPECTED_BUILD: ${{ steps.package-metadata.outputs.build }}
+        run: |
+          set -euo pipefail
+
+          conda activate testenv
+
+          INSTALLED_JSON="$(conda list -n testenv "$PACKAGE_NAME" --json)"
+          PACKAGE_COUNT="$(jq 'length' <<< "$INSTALLED_JSON")"
+
+          if [[ "$PACKAGE_COUNT" -ne 1 ]]; then
+            echo "Expected exactly one installed package named $PACKAGE_NAME."
+            echo "$INSTALLED_JSON"
+            exit 1
+          fi
+
+          ACTUAL_VERSION="$(jq -r '.[0].version' <<< "$INSTALLED_JSON")"
+          ACTUAL_BUILD="$(jq -r '.[0].build_string' <<< "$INSTALLED_JSON")"
+          ACTUAL_CHANNEL="$(jq -r '.[0].channel' <<< "$INSTALLED_JSON")"
+
+          echo "Installed package:"
+          echo "  Version: $ACTUAL_VERSION"
+          echo "  Build:   $ACTUAL_BUILD"
+          echo "  Channel: $ACTUAL_CHANNEL"
+
+          if [[ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]]; then
+            echo "Wrong package version installed."
+            exit 1
+          fi
+
+          if [[ "$ACTUAL_BUILD" != "$EXPECTED_BUILD" ]]; then
+            echo "Wrong package build installed."
+            exit 1
           fi
 
       - name: Show installed environment
