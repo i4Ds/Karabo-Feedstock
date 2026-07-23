@@ -650,7 +650,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          conda install -y -n base anaconda-client
+          conda install -y -n base -c conda-forge anaconda-client
 
           mapfile -t PACKAGES < <(
             find dist -type f \
@@ -667,7 +667,7 @@ jobs:
           printf ' - %s\n' "${PACKAGES[@]}"
 
           for PACKAGE_PATH in "${PACKAGES[@]}"; do
-            anaconda \
+            conda run --no-capture-output -n base anaconda \
               -t "$ANACONDA_TOKEN" \
               upload "$PACKAGE_PATH" \
               --label "${{ inputs.label }}"
