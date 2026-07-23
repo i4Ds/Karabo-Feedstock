@@ -4,7 +4,7 @@ package:
 
 source:
   git_url: "https://github.com/i4Ds/ARatmospy"
-  git_rev: "7ff02d69dc7f57120cb91645870088b710a05473"
+  git_rev: "b09090a584c04113dfc3608e5168013352186d78"
 
 build:
   number: {{ build }}
