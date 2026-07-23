@@ -52,6 +52,12 @@ env:
 on:
   workflow_call:
     inputs:
+      pythonVersions:
+        description: "Comma-separated Python versions"
+        required: false
+        default: "3.12"
+        type: string
+
       packageName:
         required: true
         type: string
@@ -109,13 +115,70 @@ on:
         type: boolean
 
 jobs:
+  prepare_matrix:
+    name: Prepare Python matrix
+    runs-on: ubuntu-22.04
+
+    outputs:
+      python_versions: ${{ steps.matrix.outputs.python_versions }}
+
+    steps:
+      - name: Convert Python versions to JSON
+        id: matrix
+        shell: bash
+        env:
+          PYTHON_VERSIONS: ${{ inputs.pythonVersions }}
+        run: |
+          set -euo pipefail
+
+          IFS=',' read -ra RAW_VERSIONS <<< "$PYTHON_VERSIONS"
+
+          declare -a VERSIONS=()
+          declare -A SEEN=()
+
+          for RAW_VERSION in "${RAW_VERSIONS[@]}"; do
+            VERSION="$(echo "$RAW_VERSION" | xargs)"
+
+            if [[ -z "$VERSION" ]]; then
+              continue
+            fi
+
+            if [[ ! "$VERSION" =~ ^3\.[0-9]+$ ]]; then
+              echo "Invalid Python version: '$VERSION'"
+              echo "Use comma-separated versions such as: 3.12 or 3.11,3.12"
+              exit 1
+            fi
+
+            if [[ -z "${SEEN[$VERSION]+x}" ]]; then
+              VERSIONS+=("$VERSION")
+              SEEN["$VERSION"]=1
+            fi
+          done
+
+          if [[ "${#VERSIONS[@]}" -eq 0 ]]; then
+            echo "No Python versions were provided."
+            exit 1
+          fi
+
+          PYTHON_VERSIONS_JSON="$(
+            printf '%s\n' "${VERSIONS[@]}" |
+              jq -R . |
+              jq -sc .
+          )"
+
+          echo "python_versions=$PYTHON_VERSIONS_JSON" >> "$GITHUB_OUTPUT"
+          echo "Selected Python versions: $PYTHON_VERSIONS_JSON"
+
   build_base:
-    name: Build ${{ inputs.packageName }}
+    name: Build ${{ inputs.packageName }} with Python ${{ matrix.python-version }}
+    needs: prepare_matrix
     runs-on: ubuntu-22.04
     timeout-minutes: 120
 
-    outputs:
-      pkgv: ${{ steps.pkgv.outputs.version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(needs.prepare_matrix.outputs.python_versions) }}
 
     steps:
       - name: Checkout repository
@@ -225,6 +288,7 @@ jobs:
           mapfile -t PACKAGE_PATHS < <(
             conda build \
               --output \
+              --python "${{ matrix.python-version }}" \
               -c "i4ds/label/${{ inputs.label }}" \
               -c i4ds \
               -c conda-forge \
@@ -249,6 +313,7 @@ jobs:
           set -euo pipefail
 
           conda build \
+            --python "${{ matrix.python-version }}" \
             -c "i4ds/label/${{ inputs.label }}" \
             -c i4ds \
             -c conda-forge \
@@ -304,14 +369,16 @@ jobs:
       - name: Upload built Conda packages
         uses: actions/upload-artifact@v4
         with:
-          name: conda-packages-${{ inputs.packageName }}
+          name: conda-packages-${{ inputs.packageName }}-py${{ matrix.python-version }}
           path: dist/
           if-no-files-found: error
           retention-days: 7
 
   test_base:
     name: Test ${{ inputs.packageName }} with Python ${{ matrix.python-version }}
-    needs: build_base
+    needs:
+      - prepare_matrix
+      - build_base
     if: ${{ !inputs.skipTest }}
     runs-on: ubuntu-22.04
     timeout-minutes: 60
@@ -319,10 +386,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version:
-          - "3.10"
-          - "3.11"
-          - "3.12"
+        python-version: ${{ fromJSON(needs.prepare_matrix.outputs.python_versions) }}
 
     steps:
       - name: Install Conda
@@ -374,7 +438,7 @@ jobs:
       - name: Download built Conda packages
         uses: actions/download-artifact@v4
         with:
-          name: conda-packages-${{ inputs.packageName }}
+          name: conda-packages-${{ inputs.packageName }}-py${{ matrix.python-version }}
           path: dist
 
       - name: Create temporary local Conda channel
@@ -640,8 +704,9 @@ jobs:
       - name: Download tested Conda packages
         uses: actions/download-artifact@v4
         with:
-          name: conda-packages-${{ inputs.packageName }}
+          pattern: conda-packages-${{ inputs.packageName }}-py*
           path: dist
+          merge-multiple: true
 
       - name: Publish packages to Anaconda
         shell: bash -l {0}

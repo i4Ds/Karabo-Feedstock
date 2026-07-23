@@ -14,6 +14,11 @@ on:
       buildNumber:
         type: string
         required: true
+      pythonVersions:
+        description: "3.12 or 3.11,3.12"
+        type: string
+        required: true
+        default: "3.12"
 
   workflow_call:
     inputs:
@@ -27,6 +32,11 @@ on:
       buildNumber:
         type: string
         required: true
+      pythonVersions:
+        description: "Python versions, comma-separated"
+        type: string
+        required: false
+        default: "3.12"
 
 jobs:
 
@@ -39,6 +49,7 @@ jobs:
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
+      pythonVersions: ${{ inputs.pythonVersions }}
       pythonCall: import ARatmospy
       isNative: true
     secrets: inherit
