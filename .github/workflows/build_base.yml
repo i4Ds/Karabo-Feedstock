@@ -691,7 +691,15 @@ jobs:
     needs:
       - build_base
       - test_base
-    if: ${{ success() }}
+
+    if: |
+      always() &&
+      needs.build_base.result == 'success' &&
+      (
+        needs.test_base.result == 'success' ||
+        needs.test_base.result == 'skipped'
+      )
+
     runs-on: ubuntu-22.04
     timeout-minutes: 30
 
