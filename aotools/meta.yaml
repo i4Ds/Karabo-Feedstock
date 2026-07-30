@@ -22,9 +22,9 @@ requirements:
   run:
     - python                {{ python }}
     - matplotlib
-    - numba                 >=0.55.1  # 0.53.1 is buggy
-    - {{ pin_compatible('numpy') }}
-    - scipy                 >=1.10.1
+    - numba                 >=0.61.0 # 0.53.1 is buggy
+    - {{ pin_compatible('numpy', max_pin='x') }}  # allows numpy 2.x
+    - scipy                 >=1.11.0
 
 about:
   home: "https://github.com/aotools/aotools"

@@ -13,11 +13,11 @@ build:
 requirements:
   build:
     - python
-    - numpy
+   # - numpy {{ numpy }}
 
   host:
     - python           {{ python }}
-    - numpy
+ #  - {{ pin_compatible('numpy', max_pin='x') }}  
     - setuptools
 
   run:
@@ -25,14 +25,14 @@ requirements:
     - astropy
     - joblib
     - matplotlib
-    - numba
-    - {{ pin_compatible('numpy') }}
+    - numba         # >=0.61.1 #   Numba 0.61.1+ is the first version with official NumPy 2.x support https://github.com/numba/numba/issues/9838?
+    - numpy         
     - fftw          =={{ FFTW3_VERSION_ALT }}
     - pyfftw
     - pytest
     - scikit-image
     - scikit-learn
-    - scipy         >=1.10.1,<1.15 # see https://github.com/i4Ds/Karabo-Feedstock/issues/30
+    - scipy         >=1.15 # see https://github.com/i4Ds/Karabo-Feedstock/issues/30  # SciPy 1.13+ is also required for NumPy 2 compatibility
     - tqdm
     - numexpr
     - tensorflow

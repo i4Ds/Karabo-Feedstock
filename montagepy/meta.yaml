@@ -14,17 +14,17 @@ requirements:
   build:
     - {{ compiler('c') }}
     - python
-    - numpy
+    - numpy {{ numpy }}
     
   host:
     - python {{ python }}
     - pip
-    - numpy
+    - numpy {{ numpy }}
 
   run:
     - python {{ python }}
     - requests
-    - {{ pin_compatible('numpy') }}
+    - numpy >=2.2
 
 about:
   home: https://github.com/Caltech-IPAC/Montage

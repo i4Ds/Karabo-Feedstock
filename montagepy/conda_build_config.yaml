@@ -1,17 +1,20 @@
 python:
-  - 3.9
   - 3.10
   - 3.11
+  - 3.12
+
+numpy:
+  - 2.2
 
 wheel_url:
-  - https://files.pythonhosted.org/packages/e8/00/fbb4468dec62ec0b9e7152588c14ded838298fe370fa70d1d59ee4041f81/MontagePy-1.2.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl
-  - https://files.pythonhosted.org/packages/01/82/d92658b37d8f9dcf1bf137344e39964b2f4c4b1825a3acdc777cd355372a/MontagePy-1.2.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl
-  - https://files.pythonhosted.org/packages/01/82/d92658b37d8f9dcf1bf137344e39964b2f4c4b1825a3acdc777cd355372a/MontagePy-1.2.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl
+  - https://files.pythonhosted.org/packages/26/c9/70ac00af62df03479bb018e3d462e31bd6709fd8cbe84bd70275737bd597/montagepy-2.3.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  - https://files.pythonhosted.org/packages/98/b6/0e79a7ea4d40d104ec3640aeec5736cb5d0e291a756e993a3ec91dde0c18/montagepy-2.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  - https://files.pythonhosted.org/packages/38/76/e326dece295d6c256aa7f6b1b6f22e4d62ac38c331083554fab768f5a062/montagepy-2.3.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 
 wheel_sha:
-  - 570716d6b32d5a72fb40079461707b900809c58938efa99d691636fb837b31df
-  - a9005a0d838b59258c8ce3e83ec8f1a21b4d5013f8b296dd00a1a0e9add8496f
-  - b69d810d23a0e2ed7f10a8d9f69c6023a7c36a1dfe07ef4879b3e1583a8f3e2f
+  - df63872aae3646b7f6bd9d7f34b242d80150baf3b54676de966502e2a85c21b4
+  - 6afb38fb3e57982d16a8cf46948c8e49766fac9101bf43d7613f984867862254
+  - d52275805a85f25b89b32ed1d9a1027e6b16795ccfd0aae5bb5db2b421a47297
 
 zip_keys:
   - python

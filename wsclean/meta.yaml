@@ -20,7 +20,8 @@ requirements:
     - {{ compiler('cxx') }}
     - cmake >=3.10,<4
     - make
-    - boost={{ BOOST_VERSION_ALT }}
+    - libboost-devel        ={{ BOOST_VERSION_ALT }}
+    - libboost-python-devel ={{ BOOST_VERSION_ALT }}
     - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio={{ CFITSIO_VERSION_ALT }}
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
@@ -32,7 +33,8 @@ requirements:
     - python
 
   host:
-    - boost={{ BOOST_VERSION_ALT }}
+    - libboost-devel        ={{ BOOST_VERSION_ALT }}
+    - libboost-python-devel ={{ BOOST_VERSION_ALT }}
     - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio={{ CFITSIO_VERSION_ALT }}
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
@@ -44,7 +46,8 @@ requirements:
     - python
 
   run:
-    - boost={{ BOOST_VERSION_ALT }}
+    - libboost-devel        ={{ BOOST_VERSION_ALT }}
+    - libboost-python-devel ={{ BOOST_VERSION_ALT }}
     - casacore={{ CASACORE_VERSION_ALT }}
     - cfitsio={{ CFITSIO_VERSION_ALT }}
     - everybeam={{ EVERYBEAM_VERSION_ALT }}
