@@ -4,7 +4,7 @@ package:
 
 source:
   git_url: "https://github.com/epfl-radio-astro/bipp"
-  git_rev: "f13353bca7f4dbd9940eded3b96f98b75e98186e"
+  git_tag: v{{ BLUEBILD_VERSION_ALT }}
 
 build:
   number: {{ build }}
@@ -54,4 +54,4 @@ about:
 
 extra:
   recipe-maintainers:
-    - lukas.gehrig@fhnw.ch
+    - delberin.ali@fhnw.ch
