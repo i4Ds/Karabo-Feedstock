@@ -4,7 +4,7 @@ package:
 
 source:
   git_url: "https://github.com/epfl-radio-astro/bipp"
-  git_tag: v{{ BLUEBILD_VERSION_ALT }}
+  git_tag: v{{ BLUEBILD_VERSION }}
 
 build:
   number: {{ build }}
