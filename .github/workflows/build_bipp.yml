@@ -49,6 +49,7 @@ jobs:
       dev: ${{ inputs.dev }}
       devDeps: ${{ inputs.devDeps }}
       buildNumber: ${{ inputs.buildNumber }}
+      pythonCall: import bipp
       isNative: true
       useCuda: true
     secrets: inherit
