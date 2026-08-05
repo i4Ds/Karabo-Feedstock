@@ -17,37 +17,38 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
-    - cmake         >=3.18, <4
-    - python        {{ python }}
-    - numpy         {{ numpy }}
-    - libboost-devel        ={{ BOOST_VERSION }}
-    - setuptools    <60.0     # [py<312]
-    - setuptools    >=61.0    # [py>=312]
+    - cmake >=3.18,<4
+    - python {{ python }}
+    - numpy {{ numpy }}
+    - libboost-devel ={{ BOOST_VERSION }}
+    - setuptools >=61.0
+    - setuptools_scm
+    - scikit-build >=0.13
     - ninja
-    - meson   # f2py drops distutils backend for py>=3.12 and requires meson instead
-
+    - meson
 
   host:
-    - python        {{ python }}
-    - cmake         >=3.18, <4
+    - python {{ python }}
+    - cmake >=3.18,<4
     - ninja
+    - meson
     - pip
-    - numpy         {{ numpy }}
-    - setuptools    <60.0     # [py<312]
-    - setuptools    >=61.0    # [py>=312]
-    - scikit-build  >=0.13
-    - libboost-devel        ={{ BOOST_VERSION }}
-    - libboost-python-devel ={{ BOOST_VERSION }}  
+    - numpy {{ numpy }}
+    - setuptools >=61.0
+    - setuptools_scm
+    - scikit-build >=0.13
+    - libboost-devel ={{ BOOST_VERSION }}
+    - libboost-python-devel ={{ BOOST_VERSION }}
     - wheel
 
   run:
-    - python        {{ python }}
-    - libboost              ={{ BOOST_VERSION }}
-    - libboost-python       ={{ BOOST_VERSION }}
+    - python {{ python }}
+    - libboost ={{ BOOST_VERSION }}
+    - libboost-python ={{ BOOST_VERSION }}
     - astropy
     - {{ pin_compatible('numpy') }}
     - matplotlib-base
-    - scipy         >=1.15
+    - scipy
     - ipython
 
 
