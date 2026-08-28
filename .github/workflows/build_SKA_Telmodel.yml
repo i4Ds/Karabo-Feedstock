@@ -1,0 +1,44 @@
+name: SKA Telmodel
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
+      buildNumber:
+        type: string
+        required: true
+
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
+      buildNumber:
+        type: string
+        required: true
+
+jobs:
+
+  SKA_Telmodel:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: ska-telmodel
+      packageVersion: $SKA_TELMODEL_VERSION
+      packageVersionName: SKA_TELMODEL_VERSION
+      pythonCall: from ska_telmodel.data import TMData
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+      isNative: true
+    secrets: inherit

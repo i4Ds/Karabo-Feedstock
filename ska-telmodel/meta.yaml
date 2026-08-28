@@ -1,0 +1,56 @@
+{% set uNameAndVers = PACKAGE_NAME|replace("-", "_") + "-" + SKA_TELMODEL_VERSION %}
+
+package:
+  name: {{ PACKAGE_NAME|lower }}
+  version: {{ SKA_TELMODEL_VERSION_ALT }}
+
+source:
+  url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_TELMODEL_VERSION }}/{{ uNameAndVers }}.tar.gz
+
+build:
+  number: {{ build }}
+  string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
+  script_env:
+    - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
+
+requirements:
+  build:
+    - python
+
+  host:
+    - python           {{ python }}
+    - pip
+    - poetry-core      >=1.0.0
+
+  run:
+    - python           {{ python }}
+    - appdirs          >=1.4.4,<2.0.0
+    - filelock         >=3.20.3,<4.0.0
+    - gitpython        >=3.1.46,<4.0.0
+    - jsonschema       >=4.26.0,<5.0.0
+    - overrides        >=7.7.0,<8.0.0
+    - prettytable      >=3.17.0,<4.0.0
+    - python-gitlab    >=8.0.0,<9.0.0
+    - pyyaml           >=6.0.3,<7.0.0
+    - schema           >=0.7.8,<0.8.0
+    - tomli            >=2.4.0,<3.0.0
+    - toolz            >=1.1.0,<2.0.0
+
+test:
+  imports:
+    - ska_telmodel
+  commands:
+    - python -c "from ska_telmodel.data import TMData; print('TMData OK')"
+    - pip check
+  requires:
+    - pip
+
+about:
+  home: https://gitlab.com/ska-telescope/ska-telmodel
+  license: Apache-2.0
+  summary: 'SKA Telescope Model'
+  dev_url: https://gitlab.com/ska-telescope/ska-telmodel
+
+extra:
+  recipe-maintainers:
+    - delberin.ali@fhnw.ch

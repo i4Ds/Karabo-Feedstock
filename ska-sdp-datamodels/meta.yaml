@@ -14,38 +14,43 @@ build:
     - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
 
 requirements:
+  build:
+    - python
+    - numpy
+
   host:
     - python            {{ python }}
     - pip
     - numpy
-    - poetry-core       >=1.0.0,<2
+    - poetry-core       >=1.0.0
 
   run:
     - python            {{ python }}
-    - astroplan         >=0.10
-    - astropy           >=6.1
-    - h5py              >=3.12
-    - {{ pin_compatible('numpy') }}
-    - pandas            >=2.2
+    - astroplan         >=0.10,<0.11
+    - astropy           >=6.1,<7.0
+    - h5py              >=3.12,<4.0
+    - msgpack-python    >=1.1,<2.0
+    - msgpack-numpy     >=0.4.8,<0.5
+    - numpy             >=2.2,<2.3
+    - pandas            >=2.2,<3.0
+    - ska-telmodel      >=1.19,<2.0
     - xarray            >=2024.9
-    - msgpack           >=1.1
-    - msgpack-numpy     >=0.4.8
-    - ska-telmodel-client >=1.30.2
-    - docstring-parser  >=0.18.0
 
 test:
   imports:
     - ska_sdp_datamodels
   commands:
+    - python -c "from ska_sdp_datamodels.sky_model.sky_model import SkyComponent"
+    - python -c "from ska_sdp_datamodels.configuration.config_create import create_named_configuration"
     - pip check
   requires:
     - pip
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels
-  license: Apache-2.0
+  license: Apache 2.0
   license_file: LICENSE
-  summary: SKA SDP Datamodels
+  summary: 'SKA SDP Datamodels'
   description: |
     SKA SDP Datamodels
   doc_url: https://developer.skao.int/projects/ska-sdp-datamodels/en/latest/
