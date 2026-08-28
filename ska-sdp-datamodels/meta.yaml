@@ -1,4 +1,4 @@
-{% set uNameAndVers = PACKAGE_NAME|replace("-", "_") + "-" + SKA_SDP_DTMDL_VERSION %} # naming convention needs this
+{% set uNameAndVers = PACKAGE_NAME|replace("-", "_") + "-" + SKA_SDP_DTMDL_VERSION %}
 
 package:
   name: {{ PACKAGE_NAME|lower }}
@@ -14,15 +14,11 @@ build:
     - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
 
 requirements:
-  build:
-    - python
-    - numpy
-
   host:
     - python            {{ python }}
     - pip
     - numpy
-    - poetry-core       >=1.0.0
+    - poetry-core       >=1.0.0,<2
 
   run:
     - python            {{ python }}
@@ -31,20 +27,27 @@ requirements:
     - h5py              >=3.12
     - {{ pin_compatible('numpy') }}
     - pandas            >=2.2
-    - ska-telmodel      =1.20.0
-    - xarray            >=2024.9,<2024.11
+    - xarray            >=2024.9
+    - msgpack           >=1.1
+    - msgpack-numpy     >=0.4.8
+    - ska-telmodel-client >=1.30.2
+    - docstring-parser  >=0.18.0
 
 test:
   imports:
     - ska_sdp_datamodels
+  commands:
+    - pip check
+  requires:
+    - pip
 
 about:
   home: https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels
-  license: Apache 2.0
+  license: Apache-2.0
   license_file: LICENSE
-  summary: 'SKA SDP Datamodels'
+  summary: SKA SDP Datamodels
   description: |
-   SKA SDP Datamodels
+    SKA SDP Datamodels
   doc_url: https://developer.skao.int/projects/ska-sdp-datamodels/en/latest/
   dev_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels
 
