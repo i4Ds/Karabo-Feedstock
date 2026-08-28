@@ -28,10 +28,9 @@ requirements:
     - {{ pin_compatible('numpy') }}
     - pandas            >=2.2
     - xarray            >=2024.9
-    - msgpack           >=1.1
+    - msgpack-python    >=1.1
     - msgpack-numpy     >=0.4.8
-    - ska-telmodel-client >=1.30.2
-    - docstring-parser  >=0.18.0
+    - ska-telmodel      >=1.19,<2.0
 
 test:
   imports:
