@@ -1,0 +1,292 @@
+schema_version = 1
+
+[settings]
+expected_repository = "i4Ds/Karabo-Feedstock"
+build_base = ".github/workflows/build_base.yml"
+notify_user = "Delberin-Ali"
+agent_name = "Karabo Feedstock Maintainer"
+http_timeout_seconds = 20
+max_pages = 3
+max_workers = 4
+
+# Every *_VERSION variable in build_base.yml must appear exactly once below.
+# This makes the scan fail visibly if a new Feedstock version is added without
+# also defining how it should be monitored.
+
+[[dependencies]]
+id = "fftw"
+name = "FFTW"
+version_variables = ["FFTW3_VERSION"]
+recipes = ["finufft/meta.yaml"]
+source_type = "github-tags"
+repository = "FFTW/fftw3"
+tag_pattern = '^fftw-(?P<version>\d+(?:\.\d+){1,3})$'
+release_page = "https://github.com/FFTW/fftw3/tags"
+notes = "FFTW remains active because the FINUFFT recipe pins FFTW3_VERSION."
+
+[[dependencies]]
+id = "fftw3f"
+name = "FFTW3F"
+version_variables = ["FFTW3F_VERSION"]
+recipes = ["fftw3f/meta.yaml"]
+source_type = "retired"
+release_page = "https://github.com/FFTW/fftw3/tags"
+retired_reason = "The dedicated FFTW3F package is no longer built. FFTW3_VERSION remains separately monitored for FINUFFT."
+
+[[dependencies]]
+id = "pybdsf"
+name = "PyBDSF"
+version_variables = ["PYBDSF_VERSION"]
+recipes = ["pybdsf/meta.yaml"]
+source_type = "pypi"
+package = "bdsf"
+release_page = "https://pypi.org/project/bdsf/"
+notes = "The Feedstock directory is pybdsf, while the published package name is bdsf."
+
+[[dependencies]]
+id = "rascil"
+name = "RASCIL"
+version_variables = ["RASCIL_VERSION"]
+recipes = ["rascil/meta.yaml"]
+source_type = "retired"
+release_page = "https://gitlab.com/ska-telescope/external/rascil-main/-/tags"
+retired_reason = "RASCIL is no longer used by Karabo and is no longer built from this Feedstock."
+
+[[dependencies]]
+id = "ska-sdp-datamodels"
+name = "SKA SDP Datamodels"
+version_variables = ["SKA_SDP_DTMDL_VERSION"]
+recipes = ["ska-sdp-datamodels/meta.yaml"]
+source_type = "gitlab-tags"
+base_url = "https://gitlab.com"
+project = "ska-telescope/sdp/ska-sdp-datamodels"
+release_page = "https://gitlab.com/ska-telescope/sdp/ska-sdp-datamodels/-/tags"
+notes = "Major releases may contain API changes; validate against Karabo before changing the pin."
+
+[[dependencies]]
+id = "ska-telmodel"
+name = "SKA Telmodel"
+version_variables = ["SKA_TELMODEL_VERSION"]
+recipes = ["ska-telmodel/meta.yaml"]
+source_type = "gitlab-tags"
+base_url = "https://gitlab.com"
+project = "ska-telescope/ska-telmodel"
+release_page = "https://gitlab.com/ska-telescope/ska-telmodel/-/tags"
+
+[[dependencies]]
+id = "ska-sdp-func-python"
+name = "SKA SDP Func Python"
+version_variables = ["SKA_SDP_FUNC_PY_VERSION"]
+recipes = ["ska-sdp-func-python/meta.yaml"]
+source_type = "gitlab-tags"
+base_url = "https://gitlab.com"
+project = "ska-telescope/sdp/ska-sdp-func-python"
+release_page = "https://gitlab.com/ska-telescope/sdp/ska-sdp-func-python/-/tags"
+notes = "Check compatibility with the native ska-sdp-func package."
+
+[[dependencies]]
+id = "ska-sdp-func"
+name = "SKA SDP Func"
+version_variables = ["SKA_SDP_FUNC_VERSION"]
+recipes = ["ska-sdp-func/meta.yaml"]
+source_type = "gitlab-tags"
+base_url = "https://gitlab.com"
+project = "ska-telescope/sdp/ska-sdp-func"
+release_page = "https://gitlab.com/ska-telescope/sdp/ska-sdp-func/-/tags"
+notes = "Check compatibility with ska-sdp-func-python before updating."
+
+[[dependencies]]
+id = "oskar"
+name = "OSKAR / OSKARPY"
+version_variables = ["OSKAR_VERSION", "OSKARPY_VERSION"]
+recipes = ["oskar/meta.yaml", "oskar-py/meta.yaml"]
+source_type = "github-tags"
+repository = "OxfordSKA/OSKAR"
+release_page = "https://github.com/OxfordSKA/OSKAR/tags"
+notes = "OSKAR and OSKARPY are coupled and must be updated and validated in one pull request. Preserve required recipe patches."
+
+# These four native-library versions form a tested compatibility set in
+# build_base.yml. They are registered for complete coverage, but an isolated
+# latest-version comparison would be unsafe and misleading.
+
+[[dependencies]]
+id = "casacore"
+name = "Casacore"
+version_variables = ["CASACORE_VERSION"]
+recipes = []
+source_type = "manual"
+release_page = "https://anaconda.org/conda-forge/casacore/files"
+manual_reason = "Part of the Casacore/Boost/HDF5/CFITSIO compatibility set; review the complete set together."
+
+[[dependencies]]
+id = "boost"
+name = "Boost"
+version_variables = ["BOOST_VERSION"]
+recipes = []
+source_type = "manual"
+release_page = "https://anaconda.org/conda-forge/boost/files"
+manual_reason = "Part of the Casacore/Boost/HDF5/CFITSIO compatibility set; review the complete set together."
+
+[[dependencies]]
+id = "hdf5"
+name = "HDF5"
+version_variables = ["HDF5_VERSION"]
+recipes = []
+source_type = "manual"
+release_page = "https://anaconda.org/conda-forge/hdf5/files"
+manual_reason = "Part of the Casacore/Boost/HDF5/CFITSIO compatibility set; MPI variants require coordinated testing."
+
+[[dependencies]]
+id = "cfitsio"
+name = "CFITSIO"
+version_variables = ["CFITSIO_VERSION"]
+recipes = []
+source_type = "manual"
+release_page = "https://anaconda.org/conda-forge/cfitsio/files"
+manual_reason = "Part of the Casacore/Boost/HDF5/CFITSIO compatibility set; review the complete set together."
+
+[[dependencies]]
+id = "hvox"
+name = "HVOX"
+version_variables = ["HVOX_VERSION"]
+recipes = ["hvox/meta.yaml"]
+source_type = "retired"
+release_page = "https://github.com/matthieumeo/hvox/commits/main/"
+retired_reason = "HVOX is no longer built from this Feedstock."
+
+[[dependencies]]
+id = "pycsou"
+name = "Pycsou"
+version_variables = ["PYCSOU_VERSION"]
+recipes = ["pycsou/meta.yaml"]
+source_type = "retired"
+release_page = "https://github.com/matthieumeo/pycsou/commits/v2-dev/"
+retired_reason = "Pycsou is no longer built from this Feedstock and was part of the retired HVOX dependency chain."
+
+[[dependencies]]
+id = "idg"
+name = "IDG"
+version_variables = ["IDG_VERSION"]
+recipes = ["idg/meta.yaml"]
+source_type = "gitlab-tags"
+base_url = "https://gitlab.com"
+project = "astron-idg/idg"
+release_page = "https://gitlab.com/astron-idg/idg/-/tags"
+
+[[dependencies]]
+id = "everybeam"
+name = "EveryBeam"
+version_variables = ["EVERYBEAM_VERSION"]
+recipes = ["everybeam/meta.yaml"]
+source_type = "gitlab-tags"
+base_url = "https://git.astron.nl"
+project = "RD/EveryBeam"
+release_page = "https://git.astron.nl/RD/EveryBeam/-/tags"
+
+[[dependencies]]
+id = "wsclean"
+name = "WSClean"
+version_variables = ["WSCLEAN_VERSION"]
+recipes = ["wsclean/meta.yaml"]
+source_type = "gitlab-tags"
+base_url = "https://gitlab.com"
+project = "aroffringa/wsclean"
+release_page = "https://gitlab.com/aroffringa/wsclean/-/tags"
+notes = "The recipe converts a three-component Feedstock version such as 3.6.0 to the upstream tag v3.6."
+
+[[dependencies]]
+id = "aotools"
+name = "AOtools"
+version_variables = ["AOTOOLS_VERSION"]
+recipes = ["aotools/meta.yaml"]
+source_type = "pypi"
+package = "aotools"
+release_page = "https://pypi.org/project/aotools/"
+
+[[dependencies]]
+id = "seqfile"
+name = "seqfile"
+version_variables = ["SEQFILE_VERSION"]
+recipes = ["seqfile/meta.yaml"]
+source_type = "pypi"
+package = "seqfile"
+release_page = "https://pypi.org/project/seqfile/"
+
+[[dependencies]]
+id = "eidos"
+name = "Eidos"
+version_variables = ["EIDOS_VERSION"]
+recipes = ["eidos/meta.yaml"]
+source_type = "github-tags"
+repository = "i4Ds/eidos"
+release_page = "https://github.com/i4Ds/eidos/tags"
+notes = "Track the i4Ds fork used by the recipe rather than an unrelated package source."
+
+[[dependencies]]
+id = "ska-gridder-nifty-cuda"
+name = "SKA Gridder Nifty CUDA"
+version_variables = ["SKA_GRDR_NFTY_CU_VERSION"]
+recipes = ["ska-gridder-nifty-cuda/meta.yaml"]
+source_type = "gitlab-tags"
+base_url = "https://gitlab.com"
+project = "ska-telescope/sdp/ska-gridder-nifty-cuda"
+release_page = "https://gitlab.com/ska-telescope/sdp/ska-gridder-nifty-cuda/-/tags"
+notes = "CUDA and compiler compatibility require human review."
+
+[[dependencies]]
+id = "katbeam"
+name = "Katbeam"
+version_variables = ["KATBEAM_VERSION"]
+recipes = ["katbeam/meta.yaml"]
+source_type = "github-tags"
+repository = "ska-sa/katbeam"
+release_page = "https://github.com/ska-sa/katbeam/tags"
+notes = "Upstream uses tag v0.1; the Feedstock normalizes it to 0.1.0."
+
+[[dependencies]]
+id = "tools21cm"
+name = "tools21cm"
+version_variables = ["TOOLS_21CM_VERSION"]
+recipes = ["tools21cm/meta.yaml"]
+source_type = "pypi"
+package = "tools21cm"
+release_page = "https://pypi.org/project/tools21cm/"
+
+[[dependencies]]
+id = "aratmospy"
+name = "ARatmospy"
+version_variables = ["ARATMOSPY_VERSION"]
+recipes = ["aratmospy/meta.yaml"]
+source_type = "manual"
+release_page = "https://github.com/i4Ds/ARatmospy/commits/main/"
+manual_reason = "The recipe is pinned to an i4Ds fork commit and that fork has no release tags."
+
+[[dependencies]]
+id = "montagepy"
+name = "MontagePy"
+version_variables = ["MONTAGEPY_VERSION"]
+recipes = ["montagepy/meta.yaml"]
+source_type = "github-tags"
+repository = "Caltech-IPAC/Montage"
+release_page = "https://github.com/Caltech-IPAC/Montage/tags"
+notes = "Track the Montage source release, not the differently versioned MontagePy package on PyPI."
+
+[[dependencies]]
+id = "finufft"
+name = "FINUFFT"
+version_variables = ["FINUFFT_VERSION"]
+recipes = ["finufft/meta.yaml"]
+source_type = "pypi"
+package = "finufft"
+release_page = "https://pypi.org/project/finufft/"
+notes = "The recipe uses platform-specific wheel URLs; validate each supported Python version."
+
+[[dependencies]]
+id = "bipp"
+name = "BIPP / Bluebild"
+version_variables = ["BLUEBILD_VERSION"]
+recipes = ["bipp/meta.yaml"]
+source_type = "github-tags"
+repository = "epfl-radio-astro/bipp"
+release_page = "https://github.com/epfl-radio-astro/bipp/tags"
+notes = "The Feedstock variable is named BLUEBILD_VERSION but it controls the bipp recipe."
