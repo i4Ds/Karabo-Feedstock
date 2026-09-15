@@ -14,9 +14,10 @@ build:
 
 requirements:
   build:
-    # specific compiler version required, use of nullptr keyword in oskar 2.8.3
-    - gcc_linux-64 >=8,<12
-    - gxx_linux-64 >=8,<12
+    # Build against Conda's portable Linux sysroot instead of the runner's GLIBC.
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ stdlib('c') }}
     - cmake >=3.10,<4
     - make
 
