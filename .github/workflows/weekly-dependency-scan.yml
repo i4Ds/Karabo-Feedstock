@@ -15,8 +15,8 @@ on:
           - scan
           - test-notification
 
-# The scanner can read the repository and manage issues only. It cannot change
-# code, start build workflows, publish packages, or merge pull requests.
+# The scanner can read repository files and manage issues only. It cannot edit
+# code, dispatch build workflows, create pull requests, merge, or publish.
 permissions:
   contents: read
   issues: write
@@ -26,277 +26,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  scan-tools21cm:
-    name: Check tools21cm
+  scan-feedstock:
+    name: Check complete Feedstock
     if: github.repository == 'i4Ds/Karabo-Feedstock'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       SCAN_MODE: ${{ inputs.mode || 'scan' }}
 
     steps:
-      - name: Compare Feedstock and PyPI versions
-        uses: actions/github-script@v8
+      - name: Checkout the reviewed dependency registry
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const defaultBranch = context.payload.repository.default_branch || "main";
-            const notifyUser = "Delberin-Ali";
-            const scanMode = process.env.SCAN_MODE;
+          python-version: "3.12"
 
-            const target = {
-              name: "tools21cm",
-              versionVariable: "TOOLS_21CM_VERSION",
-              releaseApi: "https://pypi.org/pypi/tools21cm/json",
-              releasePage: "https://pypi.org/project/tools21cm/",
-            };
+      - name: Validate scanner and complete registry coverage
+        run: >-
+          python -m unittest discover
+          -s .github/scripts/tests
+          -p 'test_*.py'
+          -v
 
-            function parseStableVersion(version) {
-              const match = version.match(/^(\d+)\.(\d+)\.(\d+)$/);
-              if (!match) {
-                throw new Error(
-                  `Refusing unexpected ${target.name} version: ${version}`
-                );
-              }
-              return match.slice(1).map(Number);
-            }
-
-            function compareVersions(left, right) {
-              const leftParts = parseStableVersion(left);
-              const rightParts = parseStableVersion(right);
-              for (let index = 0; index < leftParts.length; index += 1) {
-                if (leftParts[index] !== rightParts[index]) {
-                  return leftParts[index] > rightParts[index] ? 1 : -1;
-                }
-              }
-              return 0;
-            }
-
-            async function findOpenIssue(marker) {
-              const issues = await github.paginate(
-                github.rest.issues.listForRepo,
-                { owner, repo, state: "open", per_page: 100 }
-              );
-              return issues.find(
-                (issue) => !issue.pull_request && issue.body?.includes(marker)
-              );
-            }
-
-            async function createAssignedIssue(title, body) {
-              try {
-                return await github.rest.issues.create({
-                  owner,
-                  repo,
-                  title,
-                  body,
-                  assignees: [notifyUser],
-                });
-              } catch (error) {
-                if (error.status !== 422) {
-                  throw error;
-                }
-                core.warning(
-                  `Could not assign @${notifyUser}; creating the mentioned issue without an assignee.`
-                );
-                return github.rest.issues.create({ owner, repo, title, body });
-              }
-            }
-
-            async function upsertNotificationIssue(marker, title, body) {
-              const existing = await findOpenIssue(marker);
-              if (!existing) {
-                const created = await createAssignedIssue(title, body);
-                core.notice(`Created issue #${created.data.number}`);
-                return created.data.number;
-              }
-
-              const changed = existing.title !== title || existing.body !== body;
-              if (changed) {
-                await github.rest.issues.update({
-                  owner,
-                  repo,
-                  issue_number: existing.number,
-                  title,
-                  body,
-                });
-                await github.rest.issues.createComment({
-                  owner,
-                  repo,
-                  issue_number: existing.number,
-                  body: `@${notifyUser}, the weekly scan found updated release information.`,
-                });
-                core.notice(`Updated issue #${existing.number}`);
-              } else {
-                core.info(`Issue #${existing.number} already contains this update.`);
-              }
-
-              if (!existing.assignees.some((user) => user.login === notifyUser)) {
-                try {
-                  await github.rest.issues.addAssignees({
-                    owner,
-                    repo,
-                    issue_number: existing.number,
-                    assignees: [notifyUser],
-                  });
-                } catch (error) {
-                  core.warning(`Could not assign @${notifyUser}: ${error.message}`);
-                }
-              }
-              return existing.number;
-            }
-
-            const fileResponse = await github.rest.repos.getContent({
-              owner,
-              repo,
-              path: ".github/workflows/build_base.yml",
-              ref: defaultBranch,
-            });
-            if (Array.isArray(fileResponse.data) || !fileResponse.data.content) {
-              throw new Error("build_base.yml did not return file content");
-            }
-
-            const buildBase = Buffer.from(
-              fileResponse.data.content,
-              fileResponse.data.encoding
-            ).toString("utf8");
-            const escapedVariable = target.versionVariable.replace(
-              /[.*+?^${}()|[\]\\]/g,
-              "\\$&"
-            );
-            const versionPattern = new RegExp(
-              `^\\s*${escapedVariable}:\\s*([^\\s#]+)`,
-              "m"
-            );
-            const configuredMatch = buildBase.match(versionPattern);
-            if (!configuredMatch) {
-              throw new Error(`Could not find ${target.versionVariable}`);
-            }
-            const configuredVersion = configuredMatch[1];
-            parseStableVersion(configuredVersion);
-
-            const releaseResponse = await fetch(target.releaseApi, {
-              headers: {
-                "User-Agent": "i4Ds-Karabo-Feedstock-weekly-dependency-scan",
-              },
-            });
-            if (!releaseResponse.ok) {
-              throw new Error(
-                `PyPI request failed with HTTP ${releaseResponse.status}`
-              );
-            }
-            const releaseData = await releaseResponse.json();
-            const latestVersion = releaseData.info?.version;
-            if (!latestVersion) {
-              throw new Error("PyPI response did not contain info.version");
-            }
-            parseStableVersion(latestVersion);
-
-            const updateAvailable =
-              compareVersions(latestVersion, configuredVersion) > 0;
-            const codeUrl =
-              `https://github.com/${owner}/${repo}/blob/${defaultBranch}` +
-              "/.github/workflows/build_base.yml";
-
-            await core.summary
-              .addHeading("Weekly Feedstock dependency scan")
-              .addTable([
-                [
-                  { data: "Dependency", header: true },
-                  { data: "Configured", header: true },
-                  { data: "Latest stable", header: true },
-                  { data: "Update", header: true },
-                ],
-                [
-                  target.name,
-                  configuredVersion,
-                  latestVersion,
-                  updateAvailable ? "Available" : "None",
-                ],
-              ])
-              .addRaw(
-                "This workflow did not modify files, trigger builds, or publish packages."
-              )
-              .write();
-
-            if (scanMode === "test-notification") {
-              const marker = "<!-- karabo-dependency-scan-test:tools21cm -->";
-              const title = "[Test] Weekly dependency scan notification";
-              const body = [
-                marker,
-                `@${notifyUser}`,
-                "",
-                "## Safe notification test",
-                "",
-                "The weekly dependency scanner created this issue because it was run manually in `test-notification` mode.",
-                "",
-                `- Configured ${target.name} version: \`${configuredVersion}\``,
-                `- Latest stable PyPI version: \`${latestVersion}\``,
-                `- Real update currently available: **${updateAvailable ? "yes" : "no"}**`,
-                "",
-                "No recipe was changed, no build was triggered, and no package was published.",
-                "Close this issue after confirming that the assignment and notification worked.",
-              ].join("\n");
-              await upsertNotificationIssue(marker, title, body);
-              return;
-            }
-
-            if (!updateAvailable) {
-              core.notice(
-                `${target.name} is current: ${configuredVersion} (latest ${latestVersion}).`
-              );
-              const marker = "<!-- karabo-dependency-scan:tools21cm -->";
-              const existing = await findOpenIssue(marker);
-              if (existing) {
-                await github.rest.issues.createComment({
-                  owner,
-                  repo,
-                  issue_number: existing.number,
-                  body: `The configured version is now \`${configuredVersion}\`, which is current. Closing this notification.`,
-                });
-                await github.rest.issues.update({
-                  owner,
-                  repo,
-                  issue_number: existing.number,
-                  state: "closed",
-                });
-              }
-              return;
-            }
-
-            const marker = "<!-- karabo-dependency-scan:tools21cm -->";
-            const title =
-              `[Dependency update] ${target.name} ${configuredVersion} → ${latestVersion}`;
-            const body = [
-              marker,
-              `@${notifyUser}`,
-              "",
-              "## Dependency update detected",
-              "",
-              "| Item | Version |",
-              "| --- | --- |",
-              `| Current Feedstock version | \`${configuredVersion}\` |`,
-              `| Latest stable PyPI version | \`${latestVersion}\` |`,
-              "",
-              `- [Current version in build_base.yml](${codeUrl})`,
-              `- [${target.name} release page](${target.releasePage})`,
-              "",
-              "## Next step",
-              "",
-              "1. Review the upstream release.",
-              "2. Open GitHub Copilot Agents for `i4Ds/Karabo-Feedstock`.",
-              "3. Select **Karabo Feedstock Maintainer** on the `main` branch.",
-              "4. Give it this task:",
-              "",
-              "```text",
-              `Analyze the ${target.name} update from ${configuredVersion} to ${latestVersion}.`,
-              "First explain the smallest safe change. If compatible, update all related",
-              "Feedstock version fields, run validation without uploading packages, and",
-              "prepare a draft pull request for human review.",
-              "```",
-              "",
-              "## Scanner safety",
-              "",
-              "This scan did not modify repository files, trigger a Conda build, publish a package, or create a pull request.",
-            ].join("\n");
-            await upsertNotificationIssue(marker, title, body);
+      - name: Compare Feedstock and upstream stable releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python .github/scripts/dependency_scan.py
+          --repo-root .
+          --config .github/dependency-scan.toml
+          --mode "$SCAN_MODE"
