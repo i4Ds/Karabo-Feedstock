@@ -7,6 +7,7 @@ source:
   git_tag: {{ OSKAR_VERSION }}
   patches:
     - 0001-fix-optional-phase-convention-tag.patch
+    - 0002-fix-strtok-r-with-old-glibc.patch
 
 build:
   number: {{ build }}

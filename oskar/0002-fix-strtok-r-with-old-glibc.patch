@@ -1,0 +1,14 @@
+diff --git a/oskar/utility/src/oskar_string_to_array.c b/oskar/utility/src/oskar_string_to_array.c
+--- a/oskar/utility/src/oskar_string_to_array.c
++++ b/oskar/utility/src/oskar_string_to_array.c
+@@ -15,7 +15,10 @@
+ #ifdef _WIN32
+ #define strtok_r(s,d,p) strtok_s(s,d,p)
+ #else
++#ifdef strtok_r
++#undef strtok_r
++#endif
+ /* Ensure function is declared for strange string.h header. */
+ /* NOLINTNEXTLINE(readability-identifier-naming) */
+ char* strtok_r(char*, const char*, char**);
+ #endif
