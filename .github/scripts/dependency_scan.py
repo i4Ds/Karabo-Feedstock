@@ -51,6 +51,13 @@ ALLOWED_SOURCE_TYPES = {
     "manual",
     "retired",
 }
+ALLOWED_COMPATIBILITY_MODES = {
+    "python-numpy",
+    "python-only",
+    "coinstall",
+    "manual",
+    "retired",
+}
 
 
 class ScanError(RuntimeError):
@@ -91,6 +98,13 @@ class Settings:
 
 
 @dataclass(frozen=True)
+class CompatibilitySettings:
+    python_version: str
+    numpy_version: str
+    channel_label: str
+
+
+@dataclass(frozen=True)
 class Dependency:
     id: str
     name: str
@@ -107,12 +121,18 @@ class Dependency:
     project: str = ""
     tag_pattern: str = DEFAULT_TAG_PATTERN
     ignored_versions: tuple[str, ...] = ()
+    compatibility_mode: str = "manual"
+    validation_recipe_paths: tuple[str, ...] = ()
+    validation_package_names: tuple[str, ...] = ()
+    python_smoke_tests: tuple[str, ...] = ()
+    needs_cuda: bool = False
 
 
 @dataclass(frozen=True)
 class Registry:
     schema_version: int
     settings: Settings
+    compatibility: CompatibilitySettings
     dependencies: tuple[Dependency, ...]
 
 
@@ -227,6 +247,15 @@ def _bounded_int(
     return value
 
 
+def _optional_bool(
+    mapping: Mapping[str, Any], key: str, context: str, *, default: bool = False
+) -> bool:
+    value = mapping.get(key, default)
+    if not isinstance(value, bool):
+        raise ScanError(f"{context}: {key} must be a boolean")
+    return value
+
+
 def load_registry(path: Path) -> Registry:
     try:
         raw = tomllib.loads(path.read_text(encoding="utf-8"))
@@ -234,7 +263,7 @@ def load_registry(path: Path) -> Registry:
         raise ScanError(f"could not read registry {path}: {error}") from error
 
     schema_version = raw.get("schema_version")
-    if schema_version != 1:
+    if schema_version != 2:
         raise ScanError(f"unsupported dependency registry schema: {schema_version!r}")
 
     settings_raw = raw.get("settings")
@@ -273,6 +302,21 @@ def load_registry(path: Path) -> Registry:
         ),
     )
 
+    compatibility_raw = raw.get("compatibility")
+    if not isinstance(compatibility_raw, dict):
+        raise ScanError("registry: [compatibility] table is required")
+    compatibility = CompatibilitySettings(
+        python_version=_required_string(
+            compatibility_raw, "python_version", "compatibility"
+        ),
+        numpy_version=_required_string(
+            compatibility_raw, "numpy_version", "compatibility"
+        ),
+        channel_label=_required_string(
+            compatibility_raw, "channel_label", "compatibility"
+        ),
+    )
+
     dependencies_raw = raw.get("dependencies")
     if not isinstance(dependencies_raw, list) or not dependencies_raw:
         raise ScanError("registry: at least one [[dependencies]] table is required")
@@ -301,12 +345,26 @@ def load_registry(path: Path) -> Registry:
             ignored_versions=_optional_string_tuple(
                 item, "ignored_versions", context
             ),
+            compatibility_mode=str(
+                item.get("compatibility_mode", "manual")
+            ).strip(),
+            validation_recipe_paths=_optional_string_tuple(
+                item, "validation_recipe_paths", context
+            ),
+            validation_package_names=_optional_string_tuple(
+                item, "validation_package_names", context
+            ),
+            python_smoke_tests=_optional_string_tuple(
+                item, "python_smoke_tests", context
+            ),
+            needs_cuda=_optional_bool(item, "needs_cuda", context),
         )
         dependencies.append(dependency)
 
     return Registry(
         schema_version=schema_version,
         settings=settings,
+        compatibility=compatibility,
         dependencies=tuple(dependencies),
     )
 
@@ -327,6 +385,19 @@ def validate_registry(
     seen_ids: set[str] = set()
     seen_variables: set[str] = set()
 
+    for label, value in (
+        ("python_version", registry.compatibility.python_version),
+        ("numpy_version", registry.compatibility.numpy_version),
+    ):
+        try:
+            parse_stable_version(value)
+        except ScanError as error:
+            errors.append(f"compatibility.{label}: {error}")
+    if not re.fullmatch(
+        r"[A-Za-z0-9_.-]+", registry.compatibility.channel_label
+    ):
+        errors.append("compatibility.channel_label contains unsupported characters")
+
     for dependency in registry.dependencies:
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", dependency.id):
             errors.append(f"{dependency.id!r}: id must contain lowercase letters/numbers/hyphens")
@@ -338,6 +409,51 @@ def validate_registry(
             errors.append(
                 f"{dependency.id}: unsupported source_type {dependency.source_type!r}"
             )
+
+        if dependency.compatibility_mode not in ALLOWED_COMPATIBILITY_MODES:
+            errors.append(
+                f"{dependency.id}: unsupported compatibility_mode "
+                f"{dependency.compatibility_mode!r}"
+            )
+
+        if dependency.source_type == "manual" and dependency.compatibility_mode != "manual":
+            errors.append(f"{dependency.id}: manual source requires manual compatibility")
+        if dependency.source_type == "retired" and dependency.compatibility_mode != "retired":
+            errors.append(f"{dependency.id}: retired source requires retired compatibility")
+        if (
+            dependency.source_type not in {"manual", "retired"}
+            and dependency.compatibility_mode in {"manual", "retired"}
+        ):
+            errors.append(
+                f"{dependency.id}: automatic source requires an automated compatibility mode"
+            )
+
+        if len(dependency.validation_recipe_paths) != len(
+            dependency.validation_package_names
+        ):
+            errors.append(
+                f"{dependency.id}: validation_recipe_paths and "
+                "validation_package_names must have the same length"
+            )
+        if (
+            dependency.compatibility_mode not in {"manual", "retired"}
+            and not dependency.validation_recipe_paths
+        ):
+            errors.append(f"{dependency.id}: automated compatibility requires a validation recipe")
+        for package_name in dependency.validation_package_names:
+            if not re.fullmatch(r"[A-Za-z0-9_.-]+", package_name):
+                errors.append(f"{dependency.id}: invalid validation package name")
+
+        for recipe in dependency.validation_recipe_paths:
+            try:
+                path = _safe_repo_path(repo_root, recipe)
+            except ScanError as error:
+                errors.append(str(error))
+                continue
+            if not path.is_file():
+                errors.append(
+                    f"{dependency.id}: validation recipe does not exist: {recipe}"
+                )
 
         if not dependency.release_page.startswith("https://"):
             errors.append(f"{dependency.id}: release_page must use https")
@@ -726,9 +842,13 @@ def _agent_task(result: ScanResult, registry: Registry) -> list[str]:
         f"Relevant recipe files: {recipes}.",
         "Read the matching entry in .github/dependency-scan.toml and inspect the",
         "upstream release before changing anything. Explain the smallest safe change.",
+        f"Required compatibility target: Python {registry.compatibility.python_version}",
+        f"and NumPy {registry.compatibility.numpy_version} when the registry mode requires it.",
         "If compatible, update all related Feedstock version fields, source revisions,",
-        "checksums and build numbers. Validate without uploading packages, then create",
-        "a draft pull request for human review. Never merge or publish packages.",
+        "checksums and build numbers. Run the unit tests and compatibility preflight,",
+        "then create a draft pull request for human review. The PR compatibility",
+        "workflow will build and test the local artifact without uploading it.",
+        "Never merge or publish packages.",
     ]
     if dependency.notes:
         lines.append(f"Special review note: {dependency.notes}")

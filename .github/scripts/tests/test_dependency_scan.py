@@ -101,6 +101,9 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(set(registered), set(self.build_versions))
         self.assertEqual(len(registered), 29)
         self.assertEqual(len(self.registry.dependencies), 28)
+        self.assertEqual(self.registry.schema_version, 2)
+        self.assertEqual(self.registry.compatibility.python_version, "3.12")
+        self.assertEqual(self.registry.compatibility.numpy_version, "2.2.6")
         source_counts = {
             source_type: sum(
                 dependency.source_type == source_type
@@ -151,6 +154,24 @@ class RegistryTests(unittest.TestCase):
             dependency_scan.ScanError, "UNREGISTERED_VERSION"
         ):
             dependency_scan.validate_registry(self.registry, extra, REPO_ROOT)
+
+    def test_invalid_compatibility_version_fails_validation(self) -> None:
+        registry = dependency_scan.Registry(
+            schema_version=self.registry.schema_version,
+            settings=self.registry.settings,
+            compatibility=dependency_scan.CompatibilitySettings(
+                python_version="three-twelve",
+                numpy_version=self.registry.compatibility.numpy_version,
+                channel_label=self.registry.compatibility.channel_label,
+            ),
+            dependencies=self.registry.dependencies,
+        )
+        with self.assertRaisesRegex(
+            dependency_scan.ScanError, "compatibility.python_version"
+        ):
+            dependency_scan.validate_registry(
+                registry, self.build_versions, REPO_ROOT
+            )
 
 
 class ProviderTests(unittest.TestCase):
@@ -250,7 +271,7 @@ class ScanAndReportTests(unittest.TestCase):
 
     def test_tracking_issue_contains_agent_task_and_safety_boundary(self) -> None:
         registry = dependency_scan.Registry(
-            schema_version=1,
+            schema_version=2,
             settings=dependency_scan.Settings(
                 expected_repository="i4Ds/Karabo-Feedstock",
                 build_base=".github/workflows/build_base.yml",
@@ -259,6 +280,11 @@ class ScanAndReportTests(unittest.TestCase):
                 http_timeout_seconds=20,
                 max_pages=1,
                 max_workers=1,
+            ),
+            compatibility=dependency_scan.CompatibilitySettings(
+                python_version="3.12",
+                numpy_version="2.2.6",
+                channel_label="main",
             ),
             dependencies=(),
         )
@@ -273,6 +299,8 @@ class ScanAndReportTests(unittest.TestCase):
         title, body = dependency_scan.render_tracking_issue([result], registry)
         self.assertIn("1 update", title)
         self.assertIn("Use the Karabo Feedstock Maintainer custom agent", body)
+        self.assertIn("Required compatibility target: Python 3.12", body)
+        self.assertIn("NumPy 2.2.6", body)
         self.assertIn("draft pull request for human review", body)
         self.assertIn("did **not** modify repository files", body)
 

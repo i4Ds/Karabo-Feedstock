@@ -20,6 +20,47 @@ at 09:00 UTC and can also be started manually.
 The scanner does not start the custom agent. A maintainer chooses one update,
 starts the agent manually, and reviews its draft pull request.
 
+## Python and NumPy compatibility
+
+The registry contains one compatibility contract for the complete Feedstock:
+
+- Python 3.12 is the required runtime;
+- NumPy 2.2.6 is the required NumPy runtime where applicable;
+- packages are built into an isolated local Conda directory;
+- no validation package is uploaded to Anaconda.
+
+The weekly release scan remains lightweight and read-only. Definitive
+compatibility validation runs on a dependency-update pull request because a
+release cannot be proven compatible from version metadata alone.
+
+The custom agent first inspects upstream metadata, updates one dependency group,
+runs the unit tests and compatibility preflight, and opens a draft pull request.
+Opening that draft is what starts the authoritative build-and-test workflow.
+
+`.github/workflows/dependency-compatibility.yml` selects dependency groups
+whose version or recipe changed. For every selected group it:
+
+1. verifies that the recipe variants include the configured Python and NumPy
+   targets;
+2. builds the registered recipe or coupled recipes without uploading;
+3. creates a clean environment with the configured versions;
+4. installs the exact locally built artifacts;
+5. runs the registered Python smoke tests;
+6. publishes the pass/fail table as the GitHub Actions job summary and retains
+   the full report and log as an artifact for 14 days.
+
+Compatibility modes are explicit:
+
+- `python-numpy`: build and test with Python and NumPy plus Python smoke tests;
+- `python-only`: build and test with Python where NumPy is not a dependency;
+- `coinstall`: native package build and co-installation with Python and NumPy;
+- `manual`: coordinated compatibility work that cannot be automated safely;
+- `retired`: no release or compatibility work is performed.
+
+CUDA recipes run serially and use the same CUDA/GCC setup as the existing
+Feedstock build workflows. A compatibility check has only `contents: read`
+permission and receives no repository or Anaconda write credential.
+
 ## Safety boundary
 
 The workflow has only `contents: read` and `issues: write`. The scanner cannot
@@ -40,6 +81,8 @@ Each `[[dependencies]]` entry defines:
 - the relevant recipe files;
 - one trusted release provider and release page;
 - an optional tag pattern, compatibility note, or ignored stable version.
+- a compatibility mode, validation recipes/package names, optional smoke tests,
+  and whether the existing CUDA setup is required.
 
 Supported providers are `pypi`, `github-tags`, `gitlab-tags`, `manual`, and
 `retired`.
@@ -73,6 +116,23 @@ python .github/scripts/dependency_scan.py \
   --mode scan \
   --dry-run
 ```
+
+Validate the compatibility configuration for one dependency without building:
+
+```bash
+python .github/scripts/dependency_compatibility.py \
+  --repo-root . \
+  --config .github/dependency-scan.toml \
+  validate \
+  --dependency aotools \
+  --preflight-only \
+  --report /tmp/aotools-compatibility.md
+```
+
+After the compatibility workflow is merged, it runs automatically on relevant
+pull requests. It can also be tested manually from **Actions → Dependency
+Python and NumPy Compatibility → Run workflow** by entering a registry id such
+as `aotools` and selecting the dependency-update branch.
 
 After merging, use **Actions → Weekly Feedstock Dependency Scan → Run
 workflow → test-notification** to verify issue assignment and notification.

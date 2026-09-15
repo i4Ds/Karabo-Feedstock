@@ -1,0 +1,160 @@
+name: Dependency Python and NumPy Compatibility
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/build_base.yml"
+      - ".github/dependency-scan.toml"
+      - ".github/scripts/dependency_scan.py"
+      - ".github/scripts/dependency_compatibility.py"
+      - ".github/scripts/tests/**"
+      - "*/meta.yaml"
+      - "*/conda_build_config.yaml"
+      - "*/build.sh"
+  workflow_dispatch:
+    inputs:
+      dependency:
+        description: "Dependency id from .github/dependency-scan.toml"
+        required: true
+        default: "aotools"
+        type: string
+
+# Validation is deliberately read-only. No Anaconda token or write permission
+# is available to these jobs, including when recipe source code is executed.
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-compatibility-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    name: Select changed dependency groups
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
+
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run scanner and compatibility unit tests
+        run: >-
+          python -m unittest discover
+          -s .github/scripts/tests
+          -p 'test_*.py'
+          -v
+
+      - name: Create validation matrix
+        id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          REQUESTED_DEPENDENCY: ${{ inputs.dependency }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            python .github/scripts/dependency_compatibility.py \
+              --repo-root . \
+              --config .github/dependency-scan.toml \
+              plan \
+              --base "$BASE_SHA" \
+              --github-output "$GITHUB_OUTPUT"
+          else
+            python .github/scripts/dependency_compatibility.py \
+              --repo-root . \
+              --config .github/dependency-scan.toml \
+              plan \
+              --dependency "$REQUESTED_DEPENDENCY" \
+              --github-output "$GITHUB_OUTPUT"
+          fi
+
+  compatibility:
+    name: ${{ matrix.name }} — Python 3.12 / NumPy 2.2.6
+    needs: plan
+    if: needs.plan.outputs.count != '0'
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout dependency update
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: "3.12"
+
+      - name: Install GCC 11 for CUDA recipes
+        if: matrix.needs_cuda == true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-11 g++-11
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+
+      - name: Free runner disk space for CUDA recipes
+        if: matrix.needs_cuda == true
+        run: |
+          sudo rm -rf /usr/local/lib/android /opt/ghc /usr/share/dotnet || true
+          docker system prune -af || true
+          df -h
+
+      - name: Install CUDA toolkit for CUDA recipes
+        if: matrix.needs_cuda == true
+        uses: Jimver/cuda-toolkit@v0.2.25
+        with:
+          cuda: "12.0.1"
+          log-file-suffix: compatibility
+
+      - name: Configure isolated Conda builder
+        shell: bash -el {0}
+        run: |
+          conda install -y -n base -c conda-forge conda-libmamba-solver "conda-build>=25"
+          conda config --set solver libmamba
+          conda config --remove-key channels || true
+          conda config --add channels conda-forge
+          conda config --add channels i4ds/label/main
+          conda config --add channels i4ds
+          conda config --add channels defaults
+          conda config --set channel_priority flexible
+          conda config --set anaconda_upload no
+
+      - name: Build, install, and run compatibility tests
+        shell: bash -el {0}
+        run: >-
+          python .github/scripts/dependency_compatibility.py
+          --repo-root .
+          --config .github/dependency-scan.toml
+          validate
+          --dependency "${{ matrix.dependency }}"
+          --report "validation-output/${{ matrix.dependency }}/report.md"
+          --log "validation-output/${{ matrix.dependency }}/validation.log"
+
+      - name: Upload compatibility report and log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-${{ matrix.dependency }}
+          path: validation-output/${{ matrix.dependency }}/
+          if-no-files-found: warn
+          retention-days: 14
