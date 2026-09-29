@@ -18,12 +18,12 @@ test -f "$CUDA_INC/cuda_runtime.h"
 # compute capability 6.0+, so entries below MIN_SM are skipped (upstream's minimum is 6.0 too).
 test -n "${CUDAARCHS:-}"
 MIN_SM=60
-GENCODE=""
+GENCODE=""; WANT_SASS=""
 for a in ${CUDAARCHS//;/ }; do
   arch=${a%-*}; n=${arch%[af]}
   [ "$n" -ge "$MIN_SM" ] || continue
   case $a in
-    *-real)    GENCODE="$GENCODE;-gencode;arch=compute_${arch},code=sm_${arch}" ;;
+    *-real)    GENCODE="$GENCODE;-gencode;arch=compute_${arch},code=sm_${arch}"; WANT_SASS="$WANT_SASS sm_${arch}" ;;
     *-virtual) GENCODE="$GENCODE;-gencode;arch=compute_${arch},code=compute_${arch}" ;;
   esac
 done
@@ -38,8 +38,11 @@ export CMAKE_ARGS="${CMAKE_ARGS:-} -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
 $PYTHON -m pip install --no-deps . -v
 
 # find_package(CUDA) is optional upstream: fail here rather than ship a CPU-only package.
-# Fail unless the library links the CUDA runtime and carries Hopper (sm_90) machine code.
+# Fail unless the library links the CUDA runtime and carries machine code for every real
+# architecture that was requested above.
 LIB=$(find "$SP_DIR" "$PREFIX/lib" -name 'libska_sdp_func.so' | head -n1)
-# (no grep -q: with pipefail an early grep exit would fail the pipeline with SIGPIPE)
 "${READELF:-readelf}" -d "$LIB" | grep libcudart
-cuobjdump --list-elf "$LIB" | grep sm_90
+SASS=$(cuobjdump --list-elf "$LIB")
+for sm in $WANT_SASS; do
+  grep -q "${sm}\b" <<<"$SASS" || { echo "ERROR: no $sm code in $LIB"; exit 1; }
+done

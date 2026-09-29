@@ -23,6 +23,12 @@ cmake \
 make -j"${CPU_COUNT:-2}" install
 
 # OSKAR's find_package(CUDAToolkit) is optional: without it the build silently becomes CPU-only.
-# Fail unless the library links the CUDA runtime and carries Hopper (sm_90) machine code.
+# Fail unless the library links the CUDA runtime and carries machine code for every real
+# architecture in CUDAARCHS, so the check follows conda-forge's list rather than a fixed name.
 "${READELF:-readelf}" -d "${PREFIX}/lib/liboskar.so" | grep libcudart
-cuobjdump --list-elf "${PREFIX}/lib/liboskar.so" | grep sm_90
+SASS=$(cuobjdump --list-elf "${PREFIX}/lib/liboskar.so")
+for a in $(echo "${CUDAARCHS}" | tr ';' ' '); do
+    case "$a" in
+        *-real) echo "$SASS" | grep -q "sm_${a%-real}\b" || { echo "ERROR: no sm_${a%-real} code in liboskar.so"; exit 1; } ;;
+    esac
+done
