@@ -23,7 +23,7 @@ for a in ${CUDAARCHS//;/ }; do
   arch=${a%-*}; n=${arch%[af]}
   [ "$n" -ge "$MIN_SM" ] || continue
   case $a in
-    *-real)    GENCODE="$GENCODE;-gencode;arch=compute_${arch},code=sm_${arch}"; WANT_SASS="$WANT_SASS sm_${arch}" ;;
+    *-real)    GENCODE="$GENCODE;-gencode;arch=compute_${arch},code=sm_${arch}"; WANT_SASS="$WANT_SASS $n" ;;
     *-virtual) GENCODE="$GENCODE;-gencode;arch=compute_${arch},code=compute_${arch}" ;;
   esac
 done
@@ -39,10 +39,12 @@ $PYTHON -m pip install --no-deps . -v
 
 # find_package(CUDA) is optional upstream: fail here rather than ship a CPU-only package.
 # Fail unless the library links the CUDA runtime and carries machine code for every real
-# architecture that was requested above.
+# architecture that was requested above. cuobjdump names family-specific entries without
+# their suffix (100f -> sm_100) and architecture-specific ones with it (90a -> sm_90a), so
+# match the number with an optional a/f.
 LIB=$(find "$SP_DIR" "$PREFIX/lib" -name 'libska_sdp_func.so' | head -n1)
 "${READELF:-readelf}" -d "$LIB" | grep libcudart
 SASS=$(cuobjdump --list-elf "$LIB")
-for sm in $WANT_SASS; do
-  grep -q "${sm}\b" <<<"$SASS" || { echo "ERROR: no $sm code in $LIB"; exit 1; }
+for n in $WANT_SASS; do
+  grep -qE "sm_${n}[af]?\b" <<<"$SASS" || { echo "ERROR: no sm_${n} code in $LIB"; exit 1; }
 done

@@ -25,10 +25,13 @@ make -j"${CPU_COUNT:-2}" install
 # OSKAR's find_package(CUDAToolkit) is optional: without it the build silently becomes CPU-only.
 # Fail unless the library links the CUDA runtime and carries machine code for every real
 # architecture in CUDAARCHS, so the check follows conda-forge's list rather than a fixed name.
+# cuobjdump names family-specific entries without their suffix (100f -> sm_100) and
+# architecture-specific ones with it (90a -> sm_90a), so match the number with an optional a/f.
 "${READELF:-readelf}" -d "${PREFIX}/lib/liboskar.so" | grep libcudart
 SASS=$(cuobjdump --list-elf "${PREFIX}/lib/liboskar.so")
 for a in $(echo "${CUDAARCHS}" | tr ';' ' '); do
     case "$a" in
-        *-real) echo "$SASS" | grep -q "sm_${a%-real}\b" || { echo "ERROR: no sm_${a%-real} code in liboskar.so"; exit 1; } ;;
+        *-real) n=${a%-real}; n=${n%[af]}
+                echo "$SASS" | grep -qE "sm_${n}[af]?\b" || { echo "ERROR: no sm_${n} code in liboskar.so"; exit 1; } ;;
     esac
 done
