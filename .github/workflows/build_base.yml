@@ -272,10 +272,11 @@ jobs:
         # both; native packages on the platforms they were built for.
         os: ${{ fromJSON((!inputs.isNative || inputs.buildArm) && '["ubuntu-latest", "ubuntu-24.04-arm"]' || '["ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
+    # No checkout here: the test needs nothing from the repository, and with the repository as
+    # the working directory `python -c "import <name>"` would resolve any recipe directory of
+    # that name (aratmospy/, eidos/, oskar/, ...) as an empty namespace package and pass without
+    # the package being importable at all.
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
