@@ -3,7 +3,7 @@ package:
   version: "{{ SEQFILE_VERSION_ALT }}"
 
 source:
-  url: "https://pypi.io/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ SEQFILE_VERSION }}.tar.gz"
+  url: "https://files.pythonhosted.org/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ SEQFILE_VERSION }}.tar.gz"
 
 build:
   number: {{ build }}

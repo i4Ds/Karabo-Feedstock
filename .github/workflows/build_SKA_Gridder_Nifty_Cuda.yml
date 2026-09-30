@@ -38,6 +38,7 @@ jobs:
       packageVersionName: SKA_GRDR_NFTY_CU_VERSION
       useCuda: true
       isNative: true
+      buildArm: true
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}

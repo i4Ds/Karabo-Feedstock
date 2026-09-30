@@ -1,4 +1,4 @@
-name: SKA SDP Func Python Wrapper
+name: PyUVData
 
 on:
   workflow_dispatch:
@@ -11,10 +11,6 @@ on:
         type: boolean
         required: false
         default: false
-      devDeps:
-        type: string
-        required: false
-        default: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
       buildNumber:
         type: string
         required: true
@@ -28,26 +24,22 @@ on:
         type: boolean
         required: false
         default: false
-      devDeps:
-        type: string
-        required: false
-        default: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
       buildNumber:
         type: string
         required: true
 
 jobs:
 
-  SKA_SDP_Func_Python_Wrapper:
+  PyUVData:
     uses: ./.github/workflows/build_base.yml
     with:
-      packageName: ska-sdp-func-python
-      packageVersion: $SKA_SDP_FUNC_PY_VERSION
-      packageVersionName: SKA_SDP_FUNC_PY_VERSION
-      pythonCall: from ska_sdp_func_python import *
+      packageName: pyuvdata
+      packageVersion: $PYUVDATA_VERSION
+      packageVersionName: PYUVDATA_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
-      devDeps: ${{ inputs.devDeps }}
       buildNumber: ${{ inputs.buildNumber }}
-      isNative: false
+      pythonCall: import pyuvdata
+      isNative: true
+      buildArm: true
     secrets: inherit

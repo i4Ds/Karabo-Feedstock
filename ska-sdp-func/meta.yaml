@@ -12,7 +12,11 @@ build:
   
 requirements:
   build:
-    - libgcc-ng=11.3 # will fail with compiler version above
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('cuda') }}  # CMake's find_package(CUDA) compiles the GPU kernels when nvcc is present
+    - {{ stdlib('c') }}
+    - cuda-cuobjdump  # build.sh checks which GPU architectures ended up in the library
     - cmake
     - make
     - python
@@ -22,7 +26,11 @@ requirements:
     - python  {{ python }}
     - pip
     - numpy
-    
+    # CUDA kernels (find_package(CUDA) in CMakeLists.txt); cudart/cufft come back as run_exports
+    - cuda-version {{ cuda_compiler_version }}
+    - cuda-cudart-dev
+    - libcufft-dev
+
   run:
     - python  {{ python }}
     - {{ pin_compatible('numpy') }}

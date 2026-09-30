@@ -3,7 +3,7 @@ package:
   version: {{ PYBDSF_VERSION_ALT }}
 
 source:
-  url: https://pypi.io/packages/source/b/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ PYBDSF_VERSION }}.tar.gz
+  url: https://files.pythonhosted.org/packages/source/b/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ PYBDSF_VERSION }}.tar.gz
 
 build:
   number: {{ build }}
@@ -17,6 +17,7 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('gfortran') }}
+    - {{ stdlib('c') }}
     - cmake >=3.18,<4
     - python {{ python }}
     - numpy {{ numpy }}

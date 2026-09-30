@@ -42,4 +42,5 @@ jobs:
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
       isNative: true
+      buildArm: true
     secrets: inherit

@@ -49,4 +49,5 @@ jobs:
       devDeps: ${{ inputs.devDeps }}
       useCuda: false
       isNative: true
+      buildArm: true
     secrets: inherit

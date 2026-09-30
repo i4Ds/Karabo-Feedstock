@@ -5,3 +5,8 @@ python:
 
 c_compiler_version: 11
 cxx_compiler_version: 11
+
+c_stdlib:
+  - sysroot
+c_stdlib_version:
+  - "2.17"
