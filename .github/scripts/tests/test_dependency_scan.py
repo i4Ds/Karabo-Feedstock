@@ -5,6 +5,8 @@ import sys
 import unittest
 from pathlib import Path
 from typing import Any
+import copy
+from unittest.mock import Mock, call
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -275,6 +277,62 @@ class ScanAndReportTests(unittest.TestCase):
         self.assertIn("Use the Karabo Feedstock Maintainer custom agent", body)
         self.assertIn("draft pull request for human review", body)
         self.assertIn("did **not** modify repository files", body)
+
+class StructuredStateTests(unittest.TestCase):
+    def setUp(self):
+        self.state = {"schema_version": 1, "dependencies": {
+            "oskar": {"configured": {"OSKAR_VERSION": "2.12.2", "OSKARPY_VERSION": "2.12.2"},
+                      "latest": "2.13.0", "status": "update", "error": ""}}}
+
+    def run_update(self, old_body, state=None, body="New wording and run link"):
+        client = dependency_scan.GitHubIssueClient("i4Ds/Karabo-Feedstock", "test", 1)
+        client.find_open_issue = Mock(return_value={"number": 70, "title": "Old title",
+            "body": old_body, "assignees": [{"login": "Delberin-Ali"}]})
+        client._request = Mock()
+        client.upsert(dependency_scan.TRACKING_MARKER, "New title", body, "Delberin-Ali", state=state or self.state)
+        return [call.args for call in client._request.call_args_list]
+
+    def test_wording_title_and_url_changes_do_not_notify(self):
+        calls = self.run_update(dependency_scan.with_scan_state("Old wording and old URL", self.state))
+        self.assertEqual([c[0] for c in calls], ["PATCH"])
+
+    def test_changed_fields_notify(self):
+        for key, value in [("latest", "2.14.0"), ("status", "error"), ("error", "HTTP 503"),
+                           ("configured", {"OSKAR_VERSION": "2.13.0", "OSKARPY_VERSION": "2.12.2"})]:
+            with self.subTest(key=key):
+                changed = copy.deepcopy(self.state)
+                changed["dependencies"]["oskar"][key] = value
+                calls = self.run_update(dependency_scan.with_scan_state("Old", self.state), changed)
+                self.assertEqual([c[0] for c in calls], ["PATCH", "POST"])
+
+    def test_dependency_addition_and_removal_notify(self):
+        for previous in [{"schema_version": 1, "dependencies": {}},
+                         {"schema_version": 1, "dependencies": {**self.state["dependencies"], "extra": self.state["dependencies"]["oskar"]}}]:
+            self.assertEqual([c[0] for c in self.run_update(dependency_scan.with_scan_state("Old", previous))], ["PATCH", "POST"])
+
+    def test_legacy_and_invalid_state_initialize_silently(self):
+        for old in ["Legacy issue", "<!-- karabo-scan-state:v1 invalid -->",
+                    '<!-- karabo-scan-state:v1 {"schema_version":99} -->']:
+            self.assertEqual([c[0] for c in self.run_update(old)], ["PATCH"])
+
+    def test_comment_delimiters_round_trip(self):
+        self.state["dependencies"]["oskar"]["error"] = "upstream --> response"
+        body = dependency_scan.with_scan_state("Report", self.state)
+        self.assertEqual(body.count("-->"), 1)
+        self.assertEqual(dependency_scan.read_scan_state(body), self.state)
+
+    def test_exact_repeat_has_no_writes(self):
+        client = dependency_scan.GitHubIssueClient("i4Ds/Karabo-Feedstock", "test", 1)
+        client.find_open_issue = Mock(return_value={"number": 70, "title": "Same", "body": dependency_scan.with_scan_state("Same", self.state), "assignees": [{"login": "Delberin-Ali"}]})
+        client._request = Mock()
+        client.upsert(dependency_scan.TRACKING_MARKER, "Same", "Same", "Delberin-Ali", state=self.state)
+        client._request.assert_not_called()
+
+    def test_state_excludes_display_names_and_order(self):
+        d = dependency_scan.Dependency("a", "Old name", ("A_VERSION",), (), "pypi", "https://example.org")
+        r = dependency_scan.ScanResult(d, {"A_VERSION": "1.0"}, "display", "1.1", "update", "notes")
+        self.assertEqual(dependency_scan.scan_state([r])["dependencies"]["a"], {"configured": {"A_VERSION": "1.0"}, "latest": "1.1", "status": "update", "error": ""})
+
 
 
 if __name__ == "__main__":
