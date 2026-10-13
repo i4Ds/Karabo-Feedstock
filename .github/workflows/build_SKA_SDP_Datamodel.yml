@@ -40,5 +40,5 @@ jobs:
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
-      isNative: true
+      isNative: false
     secrets: inherit

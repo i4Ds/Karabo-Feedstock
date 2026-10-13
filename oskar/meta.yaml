@@ -18,11 +18,16 @@ requirements:
     # Build against Conda's portable Linux sysroot instead of the runner's GLIBC.
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - {{ compiler('cuda') }}
+    - cuda-cuobjdump  # build.sh checks which GPU architectures ended up in the library
     - {{ stdlib('c') }}
     - cmake >=3.10,<4
     - make
 
   host:
+    - cuda-version {{ cuda_compiler_version }}
+    - cuda-cudart-dev
+    - libcufft-dev
     - casacore={{ CASACORE_VERSION_ALT }}
     - harp
     - hdf5

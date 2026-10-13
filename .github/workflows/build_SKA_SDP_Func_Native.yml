@@ -39,6 +39,7 @@ jobs:
       pythonCall: from ska_sdp_func.visibility import dft_point_v00, dft_point_v01
       useCuda: true
       isNative: true
+      buildArm: true
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}

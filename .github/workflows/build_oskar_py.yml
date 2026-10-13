@@ -51,4 +51,5 @@ jobs:
       pythonCall: import oskar
       customPath: oskar-py/.
       isNative: true
+      buildArm: true
     secrets: inherit

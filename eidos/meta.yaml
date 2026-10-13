@@ -8,7 +8,7 @@ source:
 
 build:
   number: {{ build }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
+  noarch: python
 
 requirements:
   build:
@@ -16,12 +16,12 @@ requirements:
     - numpy
 
   host:
-    - python                  {{ python }}
+    - python
     - pip
     - numpy
 
   run:
-    - python                  {{ python }}
+    - python                  >=3.10
     - {{ pin_compatible('numpy') }}
     - scipy                   >=1.13.0 # numpy 2.x compatibility
     - astropy

@@ -51,6 +51,7 @@ env:
   KATBEAM_VERSION: 0.1.0 # acutal version 0.1 and has therefore no patch, but is needed for conda-build
   TOOLS_21CM_VERSION: 2.4.3 # actual version 2.0, patch needed for correct scipy version
   ARATMOSPY_VERSION: 1.0.0
+  PYUVDATA_VERSION: 2.4.5  # Karabo pins >=2.4,<3; conda-forge has no 2.x for linux-aarch64
   MONTAGEPY_VERSION: 6.0.0 # version is pinned through python-wheel in conda_build_config.yaml
 
   # SKACH contributions
@@ -60,6 +61,9 @@ env:
   # Other
   PACKAGE_NAME: ${{ inputs.packageName }}
   CHANNEL_LABEL: ${{ inputs.label }}
+  # anaconda.org channel to solve against and (with ANACONDA_SECRET) upload to.
+  # Forks set the repository variable ANACONDA_CHANNEL to their own channel.
+  CHANNEL: ${{ vars.ANACONDA_CHANNEL || 'i4ds' }}
 
 on:
   workflow_call:
@@ -115,6 +119,11 @@ on:
         default: false
         type: boolean
 
+      buildArm:  # also build/test on ubuntu-24.04-arm (native recipes ported to linux-aarch64)
+        required: false
+        default: false
+        type: boolean
+
       skipTest:
         required: false
         default: false
@@ -122,9 +131,17 @@ on:
 
 jobs:
   build_base:
-    runs-on: ubuntu-latest
+    # Native recipes ported to ARM (buildArm) are built on both x86-64 and ARM64 runners; noarch
+    # recipes and unported native recipes on x86-64 only.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(inputs.isNative && inputs.buildArm && '["ubuntu-latest", "ubuntu-24.04-arm"]' || '["ubuntu-latest"]') }}
+    runs-on: ${{ matrix.os }}
     outputs:
       pkgv: ${{ steps.pkgv.outputs.version }}
+      bnr: ${{ steps.pkgv.outputs.build }}
+      uploaded: ${{ steps.token.outputs.present }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -132,8 +149,10 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
+      # Ported CUDA recipes (buildArm) take nvcc and the CUDA libraries from conda-forge. Recipes
+      # that were not ported (idg, bipp, finufft) still expect a toolkit on the x86-64 runner.
       - name: Install GCC 11 for CUDA 12
-        if: ${{ inputs.useCuda }}
+        if: ${{ inputs.useCuda && !inputs.buildArm }}
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-11 g++-11
@@ -145,11 +164,9 @@ jobs:
           sudo rm -rf /usr/local/lib/android /opt/ghc /usr/share/dotnet || true
           docker system prune -af || true
           df -h
-
-      - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
-        if: ${{ inputs.useCuda }}
+      - name: Install Cuda Toolkit (unported CUDA recipes)
+        if: ${{ inputs.useCuda && !inputs.buildArm }}
         uses: Jimver/cuda-toolkit@v0.2.25
-        id: cuda-toolkit
         with:
           cuda: '12.0.1'
           log-file-suffix: 'build'
@@ -179,6 +196,7 @@ jobs:
             DEV_DEPS_LIST=""
           fi
           echo "build=$BUILD_NR" >> "$GITHUB_ENV"
+          echo "build=$BUILD_NR" >> "$GITHUB_OUTPUT"
           echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
 
@@ -206,100 +224,84 @@ jobs:
           conda config --remove-key channels || true # remove all existing channels
 
           conda config --add channels conda-forge
-          conda config --add channels i4ds/label/${{ inputs.label }}
-          conda config --add channels i4ds
+          conda config --add channels ${{ env.CHANNEL }}/label/${{ inputs.label }}
+          conda config --add channels ${{ env.CHANNEL }}
           conda config --add channels defaults
           conda config --set channel_priority flexible
           conda install "conda-build>=25"
 
-          conda build -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ env.recipePath }}
+          conda build -c ${{ env.CHANNEL }}/label/${{ inputs.label }} -c ${{ env.CHANNEL }} -c conda-forge ${{ env.recipePath }}
 
-      - name: Set linux64 as architecture
+      - name: Set native platform as architecture
         if: ${{ inputs.isNative }}
+        shell: bash -l {0}
         run: |
-          echo "arch=linux-64" >> $GITHUB_ENV
+          echo "arch=$(conda info --json | jq -r .platform)" >> $GITHUB_ENV
       - name: Set python as architecture
         if: ${{ !inputs.isNative }}
         run: |
           echo "arch=noarch" >> $GITHUB_ENV
+      - name: Check for an anaconda.org token
+        # Forks without ANACONDA_SECRET can still build a package that has no feedstock
+        # dependencies (and see the build fail or pass); the upload and the install-from-channel
+        # test are skipped. Packages that depend on other feedstock packages (wsclean, oskarpy,
+        # ska-sdp-datamodels, ska-sdp-func-python) need those uploaded first, i.e. a token.
+        id: token
+        env:
+          TOKEN: ${{ secrets.ANACONDA_SECRET }}
+        run: |
+          if [[ -n "$TOKEN" ]]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; echo "::notice::ANACONDA_SECRET not set - build only, no upload, no install test; dependent packages need uploads"; fi
       - name: Install and publish to Conda
+        if: steps.token.outputs.present == 'true'
         shell: bash -l {0}
         run: |
           conda activate base
           conda install anaconda-client
-          anaconda -t ${{ secrets.ANACONDA_SECRET }} upload /usr/share/miniconda/conda-bld/${{ env.arch }}/${{ inputs.packageName }}*.conda --label ${{ inputs.label }}
+          anaconda -t ${{ secrets.ANACONDA_SECRET }} upload "$(conda info --base)/conda-bld/${{ env.arch }}/${{ inputs.packageName }}"*.conda --label ${{ inputs.label }}
 
 
   test_base:
     needs: build_base
-    runs-on: ubuntu-latest
+    # The test installs the package from the channel, so it needs the upload to have happened.
+    # !cancelled(): a failed leg of the build matrix must not skip the tests of the other leg.
+    if: ${{ !cancelled() && !inputs.skipTest && needs.build_base.outputs.uploaded == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # noarch packages are built once but must install on every platform, so test them on
+        # both; native packages on the platforms they were built for.
+        os: ${{ fromJSON((!inputs.isNative || inputs.buildArm) && '["ubuntu-latest", "ubuntu-24.04-arm"]' || '["ubuntu-latest"]') }}
+    runs-on: ${{ matrix.os }}
+    # No checkout here: the test needs nothing from the repository, and with the repository as
+    # the working directory `python -c "import <name>"` would resolve any recipe directory of
+    # that name (aratmospy/, eidos/, oskar/, ...) as an empty namespace package and pass without
+    # the package being importable at all.
     steps:
-      - name: Checkout repository
-        if: ${{ !inputs.skipTest }}
-        uses: actions/checkout@v4
-
       - name: Install Conda
-        if: ${{ !inputs.skipTest }}
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
 
       - name: Install Mamba Solver
-        if: ${{ !inputs.skipTest }}
         run: |
           conda install -y -n base conda-libmamba-solver
           conda config --set solver libmamba
 
-      - name: Install GCC 11 for CUDA 12
-        if: ${{ inputs.useCuda && !inputs.skipTest }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-11 g++-11
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
-
       - name: Free disk space on runner (test)
-        if: ${{ inputs.useCuda && !inputs.skipTest }}
+        if: ${{ inputs.useCuda }}
         run: |
           sudo rm -rf /usr/local/lib/android /opt/ghc /usr/share/dotnet || true
           docker system prune -af || true
           df -h
 
-      - name: Install Cuda Toolkit => ${{ inputs.useCuda }}
-        if: ${{ inputs.useCuda && !inputs.skipTest }}
-        uses: Jimver/cuda-toolkit@v0.2.25
-        id: cuda-toolkit
-        with:
-          cuda: '12.0.1'
-          log-file-suffix: 'test'
-
-      - name: Install Package and test with Python 3.10
-        if: ${{ !inputs.skipTest }}
-        continue-on-error: true
-        shell: bash -l {0}
-        run: |
-          conda create -y -n testenv10 python=3.10
-          conda activate testenv10
-          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
-          python -c "${{ inputs.pythonCall }}"
-
-      - name: Install Package and test with Python 3.11
-        if: ${{ !inputs.skipTest }}
-        continue-on-error: true
-        shell: bash -l {0}
-        run: |
-          conda create -y -n testenv11 python=3.11
-          conda activate testenv11
-          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
-          python -c "${{ inputs.pythonCall }}"
-
+      # Karabo is Python 3.12 only (Karabo-Pipeline #700); several recipes build for 3.12 only.
       - name: Install Package and test with Python 3.12
-        if: ${{ !inputs.skipTest }}
-        continue-on-error: true
         shell: bash -l {0}
         run: |
           conda create -y -n testenv12 python=3.12
           conda activate testenv12
-          conda install -y -c i4ds/label/${{ inputs.label }} -c i4ds -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}"
+          # Exactly the build just uploaded (version=*_<buildNumber>), so an older package with a
+          # higher build number on the channel cannot be tested instead.
+          conda install -y -c ${{ env.CHANNEL }}/label/${{ inputs.label }} -c ${{ env.CHANNEL }} -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}=*_${{ needs.build_base.outputs.bnr }}"
           python -c "${{ inputs.pythonCall }}"
 

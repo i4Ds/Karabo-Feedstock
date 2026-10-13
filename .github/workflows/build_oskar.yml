@@ -41,4 +41,5 @@ jobs:
       buildNumber: ${{ inputs.buildNumber }}
       useCuda: true
       isNative: true
+      buildArm: true
     secrets: inherit

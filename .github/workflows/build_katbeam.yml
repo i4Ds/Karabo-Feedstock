@@ -40,5 +40,5 @@ jobs:
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
       pythonCall: import katbeam
-      isNative: true
+      isNative: false
     secrets: inherit

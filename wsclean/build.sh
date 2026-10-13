@@ -9,8 +9,12 @@
 # and all conda-build environments.
 mkdir -p build
 cd build
+# PORTABLE=ON: without it WSClean compiles with -march=native, so the package only runs on
+# CPUs that have the instruction set of whichever CI runner built it (AVX-512 or SVE on
+# some runners). With it, the conda compiler flags apply, as for the other native recipes.
 cmake -DCMAKE_INSTALL_PREFIX=$PREFIX .. \
     -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON \
-    -DPYTHON_EXECUTABLE="${PYTHON}" -DPython3_EXECUTABLE="${PYTHON}" \ 
+    -DPYTHON_EXECUTABLE="${PYTHON}" -DPython3_EXECUTABLE="${PYTHON}" \
+    -DPORTABLE=ON
 make -j 4
 make install

@@ -1,0 +1,139 @@
+name: Build All
+
+# One dispatch builds every package Karabo needs, in dependency order:
+#   wave 1: everything without feedstock dependencies (in parallel)
+#   wave 2: ska-sdp-datamodels (ska-telmodel), wsclean (everybeam), oskarpy (oskar)
+#   wave 3: ska-sdp-func-python (ska-sdp-datamodels, ska-sdp-func)
+# Each job is the package's own workflow, so the per-package workflows keep working on their own.
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
+      buildNumber:
+        type: string
+        required: true
+
+jobs:
+  # ---- wave 1 -------------------------------------------------------------------------------
+  aratmospy:
+    uses: ./.github/workflows/build_ARatmospy.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  eidos:
+    uses: ./.github/workflows/build_eidos.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  katbeam:
+    uses: ./.github/workflows/build_katbeam.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  ska-telmodel:
+    uses: ./.github/workflows/build_SKA_Telmodel.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  tools21cm:
+    uses: ./.github/workflows/build_tools21cm.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  bdsf:
+    uses: ./.github/workflows/build_PyBDSF.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  everybeam:
+    uses: ./.github/workflows/build_everybeam.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  oskar:
+    uses: ./.github/workflows/build_oskar.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  ska-sdp-func:
+    uses: ./.github/workflows/build_SKA_SDP_Func_Native.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  ska-gridder-nifty-cuda:
+    uses: ./.github/workflows/build_SKA_Gridder_Nifty_Cuda.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+
+  pyuvdata:
+    uses: ./.github/workflows/build_pyuvdata.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+
+  # ---- wave 2 -------------------------------------------------------------------------------
+  ska-sdp-datamodels:
+    needs: [ska-telmodel]
+    uses: ./.github/workflows/build_SKA_SDP_Datamodel.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  wsclean:
+    needs: [everybeam]
+    uses: ./.github/workflows/build_wsclean.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+  oskarpy:
+    needs: [oskar]
+    uses: ./.github/workflows/build_oskar_py.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit
+
+  # ---- wave 3 -------------------------------------------------------------------------------
+  ska-sdp-func-python:
+    needs: [ska-sdp-datamodels, ska-sdp-func]
+    uses: ./.github/workflows/build_SKA_SDP_Func_Python.yml
+    with:
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+    secrets: inherit

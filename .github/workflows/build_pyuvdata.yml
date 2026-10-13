@@ -1,0 +1,45 @@
+name: PyUVData
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        type: string
+        default: "main"
+        required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
+      buildNumber:
+        type: string
+        required: true
+
+  workflow_call:
+    inputs:
+      label:
+        type: string
+        required: true
+      dev:
+        type: boolean
+        required: false
+        default: false
+      buildNumber:
+        type: string
+        required: true
+
+jobs:
+
+  PyUVData:
+    uses: ./.github/workflows/build_base.yml
+    with:
+      packageName: pyuvdata
+      packageVersion: $PYUVDATA_VERSION
+      packageVersionName: PYUVDATA_VERSION
+      label: ${{ inputs.label }}
+      dev: ${{ inputs.dev }}
+      buildNumber: ${{ inputs.buildNumber }}
+      pythonCall: import pyuvdata
+      isNative: true
+      buildArm: true
+    secrets: inherit

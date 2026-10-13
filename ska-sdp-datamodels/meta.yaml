@@ -9,7 +9,7 @@ source:
 
 build:
   number: {{ build }}
-  string: py{{ py }}h{{ PKG_HASH }}_{{ build }}
+  noarch: python
   script_env:
     - INTERNAL_FOLDER_NAME={{ uNameAndVers }}
 
@@ -19,13 +19,13 @@ requirements:
     - numpy
 
   host:
-    - python            {{ python }}
+    - python
     - pip
     - numpy
     - poetry-core       >=1.0.0
 
   run:
-    - python            {{ python }}
+    - python                  >=3.10
     - astroplan         >=0.10,<0.11
     - astropy           >=6.1,<7.0
     - h5py              >=3.12,<4.0
