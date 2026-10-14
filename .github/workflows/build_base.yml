@@ -44,7 +44,7 @@ env:
 
 
   # additional karabo dependencies
-  AOTOOLS_VERSION: 1.0.7
+  AOTOOLS_VERSION: 1.0.8
   SEQFILE_VERSION: 0.2.0
   EIDOS_VERSION: 1.1.0
   SKA_GRDR_NFTY_CU_VERSION: 0.3.0
@@ -389,4 +389,3 @@ jobs:
           # higher build number on the channel cannot be tested instead.
           conda install -y -c ${{ env.CHANNEL }}/label/${{ inputs.label }} -c ${{ env.CHANNEL }} -c conda-forge ${{ inputs.packageName }}="${{ needs.build_base.outputs.pkgv }}=*_${{ needs.build_base.outputs.bnr }}"
           python -c "${{ inputs.pythonCall }}"
-
