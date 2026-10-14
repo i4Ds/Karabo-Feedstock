@@ -11,6 +11,11 @@ on:
         type: boolean
         required: false
         default: false
+      publish:
+        description: "Publish to Anaconda (leave disabled for validation)"
+        type: boolean
+        required: false
+        default: false
       buildNumber:
         type: string
         required: true
@@ -21,6 +26,11 @@ on:
         type: string
         required: true
       dev:
+        type: boolean
+        required: false
+        default: false
+      publish:
+        description: "Publish to Anaconda (leave disabled for validation)"
         type: boolean
         required: false
         default: false
@@ -40,5 +50,7 @@ jobs:
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
       pythonCall: import aotools
+      publish: ${{ inputs.publish }}
       isNative: true
-    secrets: inherit
+    secrets:
+      ANACONDA_SECRET: ${{ inputs.publish && secrets.ANACONDA_SECRET || '' }}
