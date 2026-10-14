@@ -290,3 +290,12 @@ source_type = "github-tags"
 repository = "epfl-radio-astro/bipp"
 release_page = "https://github.com/epfl-radio-astro/bipp/tags"
 notes = "The Feedstock variable is named BLUEBILD_VERSION but it controls the bipp recipe."
+
+[[dependencies]]
+id = "pyuvdata"
+name = "PyUVData"
+version_variables = ["PYUVDATA_VERSION"]
+recipes = ["pyuvdata/meta.yaml"]
+source_type = "manual"
+release_page = "https://pypi.org/project/pyuvdata/"
+manual_reason = "Karabo requires pyuvdata >=2.4,<3; review compatible 2.x releases and Python 3.12, NumPy 2 and ARM64 support before updating."
