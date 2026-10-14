@@ -238,7 +238,10 @@ jobs:
           conda config --add channels ${{ env.CHANNEL }}
           conda config --add channels defaults
           conda config --set channel_priority flexible
-          conda install "conda-build>=25"
+          conda install -y -n base "conda-build>=25"
+          conda activate base
+          conda build --version
+
 
           mkdir -p "$RUNNER_TEMP/validation-logs"
           set -o pipefail
