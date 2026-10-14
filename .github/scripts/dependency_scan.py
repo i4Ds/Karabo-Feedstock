@@ -853,6 +853,62 @@ def render_test_issue(results: Sequence[ScanResult], registry: Registry) -> tupl
     return "[Test] Whole-feedstock dependency scan notification", "\n".join(body_lines)
 
 
+def scan_state(results: Sequence[ScanResult]) -> dict[str, Any]:
+    """Keep notification data independent of report wording and run metadata."""
+    return {
+        "schema_version": 1,
+        "dependencies": {
+            result.dependency.id: {
+                "configured": dict(result.current_versions),
+                "latest": result.latest,
+                "status": result.status,
+                "error": result.detail if result.status == "error" else "",
+            }
+            for result in results
+            if result.status not in {"manual", "retired"}
+        },
+    }
+
+
+def with_scan_state(body: str, state: Mapping[str, Any]) -> str:
+    # Escape HTML-comment delimiters that might appear in upstream error text.
+    payload = json.dumps(state, sort_keys=True, ensure_ascii=True).replace(
+        "--", "\\u002d\\u002d"
+    )
+    return body + "\n\n<!-- karabo-scan-state:v1 " + payload + " -->"
+
+
+def read_scan_state(body: str) -> dict[str, Any] | None:
+    match = re.search(r"<!-- karabo-scan-state:v1 (.*?) -->", body, re.DOTALL)
+    if match is None:
+        return None
+    try:
+        state = json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(state, dict) or state.get("schema_version") != 1:
+        return None
+    dependencies = state.get("dependencies")
+    if not isinstance(dependencies, dict):
+        return None
+    for dependency_id, entry in dependencies.items():
+        if not isinstance(dependency_id, str) or not isinstance(entry, dict):
+            return None
+        configured = entry.get("configured")
+        if not isinstance(configured, dict) or not all(
+            isinstance(key, str) and isinstance(value, str)
+            for key, value in configured.items()
+        ):
+            return None
+        if entry.get("latest") is not None and not isinstance(entry["latest"], str):
+            return None
+        if entry.get("status") not in {"current", "update", "ahead", "error"}:
+            return None
+        if not isinstance(entry.get("error"), str):
+            return None
+    return state
+
+
 class GitHubIssueClient:
     def __init__(self, repository: str, token: str, timeout: int) -> None:
         if not token:
@@ -923,7 +979,12 @@ class GitHubIssueClient:
             raise GitHubApiError(0, "created issue response did not contain a number")
         return int(created["number"])
 
-    def upsert(self, marker: str, title: str, body: str, notify_user: str) -> int:
+    def upsert(
+        self, marker: str, title: str, body: str, notify_user: str,
+        *, state: Mapping[str, Any] | None = None,
+    ) -> int:
+        if state is not None:
+            body = with_scan_state(body, state)
         existing = self.find_open_issue(marker)
         if existing is None:
             number = self._create_assigned(title, body, notify_user)
@@ -931,17 +992,27 @@ class GitHubIssueClient:
             return number
 
         number = int(existing["number"])
-        changed = existing.get("title") != title or existing.get("body") != body
-        if changed:
+        old_body = str(existing.get("body") or "")
+        report_changed = existing.get("title") != title or old_body != body
+        if state is None:
+            # Preserve the separate notification-test mode's existing behavior.
+            notify = report_changed
+        else:
+            previous_state = read_scan_state(old_body)
+            # Existing issues without valid state get a silent baseline.
+            notify = previous_state is not None and previous_state != state
+
+        if report_changed:
             self._request("PATCH", f"/issues/{number}", {"title": title, "body": body})
+            print(f"Updated issue #{number}")
+        else:
+            print(f"Issue #{number} already contains the current scan results")
+        if notify:
             self._request(
                 "POST",
                 f"/issues/{number}/comments",
                 {"body": f"@{notify_user}, the weekly scan found updated release information."},
             )
-            print(f"Updated issue #{number}")
-        else:
-            print(f"Issue #{number} already contains the current scan results")
 
         assignees = existing.get("assignees", [])
         assigned_logins = {
@@ -1044,7 +1115,10 @@ def run(argv: Sequence[str] | None = None) -> int:
 
     if updates or errors:
         title, body = render_tracking_issue(results, registry)
-        issues.upsert(TRACKING_MARKER, title, body, registry.settings.notify_user)
+        issues.upsert(
+            TRACKING_MARKER, title, body, registry.settings.notify_user,
+            state=scan_state(results),
+        )
     else:
         issues.close_if_open(
             TRACKING_MARKER,
