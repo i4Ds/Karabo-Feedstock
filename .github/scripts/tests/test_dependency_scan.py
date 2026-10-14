@@ -101,8 +101,8 @@ class RegistryTests(unittest.TestCase):
         ]
         self.assertEqual(len(registered), len(set(registered)))
         self.assertEqual(set(registered), set(self.build_versions))
-        self.assertEqual(len(registered), 29)
-        self.assertEqual(len(self.registry.dependencies), 28)
+        self.assertEqual(len(registered), 30)
+        self.assertEqual(len(self.registry.dependencies), 29)
         source_counts = {
             source_type: sum(
                 dependency.source_type == source_type
@@ -110,7 +110,7 @@ class RegistryTests(unittest.TestCase):
             )
             for source_type in dependency_scan.ALLOWED_SOURCE_TYPES
         }
-        self.assertEqual(source_counts["manual"], 5)
+        self.assertEqual(source_counts["manual"], 6)
         self.assertEqual(source_counts["retired"], 4)
         self.assertEqual(
             {
@@ -144,7 +144,7 @@ class RegistryTests(unittest.TestCase):
             for recipe in dependency.recipes
         }
         self.assertEqual(registered_recipe_dirs, active_recipe_dirs)
-        self.assertEqual(len(active_recipe_dirs), 24)
+        self.assertEqual(len(active_recipe_dirs), 25)
 
     def test_new_unregistered_build_variable_fails_validation(self) -> None:
         extra = dict(self.build_versions)
