@@ -4,6 +4,7 @@ package:
 
 source:
   url: "https://files.pythonhosted.org/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ AOTOOLS_VERSION }}.tar.gz"
+  sha256: 841cd697e3a534ea99ee89e9ed7ac7ec6bb1057a5ea2454a91f501197141235b  # 1.0.8 sdist
 
 build:
   number: {{ build }}
