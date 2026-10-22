@@ -1,0 +1,57 @@
+name: Validate AOtools PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "aotools/**"
+      - ".github/workflows/publish_aotools_main.yml"
+      - ".github/workflows/build_aotools.yml"
+      - ".github/workflows/build_base.yml"
+      - ".github/workflows/validate_aotools_pr.yml"
+      - ".github/scripts/**"
+      - ".github/dependency-scan.toml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-aotools-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  scanner-tests:
+    name: Dependency scanner tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      build_number: ${{ steps.release.outputs.build_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Read release build number
+        id: release
+        run: python .github/scripts/aotools_release.py
+
+      - name: Run scanner tests
+        run: |
+          python -m unittest discover \
+            -s .github/scripts/tests \
+            -p 'test_*.py' \
+            -v
+
+  validate-aotools:
+    name: Build and test AOtools
+    needs: scanner-tests
+    uses: ./.github/workflows/build_aotools.yml
+    with:
+      label: main
+      dev: false
+      publish: false
+      buildNumber: ${{ needs.scanner-tests.outputs.build_number }}

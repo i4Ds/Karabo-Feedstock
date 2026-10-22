@@ -37,3 +37,26 @@ path. Artifact storage in GitHub is distinct from publishing packages to Anacond
 
 After the pilot passes, extend the same mode to an ARM-enabled package, then
 coupled groups. Use the existing Maintainer agent for approved version changes.
+
+## AOtools automatic publication after merge
+
+`validate_aotools_pr.yml` reads `aotools/release.json` for the build number.
+The version remains in Build Base. Set build_number to 0 for a new version;
+increment it for a rebuild of the same version. Include that change in the PR.
+
+On relevant pushes to main, `publish_aotools_main.yml` runs scanner tests and
+checks the public channel for the version/build and Python variants in the recipe.
+A complete publication is skipped (including existing 1.0.8 build 0); partial
+publication or network errors stop the workflow for investigation. For a missing
+release, a publishing token is required, local artifact validation runs first,
+then the existing workflow rebuilds, uploads and tests from the main channel.
+PR jobs receive no publishing secret. Only the publication call receives it.
+No force/overwrite flag is used. Do not run manual publication concurrently.
+
+This workflow is triggered by pushes to main, including direct pushes. Protect
+main through the team's normal PR review rules; merging is the publication decision.
+Documentation-only and validation-only edits do not trigger publication. Shared
+build workflow changes trigger a check but do not republish an existing identity.
+For recipe changes that need distribution, increment the build number explicitly.
+The workflow does not promote the exact PR artifact: it rebuilds the merged code.
+Automatic end-to-end publication of a new identity still requires CI verification.
