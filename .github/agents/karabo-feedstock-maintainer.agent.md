@@ -38,3 +38,8 @@ Important rules:
 - After requested changes pass validation, create a draft pull request.
 - Include the old and new versions, changed files, validation commands, results and risks in the pull request description.
 - Request human review and never mark the pull request ready or merge it.
+
+AOtools release convention:
+- Read `aotools/release.json`: its build_number is shared by automatic PR validation and main publication.
+- For a new AOtools version, set build_number to 0; for a recipe rebuild of an already published version, increment it.
+- Merge to main triggers automatic publication after validation; flag this in the draft PR description. The agent must never merge or publish.

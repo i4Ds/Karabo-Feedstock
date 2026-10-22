@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "aotools/**"
+      - ".github/workflows/publish_aotools_main.yml"
       - ".github/workflows/build_aotools.yml"
       - ".github/workflows/build_base.yml"
       - ".github/workflows/validate_aotools_pr.yml"
@@ -23,6 +24,8 @@ jobs:
     name: Dependency scanner tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      build_number: ${{ steps.release.outputs.build_number }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,6 +34,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Read release build number
+        id: release
+        run: python .github/scripts/aotools_release.py
 
       - name: Run scanner tests
         run: |
@@ -47,4 +54,4 @@ jobs:
       label: main
       dev: false
       publish: false
-      buildNumber: "0"
+      buildNumber: ${{ needs.scanner-tests.outputs.build_number }}

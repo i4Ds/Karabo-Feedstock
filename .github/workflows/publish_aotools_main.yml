@@ -1,0 +1,72 @@
+name: Publish approved AOtools
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'aotools/**'
+      - '.github/workflows/build_base.yml'
+      - '.github/workflows/build_aotools.yml'
+      - '.github/workflows/publish_aotools_main.yml'
+      - '.github/scripts/aotools_release.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-aotools-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'i4Ds/Karabo-Feedstock'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      publish: ${{ steps.release.outputs.publish }}
+      build_number: ${{ steps.release.outputs.build_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
+      - name: Check publication state
+        id: release
+        env:
+          ANACONDA_CHANNEL: ${{ vars.ANACONDA_CHANNEL || 'i4ds' }}
+        run: python .github/scripts/aotools_release.py --check-channel
+
+      - name: Require publishing token for a new release
+        if: steps.release.outputs.publish == 'true'
+        env:
+          TOKEN: ${{ secrets.ANACONDA_SECRET }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::ANACONDA_SECRET is required to publish AOtools"
+            exit 1
+          fi
+
+  validate:
+    needs: release
+    if: needs.release.outputs.publish == 'true'
+    uses: ./.github/workflows/build_aotools.yml
+    with:
+      label: main
+      dev: false
+      publish: false
+      buildNumber: ${{ needs.release.outputs.build_number }}
+
+  publish:
+    needs: [release, validate]
+    if: needs.release.outputs.publish == 'true'
+    uses: ./.github/workflows/build_aotools.yml
+    with:
+      label: main
+      dev: false
+      publish: true
+      buildNumber: ${{ needs.release.outputs.build_number }}
+    secrets:
+      ANACONDA_SECRET: ${{ secrets.ANACONDA_SECRET }}
