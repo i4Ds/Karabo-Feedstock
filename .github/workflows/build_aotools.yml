@@ -21,6 +21,9 @@ on:
         required: true
 
   workflow_call:
+    secrets:
+      ANACONDA_SECRET:
+        required: false
     inputs:
       label:
         type: string
