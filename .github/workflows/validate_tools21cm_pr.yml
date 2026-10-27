@@ -1,0 +1,45 @@
+name: Validate tools21cm PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools21cm/**'
+      - '.github/workflows/build_tools21cm.yml'
+      - '.github/workflows/build_base.yml'
+      - '.github/workflows/validate_tools21cm_pr.yml'
+      - '.github/workflows/publish_tools21cm_main.yml'
+      - '.github/scripts/tools21cm_release.py'
+      - '.github/scripts/tests/test_tools21cm_release.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-tools21cm-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    outputs:
+      build_number: ${{ steps.release.outputs.build_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - id: release
+        run: python .github/scripts/tools21cm_release.py
+      - run: python -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
+
+  validate:
+    needs: checks
+    uses: ./.github/workflows/build_tools21cm.yml
+    with:
+      label: main
+      dev: false
+      publish: false
+      buildNumber: ${{ needs.checks.outputs.build_number }}

@@ -14,8 +14,15 @@ on:
       buildNumber:
         type: string
         required: true
+      publish:
+        type: boolean
+        required: false
+        default: true
 
   workflow_call:
+    secrets:
+      ANACONDA_SECRET:
+        required: false
     inputs:
       label:
         type: string
@@ -27,6 +34,10 @@ on:
       buildNumber:
         type: string
         required: true
+      publish:
+        type: boolean
+        required: false
+        default: true
 
 jobs:
 
@@ -42,4 +53,5 @@ jobs:
       pythonCall: import tools21cm
       isNative: true
       buildArm: true
+      publish: ${{ inputs.publish }}
     secrets: inherit

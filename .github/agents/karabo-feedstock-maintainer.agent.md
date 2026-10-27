@@ -43,3 +43,10 @@ AOtools release convention:
 - Read `aotools/release.json`: its build_number is shared by automatic PR validation and main publication.
 - For a new AOtools version, set build_number to 0; for a recipe rebuild of an already published version, increment it.
 - Merge to main triggers automatic publication after validation; flag this in the draft PR description. The agent must never merge or publish.
+
+tools21cm release convention:
+- Keep `tools21cm/release.json` version synchronized with `TOOLS_21CM_VERSION`.
+- Set build_number to 0 for a new version; increment it for a rebuild of the same version.
+- Update release.json in each upgrade PR: its changes on main trigger automatic publication after validation.
+- Publication checks both linux-64 and linux-aarch64; partial releases require human investigation.
+- Flag automatic publication in the draft PR; never merge or publish yourself.

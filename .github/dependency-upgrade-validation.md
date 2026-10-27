@@ -60,3 +60,15 @@ build workflow changes trigger a check but do not republish an existing identity
 For recipe changes that need distribution, increment the build number explicitly.
 The workflow does not promote the exact PR artifact: it rebuilds the merged code.
 Automatic end-to-end publication of a new identity still requires CI verification.
+
+## tools21cm validation and publication
+
+The tools21cm PR workflow builds and installs the local Python 3.12 package on
+linux-64 and linux-aarch64 without uploading. For an upgrade, update both the
+recipe/version and `tools21cm/release.json`: the version must match
+`TOOLS_21CM_VERSION`; use build 0 for a new version or increment for a rebuild.
+A change to release.json on main triggers publication. The workflow checks the
+i4ds main label for both architectures, skips a complete release, stops for a
+partial release, and validates before uploading a missing release. A failed
+post-upload install test requires investigation. Merging the initial setup also
+triggers the check for 2.4.3 build 0; review the channel state before merging.
