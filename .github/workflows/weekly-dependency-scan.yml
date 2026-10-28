@@ -77,10 +77,10 @@ jobs:
       SCAN_MODE: ${{ inputs.mode || 'scan' }}
 
     steps:
-    - name: Checkout reviewed dependency registry
-      uses: actions/checkout@v4
-      with:
-        persist-credentials: false
+      - name: Checkout reviewed dependency registry
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
