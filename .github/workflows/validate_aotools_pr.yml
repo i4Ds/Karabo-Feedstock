@@ -1,3 +1,4 @@
+
 name: Validate AOtools PR
 
 on:
@@ -9,8 +10,8 @@ on:
       - ".github/workflows/build_aotools.yml"
       - ".github/workflows/build_base.yml"
       - ".github/workflows/validate_aotools_pr.yml"
-      - ".github/scripts/**"
-      - ".github/dependency-scan.toml"
+      - ".github/scripts/aotools_release.py"
+      - ".github/scripts/tests/test_aotools_release.py"
 
 permissions:
   contents: read
@@ -21,7 +22,7 @@ concurrency:
 
 jobs:
   scanner-tests:
-    name: Dependency scanner tests
+    name: AOtools release and unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
@@ -39,7 +40,7 @@ jobs:
         id: release
         run: python .github/scripts/aotools_release.py
 
-      - name: Run scanner tests
+      - name: Run unit tests
         run: |
           python -m unittest discover \
             -s .github/scripts/tests \
