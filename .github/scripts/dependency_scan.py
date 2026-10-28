@@ -411,6 +411,7 @@ class HttpClient:
         self.timeout = timeout
         self.github_token = github_token
 
+
     def get_json(self, url: str) -> Any:
         headers = {"Accept": "application/json", "User-Agent": USER_AGENT}
         if self.github_token and url.startswith("https://api.github.com/"):
@@ -418,24 +419,46 @@ class HttpClient:
             headers["X-GitHub-Api-Version"] = "2022-11-28"
 
         last_error: Exception | None = None
-        for attempt in range(2):
+        max_attempts = 4
+
+        for attempt in range(max_attempts):
+            retry_delay = min(2 ** attempt, 8)
+
             try:
                 request = Request(url, headers=headers)
                 with urlopen(request, timeout=self.timeout) as response:
                     return json.load(response)
+
             except HTTPError as error:
-                message = error.read(1000).decode("utf-8", errors="replace")
+                message = error.read(1000).decode(
+                    "utf-8", errors="replace"
+                )
                 last_error = ScanError(
                     f"GET {url} failed with HTTP {error.code}: {message[:300]}"
                 )
-                if error.code < 500 and error.code != 429:
+
+                if error.code not in (429, 500, 502, 503, 504):
                     break
+
+                retry_after = error.headers.get("Retry-After")
+                if retry_after:
+                    try:
+                        retry_delay = max(
+                            retry_delay,
+                            min(float(retry_after), 30),
+                        )
+                    except ValueError:
+                        pass
+
             except (URLError, TimeoutError, json.JSONDecodeError) as error:
                 last_error = ScanError(f"GET {url} failed: {error}")
-            if attempt == 0:
-                time.sleep(1)
+
+            if attempt < max_attempts - 1:
+                time.sleep(retry_delay)
+
         assert last_error is not None
         raise last_error
+
 
 
 def _extract_tag_versions(dependency: Dependency, tag_names: Iterable[str]) -> list[str]:
