@@ -1092,7 +1092,22 @@ def run(argv: Sequence[str] | None = None) -> int:
         timeout=registry.settings.http_timeout_seconds,
         github_token=token,
     )
-    results = scan_all(registry, build_versions, http)
+    hidden_dependencies = {
+        "fftw3f",
+        "rascil",
+        "hvox",
+        "pycsou",
+        "katbeam",
+        "montagepy",
+        "bipp",
+        "ska-gridder-nifty-cuda",
+    }
+
+    results = [
+        result
+        for result in scan_all(registry, build_versions, http)
+        if result.dependency.id not in hidden_dependencies
+    ]
     _write_summary(render_summary(results))
 
     updates = [result for result in results if result.status == "update"]
