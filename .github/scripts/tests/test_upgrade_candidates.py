@@ -1,0 +1,57 @@
+import sys
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from upgrade_candidates import candidate_body, issue_version, marker, synchronize
+from approve_dependency_upgrade import validate_approval
+from dependency_scan import ScanError
+
+
+class UpgradeCandidateTests(unittest.TestCase):
+    def setUp(self):
+        self.dep = SimpleNamespace(id="oskar", name="OSKAR / OSKARPY", recipes=("oskar/meta.yaml", "oskar-py/meta.yaml"), release_page="https://example.org", notes="Coupled", source_type="github-tags")
+        self.registry = SimpleNamespace(dependencies=[self.dep])
+        self.state = {"dependencies": {"oskar": {"status": "update", "latest": "2.13.0", "configured": {"OSKAR_VERSION": "2.12.2"}}}}
+
+    def test_candidate_issue_marker_and_version(self):
+        body = candidate_body(self.dep, "2.12.2", "2.13.0")
+        self.assertIn(marker("oskar"), body)
+        self.assertEqual(issue_version(body), "2.13.0")
+
+    def test_creates_only_updated_active_dependency(self):
+        client = Mock()
+        client._request.side_effect = [[], {"number": 123}]
+        changes = synchronize(client, self.registry, self.state)
+        self.assertEqual(changes, ["Created candidate #123: oskar"])
+        self.assertEqual(client._request.call_args.args[0], "POST")
+
+    def test_same_version_preserves_decision(self):
+        client = Mock()
+        client._request.return_value = [{"number": 123, "body": candidate_body(self.dep, "2.12.2", "2.13.0"), "labels": [{"name": "upgrade:deferred"}]}]
+        self.assertEqual(synchronize(client, self.registry, self.state), [])
+        self.assertEqual(client._request.call_count, 1)
+
+    def test_changed_version_resets_approval(self):
+        client = Mock()
+        client._request.side_effect = [
+            [{"number": 123, "body": candidate_body(self.dep, "2.12.2", "2.12.9"), "labels": [{"name": "upgrade:approved"}, {"name": "priority:high"}]}], None
+        ]
+        synchronize(client, self.registry, self.state)
+        self.assertEqual(client._request.call_args.args[2]["labels"], ["priority:high", "upgrade:pending"])
+
+    def test_approval_requires_current_candidate_and_writer(self):
+        client = Mock()
+        client._request.return_value = {"permission": "write"}
+        client.find_open_issue.return_value = {"body": '<!-- karabo-scan-state:v1 {"schema_version": 1, "dependencies": {"oskar": {"configured": {"OSKAR_VERSION": "2.12.2"}, "latest": "2.13.0", "status": "update", "error": ""}}} -->'}
+        event = {"action": "labeled", "label": {"name": "upgrade:approved"}, "sender": {"login": "reviewer"}, "issue": {"number": 2, "body": candidate_body(self.dep, "2.12.2", "2.13.0")}}
+        self.assertIn("oskar", validate_approval(event, client, self.registry))
+        client._request.return_value = {"permission": "read"}
+        with self.assertRaises(ScanError):
+            validate_approval(event, client, self.registry)
+
+
+if __name__ == "__main__":
+    unittest.main()
