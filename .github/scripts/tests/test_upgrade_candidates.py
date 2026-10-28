@@ -44,13 +44,102 @@ class UpgradeCandidateTests(unittest.TestCase):
 
     def test_approval_requires_current_candidate_and_writer(self):
         client = Mock()
-        client._request.return_value = {"permission": "write"}
-        client.find_open_issue.return_value = {"body": '<!-- karabo-scan-state:v1 {"schema_version": 1, "dependencies": {"oskar": {"configured": {"OSKAR_VERSION": "2.12.2"}, "latest": "2.13.0", "status": "update", "error": ""}}} -->'}
-        event = {"action": "labeled", "label": {"name": "upgrade:approved"}, "sender": {"login": "reviewer"}, "issue": {"number": 2, "body": candidate_body(self.dep, "2.12.2", "2.13.0")}}
-        self.assertIn("oskar", validate_approval(event, client, self.registry))
-        client._request.return_value = {"permission": "read"}
+
+        body = candidate_body(
+            self.dep, "2.12.2", "2.13.0"
+        )
+
+        issue = {
+            "number": 2,
+            "state": "open",
+            "user": {"login": "github-actions[bot]"},
+            "labels": [{"name": "upgrade:approved"}],
+            "body": body,
+        }
+
+        tracking_body = (
+            '<!-- karabo-scan-state:v1 '
+            '{"schema_version": 1, "dependencies": {'
+            '"oskar": {'
+            '"configured": {"OSKAR_VERSION": "2.12.2"}, '
+            '"latest": "2.13.0", '
+            '"status": "update", '
+            '"error": ""'
+            '}}} -->'
+        )
+
+        client.find_open_issue.return_value = {
+            "body": tracking_body
+        }
+
+        event = {
+            "action": "labeled",
+            "label": {"name": "upgrade:approved"},
+            "sender": {"login": "reviewer"},
+            "issue": {"number": 2, "body": body},
+        }
+
+        # Case 1: Authorized maintainer approves a current candidate.
+        client._request.side_effect = [
+            issue,
+            {"permission": "write"},
+        ]
+
+        result = validate_approval(event, client, self.registry)
+        self.assertIn("oskar", result)
+        self.assertIn("2.13.0", result)
+
+        # Case 2: User without write access must be rejected.
+        client._request.reset_mock()
+        client._request.side_effect = [
+            issue,
+            {"permission": "read"},
+        ]
+
         with self.assertRaises(ScanError):
             validate_approval(event, client, self.registry)
+
+        # Case 3: Candidate created by an untrusted user.
+        untrusted_issue = {
+            **issue,
+            "user": {"login": "unknown-user"},
+        }
+
+        client._request.reset_mock()
+        client._request.side_effect = [untrusted_issue]
+
+        with self.assertRaises(ScanError):
+            validate_approval(event, client, self.registry)
+
+        # Case 4: Candidate without approval label.
+        unapproved_issue = {
+            **issue,
+            "labels": [{"name": "upgrade:pending"}],
+        }
+
+        client._request.reset_mock()
+        client._request.side_effect = [unapproved_issue]
+
+        with self.assertRaises(ScanError):
+            validate_approval(event, client, self.registry)
+
+        # Case 5: Candidate version no longer matches the scan.
+        stale_issue = {
+            **issue,
+            "body": candidate_body(
+                self.dep, "2.12.2", "2.12.9"
+            ),
+        }
+
+        client._request.reset_mock()
+        client._request.side_effect = [
+            stale_issue,
+            {"permission": "write"},
+        ]
+
+        with self.assertRaises(ScanError):
+            validate_approval(event, client, self.registry)
+
 
 
 if __name__ == "__main__":
