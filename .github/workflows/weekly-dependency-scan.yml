@@ -1,9 +1,19 @@
+
 name: Weekly Feedstock Dependency Scan
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/scripts/**"
+      - ".github/dependency-scan.toml"
+      - ".github/workflows/weekly-dependency-scan.yml"
+      - ".github/workflows/validate-upgrade-approval.yml"
+
   schedule:
-    # Monday at 09:00 UTC (11:00 CEST / 10:00 CET in Switzerland).
+    # Monday at 09:00 UTC
     - cron: "0 9 * * 1"
+
   workflow_dispatch:
     inputs:
       mode:
@@ -15,40 +25,67 @@ on:
           - scan
           - test-notification
 
-# The scanner can read repository files and manage issues only. It cannot edit
-# code, dispatch build workflows, create pull requests, merge, or publish.
+# Read-only by default, including pull requests.
 permissions:
   contents: read
-  issues: write
 
 concurrency:
-  group: weekly-feedstock-dependency-scan
+  group: weekly-feedstock-dependency-scan-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 jobs:
-  scan-feedstock:
-    name: Check complete Feedstock
-    if: github.repository == 'i4Ds/Karabo-Feedstock'
+  unit-tests:
+    name: Scanner and approval unit tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      SCAN_MODE: ${{ inputs.mode || 'scan' }}
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout the reviewed dependency registry
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Validate scanner and complete registry coverage
-        run: >-
-          python -m unittest discover
-          -s .github/scripts/tests
-          -p 'test_*.py'
-          -v
+      - name: Run all unit tests
+        run: |
+          python -m unittest discover \
+            -s .github/scripts/tests \
+            -p 'test_*.py' \
+            -v
+
+  scan-feedstock:
+    name: Check complete Feedstock
+    needs: unit-tests
+
+    if: >-
+      github.repository == 'i4Ds/Karabo-Feedstock' &&
+      (github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch')
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      issues: write
+
+    env:
+      SCAN_MODE: ${{ inputs.mode || 'scan' }}
+
+    steps:
+    - name: Checkout reviewed dependency registry
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Compare Feedstock and upstream stable releases
         env:
