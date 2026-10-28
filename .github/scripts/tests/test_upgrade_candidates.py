@@ -2,10 +2,15 @@ import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import Mock
-
+from unittest.mock import ANY, Mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from upgrade_candidates import candidate_body, issue_version, marker, synchronize
+from upgrade_candidates import (
+    all_candidate_issues,
+    candidate_body,
+    issue_version,
+    marker,
+    synchronize,
+)
 from approve_dependency_upgrade import validate_approval
 from dependency_scan import ScanError
 
@@ -41,6 +46,82 @@ class UpgradeCandidateTests(unittest.TestCase):
         ]
         synchronize(client, self.registry, self.state)
         self.assertEqual(client._request.call_args.args[2]["labels"], ["priority:high", "upgrade:pending"])
+
+    def test_duplicate_candidate_issues_are_rejected(self):
+        client = Mock()
+
+        body = candidate_body(
+            self.dep, "2.12.2", "2.13.0"
+        )
+
+        client._request.return_value = [
+            {"number": 123, "body": body},
+            {"number": 124, "body": body},
+        ]
+
+        with self.assertRaisesRegex(
+            ScanError, "duplicate candidate issues"
+        ):
+            all_candidate_issues(client)
+    def test_closed_candidate_stays_closed_for_same_version(self):
+        client = Mock()
+
+        client._request.return_value = [
+            {
+                "number": 123,
+                "state": "closed",
+                "body": candidate_body(
+                    self.dep, "2.12.2", "2.13.0"
+                ),
+                "labels": [{"name": "upgrade:deferred"}],
+            }
+        ]
+
+        changes = synchronize(client, self.registry, self.state)
+
+        self.assertEqual(changes, [])
+        self.assertEqual(client._request.call_count, 1)
+
+    def test_closed_candidate_reopens_for_changed_version(self):
+        client = Mock()
+
+        client._request.side_effect = [
+            [
+                {
+                    "number": 123,
+                    "state": "closed",
+                    "body": candidate_body(
+                        self.dep, "2.12.2", "2.12.9"
+                    ),
+                    "labels": [
+                        {"name": "upgrade:approved"},
+                        {"name": "priority:high"},
+                    ],
+                }
+            ],
+            {"number": 123},
+        ]
+
+        changes = synchronize(client, self.registry, self.state)
+
+        self.assertEqual(
+            changes,
+            ["Updated candidate #123 for oskar to 2.13.0"],
+        )
+
+        payload = client._request.call_args.args[2]
+
+        self.assertEqual(payload["state"], "open")
+        self.assertEqual(
+            payload["labels"],
+            ["priority:high", "upgrade:pending"],
+            "Expected labels not found in the PATCH request payload"
+        )
+        client._request.assert_any_call(
+            "PATCH",
+            "/issues/123",
+            ANY,
+        )
 
     def test_approval_requires_current_candidate_and_writer(self):
         client = Mock()

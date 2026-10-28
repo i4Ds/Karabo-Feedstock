@@ -30,7 +30,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: weekly-feedstock-dependency-scan-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.event_name == 'pull_request' && format('dependency-scan-pr-{0}', github.event.pull_request.number) || 'dependency-scan-main' }}
   cancel-in-progress: false
 
 jobs:

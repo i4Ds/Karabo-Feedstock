@@ -1,3 +1,4 @@
+
 name: Validate dependency upgrade approval
 
 on:
@@ -8,18 +9,30 @@ permissions:
   contents: read
   issues: write
 
+concurrency:
+  group: dependency-upgrade-approval-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   verify:
-    if: github.repository == 'i4Ds/Karabo-Feedstock' && github.event.label.name == 'upgrade:approved'
+    if: >-
+      github.repository == 'i4Ds/Karabo-Feedstock' &&
+      github.event.label.name == 'upgrade:approved' &&
+      !github.event.issue.pull_request
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Verify upgrade candidate and approving actor
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

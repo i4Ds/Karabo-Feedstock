@@ -55,22 +55,50 @@ def candidate_body(dependency, current: str, latest: str) -> str:
     ])
 
 
+
 def all_candidate_issues(client: GitHubIssueClient) -> dict[str, dict]:
     found = {}
-    for page in range(1, 11):
-        issues = client._request("GET", f"/issues?state=all&per_page=100&page={page}")
+    page = 1
+
+    while True:
+        issues = client._request(
+            "GET",
+            f"/issues?state=all&per_page=100&page={page}",
+        )
+
         if not isinstance(issues, list):
             raise ScanError("GitHub issues API did not return a list")
+
         for issue in issues:
             if "pull_request" in issue:
                 continue
+
             body = issue.get("body") or ""
-            m = re.search(r"<!-- karabo-upgrade-candidate:v1 ([a-z0-9-]+) -->", body)
-            if m and m.group(1) not in found:
-                found[m.group(1)] = issue
+
+            match = re.search(
+                r"<!-- karabo-upgrade-candidate:v1 ([a-z0-9-]+) -->",
+                body,
+            )
+
+            if not match:
+                continue
+
+            dep_id = match.group(1)
+
+            if dep_id in found:
+                raise ScanError(
+                    f"duplicate candidate issues found for {dep_id}"
+                )
+
+            found[dep_id] = issue
+
         if len(issues) < 100:
             break
+
+        page += 1
+
     return found
+
 
 
 def synchronize(client: GitHubIssueClient, registry, state: dict) -> list[str]:
@@ -95,7 +123,9 @@ def synchronize(client: GitHubIssueClient, registry, state: dict) -> list[str]:
             changes.append(f"Created candidate #{result['number']}: {dep_id}")
             continue
         if issue_version(found.get("body") or "") == latest:
-            continue  # Preserve review decision and human notes between scans.
+            # Preserve the existing decision, including manual closure.
+            # Do not reopen a candidate unless the detected version changes.
+            continue
         number = found["number"]
         # A new version needs a new approval; replace only the decision labels.
         labels = [x["name"] for x in found.get("labels", []) if x["name"] not in {PENDING, APPROVED, DEFERRED}]
@@ -115,7 +145,11 @@ def main() -> None:
     repo = os.environ.get("GITHUB_REPOSITORY", "")
     if repo != registry.settings.expected_repository:
         raise ScanError("candidate sync requires the expected upstream repository")
-    client = GitHubIssueClient(repo, os.environ.get("GITHUB_TOKEN", ""), 20)
+
+    token = os.environ.get("GITHUB_TOKEN")
+    if not token:
+        raise ScanError("GITHUB_TOKEN is required")
+    client = GitHubIssueClient(repo, token, 20)
     tracking = client.find_open_issue(TRACKING_MARKER)
     if tracking is None:
         print("No open dependency tracking issue; no candidates to synchronize")
@@ -124,7 +158,7 @@ def main() -> None:
     if state is None:
         raise ScanError("tracking issue has no valid structured scan state")
     for name, color in LABELS.items():
-        # GitHub label creation is idempotent if label already exists.
+        # Treat an existing GitHub label (HTTP 422) as already configured.
         try:
             client._request("POST", "/labels", {"name": name, "color": color})
         except Exception as exc:

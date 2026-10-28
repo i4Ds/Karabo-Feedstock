@@ -135,21 +135,38 @@ def main() -> None:
     client = GitHubIssueClient(repo, token, 20)
     message = validate_approval(event, client, registry)
     issue_no = event["issue"]["number"]
+    issue = client._request("GET", f"/issues/{issue_no}")
+    version = issue_version(issue.get("body") or "")
 
-    # Unique marker for this candidate approval.
-    approval_marker = f"<!-- karabo-approval:{issue_no} -->"
+    if not version:
+        raise ScanError("approved candidate has no target version")
+
+    # Unique audit marker for this issue and candidate version.
+    approval_marker = f"<!-- karabo-approval:{issue_no}:{version} -->"
 
     # Check existing comments before creating another.
-    comments = client._request(
-        "GET", f"/issues/{issue_no}/comments?per_page=100"
-    )
+    page = 1
 
-    if any(
-        approval_marker in (comment.get("body") or "")
-        for comment in comments
-    ):
-        print(f"Approval already recorded for issue #{issue_no}")
-        return
+    while True:
+        comments = client._request(
+            "GET",
+            f"/issues/{issue_no}/comments?per_page=100&page={page}",
+        )
+
+        if not isinstance(comments, list):
+            raise ScanError("GitHub comments API did not return a list")
+
+        if any(
+            approval_marker in (comment.get("body") or "")
+            for comment in comments
+        ):
+            print(f"Approval already recorded for issue #{issue_no}")
+            return
+
+        if len(comments) < 100:
+            break
+
+        page += 1
 
     client._request(
         "POST",
