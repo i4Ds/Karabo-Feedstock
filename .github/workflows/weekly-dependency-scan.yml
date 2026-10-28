@@ -97,7 +97,7 @@ jobs:
           --mode "$SCAN_MODE"
 
       - name: Synchronize review-only upgrade candidates
-        if: env.SCAN_MODE == 'scan'
+        if: ${{ success() && env.SCAN_MODE == 'scan' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/upgrade_candidates.py

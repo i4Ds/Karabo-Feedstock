@@ -7,7 +7,9 @@ from pathlib import Path
 from typing import Any
 import copy
 from unittest.mock import Mock, call
-
+import io
+from unittest.mock import patch
+from urllib.error import HTTPError
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / ".github/scripts/dependency_scan.py"
@@ -153,6 +155,101 @@ class RegistryTests(unittest.TestCase):
             dependency_scan.ScanError, "UNREGISTERED_VERSION"
         ):
             dependency_scan.validate_registry(self.registry, extra, REPO_ROOT)
+
+class HttpRetryTests(unittest.TestCase):
+
+    def _rate_limit_error(self, retry_after=None):
+        headers = {}
+        if retry_after is not None:
+            headers["Retry-After"] = retry_after
+
+        return HTTPError(
+            "https://gitlab.com/api/v4/test",
+            429,
+            "Too Many Requests",
+            headers,
+            io.BytesIO(b"Rate limit exceeded"),
+        )
+
+    def test_429_then_success(self):
+        client = dependency_scan.HttpClient(timeout=5)
+
+        with patch.object(
+            dependency_scan,
+            "urlopen",
+            side_effect=[
+                self._rate_limit_error(),
+                io.BytesIO(b'{"ok": true}'),
+            ],
+        ) as request, patch.object(
+            dependency_scan.time, "sleep"
+        ) as sleep:
+            result = client.get_json("https://gitlab.com/api/v4/test")
+
+        self.assertEqual(result, {"ok": True})
+        self.assertEqual(request.call_count, 2)
+        sleep.assert_called_once_with(1)
+
+    def test_429_exhausts_retries(self):
+        client = dependency_scan.HttpClient(timeout=5)
+
+        with patch.object(
+            dependency_scan,
+            "urlopen",
+            side_effect=[
+                self._rate_limit_error() for _ in range(4)
+            ],
+        ) as request, patch.object(
+            dependency_scan.time, "sleep"
+        ) as sleep:
+            with self.assertRaises(dependency_scan.ScanError):
+                client.get_json("https://gitlab.com/api/v4/test")
+
+        self.assertEqual(request.call_count, 4)
+        self.assertEqual(
+            [call.args[0] for call in sleep.call_args_list],
+            [1, 2, 4],
+        )
+
+    def test_404_does_not_retry(self):
+        client = dependency_scan.HttpClient(timeout=5)
+
+        error = HTTPError(
+            "https://gitlab.com/api/v4/test",
+            404,
+            "Not Found",
+            {},
+            io.BytesIO(b"Not found"),
+        )
+
+        with patch.object(
+            dependency_scan, "urlopen", side_effect=error
+        ) as request, patch.object(
+            dependency_scan.time, "sleep"
+        ) as sleep:
+            with self.assertRaises(dependency_scan.ScanError):
+                client.get_json("https://gitlab.com/api/v4/test")
+
+        self.assertEqual(request.call_count, 1)
+        sleep.assert_not_called()
+
+    def test_retry_after_header(self):
+        client = dependency_scan.HttpClient(timeout=5)
+
+        with patch.object(
+            dependency_scan,
+            "urlopen",
+            side_effect=[
+                self._rate_limit_error("5"),
+                io.BytesIO(b'{"ok": true}'),
+            ],
+        ), patch.object(
+            dependency_scan.time, "sleep"
+        ) as sleep:
+            result = client.get_json("https://gitlab.com/api/v4/test")
+
+        self.assertEqual(result, {"ok": True})
+        sleep.assert_called_once_with(5)
 
 
 class ProviderTests(unittest.TestCase):
