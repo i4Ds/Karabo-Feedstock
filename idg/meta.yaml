@@ -35,18 +35,18 @@ requirements:
     - {{ compiler('cxx') }}
     - cmake >=3.10,<4
     - make
-    - fftw3f
+    - fftw * {{ mpi_prefix }}_*
     - libblas
     - libcblas
 
   host:
-    - fftw3f
+    - fftw * {{ mpi_prefix }}_*
     - libblas
     - libcblas
     - {{ mpi }}  # [mpi != 'nompi']
 
   run:
-    - fftw3f
+    - fftw * {{ mpi_prefix }}_*
     - {{ mpi }}  # [mpi != 'nompi']
 
 about:
