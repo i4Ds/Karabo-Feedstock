@@ -55,7 +55,7 @@ External dependencies & which mpi-wheels they provide:
 - fftw3f: -
 - finufft: -
 - hvox (in progress): pycsou, rascil(pybdsf), ska-sdp-datamodels, ska-sdp-func-python
-- idg: fftw
+- idg: fftw3f
 - katbeam: -
 - montagepy: -
 - oskar: -
