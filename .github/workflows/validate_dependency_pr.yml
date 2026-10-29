@@ -47,6 +47,11 @@ jobs:
       - name: Validate tools21cm release identity
         if: ${{ fromJSON(steps.detect.outputs.dependencies).tools21cm }}
         run: python .github/scripts/tools21cm_release.py
+      # Check AOtools release metadata only when AOtools is affected.
+      - name: Validate AOtools release identity
+        if: ${{ fromJSON(steps.detect.outputs.dependencies).aotools }}
+        run: python .github/scripts/aotools_release.py
+
   validate-idg:
     name: Validate IDG
     needs: detect-changes
@@ -69,6 +74,21 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/build_tools21cm.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate AOtools only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-aotools:
+    name: Validate AOtools
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).aotools }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_aotools.yml
     with:
       label: main
       dev: false
