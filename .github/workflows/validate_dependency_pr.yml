@@ -1,0 +1,49 @@
+
+name: Validate Dependency PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  detect-changes:
+    name: Detect Changed Dependencies
+    runs-on: ubuntu-latest
+
+    outputs:
+      dependencies: ${{ steps.detect.outputs.dependencies }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Detect changed dependencies
+        id: detect
+        shell: bash
+        run: |
+          result=$(python .github/scripts/detect_changed_dependencies.py \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head "${{ github.event.pull_request.head.sha }}")
+
+          echo "dependencies=$result" >> "$GITHUB_OUTPUT"
+          echo "$result"
+
+  validate-idg:
+    name: Validate IDG
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).idg }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_idg.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false

@@ -256,6 +256,8 @@ jobs:
         if: ${{ !inputs.isNative }}
         run: |
           echo "arch=noarch" >> $GITHUB_ENV
+      # Collect the locally built Conda package for PR validation.
+      # Require exactly one package to avoid ambiguous installation tests.
       - name: Collect local validation packages
         if: ${{ !inputs.publish }}
         shell: bash -el {0}
@@ -265,7 +267,7 @@ jobs:
           mkdir -p "$channel_dir/$arch" "$channel_dir/noarch"
           shopt -s nullglob
           packages=("$package_dir/${{ inputs.packageName }}-"*.conda)
-          test "${#packages[@]}" -gt 0
+          test "${#packages[@]}" -eq 1
           cp "${packages[@]}" "$channel_dir/$arch/"
 
       - name: Save local validation packages
@@ -347,27 +349,47 @@ jobs:
           name: validation-${{ inputs.packageName }}-${{ inputs.isNative && matrix.os || 'ubuntu-latest' }}
           path: ${{ runner.temp }}/validation-channel
 
+      # Select the exact locally built package for each architecture.
+      # This avoids incorrect build numbers from shared matrix outputs
+      # and ensures AMD64/ARM64 tests validate the correct artifact.
       - name: Install and test local package with Python 3.12
         if: ${{ !inputs.publish }}
         shell: bash -el {0}
         env:
           PYTHON_CALL: ${{ inputs.pythonCall }}
-          PACKAGE_SPEC: ${{ inputs.packageName }}=${{ needs.build_base.outputs.pkgv }}=*_${{ needs.build_base.outputs.bnr }}
         run: |
           mkdir -p "$RUNNER_TEMP/validation-test-logs"
           set -o pipefail
           {
             conda install -y -n base conda-index
             conda index "$RUNNER_TEMP/validation-channel"
-            # Channel qualification prevents testing an older remote package.
+
+            # Each architecture downloads its own locally built package.
+            # Read the exact version and build string from that artifact
+            # instead of relying on potentially ambiguous matrix job outputs.
+            shopt -s nullglob
+            packages=("$RUNNER_TEMP/validation-channel"/*/"${{ inputs.packageName }}-"*.conda)
+            test "${#packages[@]}" -eq 1
+
+            package_file="$(basename "${packages[0]}" .conda)"
+            package_details="${package_file#${{ inputs.packageName }}-}"
+            package_version="${package_details%-*}"
+            package_build="${package_details##*-}"
+            package_spec="${{ inputs.packageName }}=${package_version}=${package_build}"
+
+            echo "Testing locally built package: $package_spec"
+
+            # Require the local validation channel so the test cannot
+            # silently install an older package from a remote channel.
             conda create -y -n validation12 --override-channels \
               -c "file://$RUNNER_TEMP/validation-channel" \
               -c "$CHANNEL/label/$CHANNEL_LABEL" -c "$CHANNEL" -c conda-forge \
-              python=3.12 "file://$RUNNER_TEMP/validation-channel::$PACKAGE_SPEC"
+              python=3.12 "file://$RUNNER_TEMP/validation-channel::$package_spec"
             conda activate validation12
             cd "$RUNNER_TEMP"
             python -c "$PYTHON_CALL"
           } 2>&1 | tee "$RUNNER_TEMP/validation-test-logs/install-test.log"
+
 
       - name: Save local install-test logs
         if: ${{ always() && !inputs.publish }}
