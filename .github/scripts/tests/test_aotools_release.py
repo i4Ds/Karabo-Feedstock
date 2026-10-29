@@ -27,7 +27,7 @@ class ReleaseTests(unittest.TestCase):
 
     def test_repository_identity_and_variants(self):
         version, build, variants = release.release_identity(Path(__file__).resolve().parents[3])
-        self.assertEqual(variants, {'py310','py311','py312'})
+        self.assertEqual(variants, {'py312'})
         self.assertGreaterEqual(build,0)
         self.assertRegex(version,r'^\d+\.\d+\.\d+$')
 
