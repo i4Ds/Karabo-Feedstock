@@ -34,7 +34,19 @@ jobs:
 
           echo "dependencies=$result" >> "$GITHUB_OUTPUT"
           echo "$result"
+      # Run shared maintenance tests before starting expensive Conda builds.
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
+      - name: Run maintenance unit tests
+        run: python -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
+
+      # Check tools21cm release metadata only when tools21cm is affected.
+      - name: Validate tools21cm release identity
+        if: ${{ fromJSON(steps.detect.outputs.dependencies).tools21cm }}
+        run: python .github/scripts/tools21cm_release.py
   validate-idg:
     name: Validate IDG
     needs: detect-changes
