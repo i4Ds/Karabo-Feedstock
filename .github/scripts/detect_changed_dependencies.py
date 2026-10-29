@@ -181,7 +181,6 @@ def detect(base: str, head: str) -> dict[str, bool]:
     # Keep dependency-specific release checks covered by centralized validation.
     dependency_validation_files = {
         ".github/workflows/validate_aotools_pr.yml": "aotools",
-        ".github/workflows/validate_tools21cm_pr.yml": "tools21cm",
         ".github/scripts/tools21cm_release.py": "tools21cm",
         ".github/scripts/tests/test_tools21cm_release.py": "tools21cm",
     }
