@@ -35,7 +35,7 @@ class DependencyDetectionTests(unittest.TestCase):
                 result = detector.detect("base", "head")
 
         self.assertTrue(result[dependency])
-        for other in ("idg", "aotools", "tools21cm", "seqfile"):
+        for other in ("idg", "aotools", "tools21cm", "seqfile", "eidos"):
             if other != dependency:
                 self.assertFalse(result[other])
 
@@ -58,6 +58,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertFalse(result["aotools"])
         self.assertFalse(result["tools21cm"])
         self.assertFalse(result["seqfile"])
+        self.assertFalse(result["eidos"])
 
     def test_shared_workflow_change(self):
         with patch.object(
@@ -79,6 +80,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["aotools"])
         self.assertTrue(result["tools21cm"])
         self.assertTrue(result["seqfile"])
+        self.assertTrue(result["eidos"])
 
 
 
@@ -92,6 +94,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertFalse(result["aotools"])
         self.assertFalse(result["tools21cm"])
         self.assertFalse(result["seqfile"])
+        self.assertFalse(result["eidos"])
     def test_idg_recipe_patch_change(self):
         with patch.object(
             detector,
@@ -134,6 +137,8 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["idg"])
         self.assertTrue(result["aotools"])
         self.assertTrue(result["tools21cm"])
+        self.assertTrue(result["seqfile"])
+        self.assertTrue(result["eidos"])
 
     def test_idg_build_workflow_change(self):
         with patch.object(
@@ -147,7 +152,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertFalse(result["aotools"])
         self.assertFalse(result["tools21cm"])
         self.assertFalse(result["seqfile"])
-
+        self.assertFalse(result["eidos"])
     def test_detector_change_triggers_all_dependencies(self):
         with patch.object(
             detector,
@@ -161,6 +166,8 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["idg"])
         self.assertTrue(result["aotools"])
         self.assertTrue(result["tools21cm"])
+        self.assertTrue(result["seqfile"])
+        self.assertTrue(result["eidos"])
 
     def test_unused_dependencies_are_excluded(self):
         with patch.object(
@@ -178,6 +185,8 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["idg"])
         self.assertTrue(result["aotools"])
         self.assertTrue(result["tools21cm"])
+        self.assertTrue(result["seqfile"])
+        self.assertTrue(result["eidos"])
 
     def test_aotools_release_test_change(self):
         with patch.object(
@@ -215,7 +224,7 @@ class DependencyDetectionTests(unittest.TestCase):
             result = detector.detect("base", "head")
 
         self.assertTrue(result["seqfile"])
-        for other in ("idg", "aotools", "tools21cm"):
+        for other in ("idg", "aotools", "tools21cm", "eidos"):
             self.assertFalse(result[other])
 
     def test_seqfile_build_workflow_change(self):
@@ -227,7 +236,7 @@ class DependencyDetectionTests(unittest.TestCase):
             result = detector.detect("base", "head")
 
         self.assertTrue(result["seqfile"])
-        for other in ("idg", "aotools", "tools21cm"):
+        for other in ("idg", "aotools", "tools21cm", "eidos"):
             self.assertFalse(result[other])
 
     def test_detector_test_change_triggers_all_dependencies(self):
@@ -243,7 +252,47 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["idg"])
         self.assertTrue(result["aotools"])
         self.assertTrue(result["tools21cm"])
+        self.assertTrue(result["seqfile"])
+        self.assertTrue(result["eidos"])
 
+    def test_eidos_version_change(self):
+        self.check_version_change("EIDOS_VERSION", "eidos")
+
+    def test_eidos_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"eidos/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["eidos"])
+        for other in ("idg", "aotools", "tools21cm", "seqfile"):
+            self.assertFalse(result[other])
+
+    def test_eidos_build_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/workflows/build_eidos.yml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["eidos"])
+        for other in ("idg", "aotools", "tools21cm", "seqfile"):
+            self.assertFalse(result[other])
+
+    def test_eidos_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"eidos/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["eidos"])
+        for other in ("idg", "aotools", "tools21cm", "seqfile"):
+            self.assertFalse(result[other])
 
 if __name__ == "__main__":
     unittest.main()

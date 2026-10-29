@@ -109,3 +109,18 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+
+  # Validate Eidos only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-eidos:
+    name: Validate Eidos
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).eidos }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_eidos.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false

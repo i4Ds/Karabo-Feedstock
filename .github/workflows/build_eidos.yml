@@ -11,6 +11,11 @@ on:
         type: boolean
         required: false
         default: false
+      publish:
+        description: "Publish to Anaconda (leave disabled for validation)"
+        type: boolean
+        required: false
+        default: false
       buildNumber:
         type: string
         required: true
@@ -24,12 +29,16 @@ on:
         type: boolean
         required: false
         default: false
+      publish:
+        description: "Publish to Anaconda (leave disabled for validation)"
+        type: boolean
+        required: false
+        default: false
       buildNumber:
         type: string
         required: true
 
 jobs:
-
   eidos:
     uses: ./.github/workflows/build_base.yml
     with:
@@ -40,5 +49,6 @@ jobs:
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
       pythonCall: import eidos
+      publish: ${{ inputs.publish }}
       isNative: false
     secrets: inherit
