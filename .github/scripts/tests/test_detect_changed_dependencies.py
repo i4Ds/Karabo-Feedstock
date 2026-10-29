@@ -35,7 +35,7 @@ class DependencyDetectionTests(unittest.TestCase):
                 result = detector.detect("base", "head")
 
         self.assertTrue(result[dependency])
-        for other in ("idg", "aotools", "tools21cm"):
+        for other in ("idg", "aotools", "tools21cm", "seqfile"):
             if other != dependency:
                 self.assertFalse(result[other])
 
@@ -57,6 +57,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["idg"])
         self.assertFalse(result["aotools"])
         self.assertFalse(result["tools21cm"])
+        self.assertFalse(result["seqfile"])
 
     def test_shared_workflow_change(self):
         with patch.object(
@@ -77,6 +78,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["idg"])
         self.assertTrue(result["aotools"])
         self.assertTrue(result["tools21cm"])
+        self.assertTrue(result["seqfile"])
 
 
 
@@ -89,7 +91,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["idg"])
         self.assertFalse(result["aotools"])
         self.assertFalse(result["tools21cm"])
-
+        self.assertFalse(result["seqfile"])
     def test_idg_recipe_patch_change(self):
         with patch.object(
             detector,
@@ -144,7 +146,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["idg"])
         self.assertFalse(result["aotools"])
         self.assertFalse(result["tools21cm"])
-
+        self.assertFalse(result["seqfile"])
 
     def test_detector_change_triggers_all_dependencies(self):
         with patch.object(
@@ -200,6 +202,33 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["tools21cm"])
         self.assertFalse(result["idg"])
         self.assertFalse(result["aotools"])
+
+    def test_seqfile_version_change(self):
+        self.check_version_change("SEQFILE_VERSION", "seqfile")
+
+    def test_seqfile_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"seqfile/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["seqfile"])
+        for other in ("idg", "aotools", "tools21cm"):
+            self.assertFalse(result[other])
+
+    def test_seqfile_build_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/workflows/build_seqfile.yml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["seqfile"])
+        for other in ("idg", "aotools", "tools21cm"):
+            self.assertFalse(result[other])
 
     def test_detector_test_change_triggers_all_dependencies(self):
         with patch.object(

@@ -94,3 +94,18 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+
+  # Validate seqfile only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-seqfile:
+    name: Validate seqfile
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).seqfile }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_seqfile.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
