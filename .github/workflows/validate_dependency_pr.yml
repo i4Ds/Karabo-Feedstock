@@ -47,3 +47,18 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+
+  # Validate tools21cm only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-tools21cm:
+    name: Validate tools21cm
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).tools21cm }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_tools21cm.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false

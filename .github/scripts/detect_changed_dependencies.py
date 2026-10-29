@@ -178,14 +178,16 @@ def detect(base: str, head: str) -> dict[str, bool]:
         if files.intersection(dependency.validation_workflows):
             affected.add(dependency.id)
 
-    # Existing dedicated PR validation workflows.
-    pr_validation_workflows = {
+    # Keep dependency-specific release checks covered by centralized validation.
+    dependency_validation_files = {
         ".github/workflows/validate_aotools_pr.yml": "aotools",
         ".github/workflows/validate_tools21cm_pr.yml": "tools21cm",
+        ".github/scripts/tools21cm_release.py": "tools21cm",
+        ".github/scripts/tests/test_tools21cm_release.py": "tools21cm",
     }
 
-    for workflow, dependency_id in pr_validation_workflows.items():
-        if workflow in files:
+    for path, dependency_id in dependency_validation_files.items():
+        if path in files:
             affected.add(dependency_id)
 
     # 6. Return validation decisions, excluding unused dependencies.
