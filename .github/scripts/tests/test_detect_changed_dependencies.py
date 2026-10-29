@@ -177,5 +177,44 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["aotools"])
         self.assertTrue(result["tools21cm"])
 
+    def test_aotools_release_test_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/scripts/tests/test_aotools_release.py"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["aotools"])
+        self.assertFalse(result["idg"])
+        self.assertFalse(result["tools21cm"])
+
+    def test_tools21cm_release_test_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/scripts/tests/test_tools21cm_release.py"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["tools21cm"])
+        self.assertFalse(result["idg"])
+        self.assertFalse(result["aotools"])
+
+    def test_detector_test_change_triggers_all_dependencies(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={
+                ".github/scripts/tests/test_detect_changed_dependencies.py"
+            },
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["idg"])
+        self.assertTrue(result["aotools"])
+        self.assertTrue(result["tools21cm"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -157,17 +157,18 @@ def detect(base: str, head: str) -> dict[str, bool]:
                 for dependency in registry.dependencies
             )
 
-    # 4. Detect changes to other shared infrastructure.
+    # 4. Detect changes to shared infrastructure and detector tests.
     shared_changes = files.intersection(
         SHARED_INFRASTRUCTURE - {build_base}
     )
 
-    detector_test_changes = any(
-        file.startswith(".github/scripts/tests/")
-        for file in files
-    )
+    shared_test_files = {
+        ".github/scripts/tests/test_detect_changed_dependencies.py",
+    }
 
-    if shared_changes or detector_test_changes:
+    shared_test_changes = bool(files.intersection(shared_test_files))
+
+    if shared_changes or shared_test_changes:
         affected.update(
             dependency.id
             for dependency in registry.dependencies
@@ -178,11 +179,12 @@ def detect(base: str, head: str) -> dict[str, bool]:
         if files.intersection(dependency.validation_workflows):
             affected.add(dependency.id)
 
-    # Keep dependency-specific release checks covered by centralized validation.
+    # Trigger validation when dependency-specific release checks change.
     dependency_validation_files = {
-        ".github/workflows/validate_aotools_pr.yml": "aotools",
         ".github/scripts/tools21cm_release.py": "tools21cm",
         ".github/scripts/tests/test_tools21cm_release.py": "tools21cm",
+        ".github/scripts/aotools_release.py": "aotools",
+        ".github/scripts/tests/test_aotools_release.py": "aotools",
     }
 
     for path, dependency_id in dependency_validation_files.items():
