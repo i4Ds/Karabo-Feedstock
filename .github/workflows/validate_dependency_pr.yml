@@ -124,3 +124,18 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+
+  # Validate SKA Telmodel only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-ska-telmodel:
+    name: Validate SKA Telmodel
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-telmodel'] }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_SKA_Telmodel.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false

@@ -81,8 +81,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["tools21cm"])
         self.assertTrue(result["seqfile"])
         self.assertTrue(result["eidos"])
-
-
+        self.assertTrue(result["ska-telmodel"])
 
     def test_idg_build_script_change(self):
         with patch.object(
@@ -95,6 +94,8 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertFalse(result["tools21cm"])
         self.assertFalse(result["seqfile"])
         self.assertFalse(result["eidos"])
+        self.assertFalse(result["ska-telmodel"])
+
     def test_idg_recipe_patch_change(self):
         with patch.object(
             detector,
@@ -292,6 +293,51 @@ class DependencyDetectionTests(unittest.TestCase):
 
         self.assertTrue(result["eidos"])
         for other in ("idg", "aotools", "tools21cm", "seqfile"):
+            self.assertFalse(result[other])
+
+    def test_ska_telmodel_version_change(self):
+        self.check_version_change("SKA_TELMODEL_VERSION", "ska-telmodel")
+
+    def test_ska_telmodel_version_change(self):
+        self.check_version_change("SKA_TELMODEL_VERSION", "ska-telmodel")
+
+    def test_ska_telmodel_version_change(self):
+        self.check_version_change("SKA_TELMODEL_VERSION", "ska-telmodel")
+
+    def test_ska_telmodel_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-telmodel/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["ska-telmodel"])
+        for other in ("idg", "aotools", "tools21cm", "seqfile", "eidos"):
+            self.assertFalse(result[other])
+
+    def test_ska_telmodel_build_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/workflows/build_SKA_Telmodel.yml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["ska-telmodel"])
+        for other in ("idg", "aotools", "tools21cm", "seqfile", "eidos"):
+            self.assertFalse(result[other])
+
+    def test_ska_telmodel_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-telmodel/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["ska-telmodel"])
+        for other in ("idg", "aotools", "tools21cm", "seqfile", "eidos"):
             self.assertFalse(result[other])
 
 if __name__ == "__main__":
