@@ -82,6 +82,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["seqfile"])
         self.assertTrue(result["eidos"])
         self.assertTrue(result["ska-telmodel"])
+        self.assertTrue(result["pybdsf"])
 
     def test_idg_build_script_change(self):
         with patch.object(
@@ -339,6 +340,54 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["ska-telmodel"])
         for other in ("idg", "aotools", "tools21cm", "seqfile", "eidos"):
             self.assertFalse(result[other])
+    def test_pybdsf_version_change(self):
+        self.check_version_change("PYBDSF_VERSION", "pybdsf")
+
+    def test_pybdsf_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"pybdsf/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["pybdsf"])
+        for other in (
+            "idg", "aotools", "tools21cm",
+            "seqfile", "eidos", "ska-telmodel",
+        ):
+            self.assertFalse(result[other])
+
+    def test_pybdsf_build_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/workflows/build_PyBDSF.yml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["pybdsf"])
+        for other in (
+            "idg", "aotools", "tools21cm",
+            "seqfile", "eidos", "ska-telmodel",
+        ):
+            self.assertFalse(result[other])
+
+    def test_pybdsf_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"pybdsf/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["pybdsf"])
+        for other in (
+            "idg", "aotools", "tools21cm",
+            "seqfile", "eidos", "ska-telmodel",
+        ):
+            self.assertFalse(result[other])
+
 
 if __name__ == "__main__":
     unittest.main()

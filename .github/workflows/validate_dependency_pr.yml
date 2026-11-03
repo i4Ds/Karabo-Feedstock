@@ -139,3 +139,18 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+
+  # Validate PyBDSF only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-pybdsf:
+    name: Validate PyBDSF
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).pybdsf }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_PyBDSF.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
