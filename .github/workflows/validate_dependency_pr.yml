@@ -154,3 +154,18 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+
+  # Validate EveryBeam only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-everybeam:
+    name: Validate EveryBeam
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).everybeam }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_everybeam.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false

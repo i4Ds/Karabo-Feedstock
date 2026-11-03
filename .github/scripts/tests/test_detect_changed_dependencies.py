@@ -83,6 +83,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["eidos"])
         self.assertTrue(result["ska-telmodel"])
         self.assertTrue(result["pybdsf"])
+        self.assertTrue(result["everybeam"])
 
     def test_idg_build_script_change(self):
         with patch.object(
@@ -387,6 +388,55 @@ class DependencyDetectionTests(unittest.TestCase):
             "seqfile", "eidos", "ska-telmodel",
         ):
             self.assertFalse(result[other])
+
+    def test_everybeam_version_change(self):
+        self.check_version_change("EVERYBEAM_VERSION", "everybeam")
+
+    def test_everybeam_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"everybeam/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["everybeam"])
+        for other in (
+            "idg", "aotools", "tools21cm", "seqfile",
+            "eidos", "ska-telmodel", "pybdsf",
+        ):
+            self.assertFalse(result[other])
+
+    def test_everybeam_build_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/workflows/build_everybeam.yml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["everybeam"])
+        for other in (
+            "idg", "aotools", "tools21cm", "seqfile",
+            "eidos", "ska-telmodel", "pybdsf",
+        ):
+            self.assertFalse(result[other])
+
+    def test_everybeam_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"everybeam/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["everybeam"])
+        for other in (
+            "idg", "aotools", "tools21cm", "seqfile",
+            "eidos", "ska-telmodel", "pybdsf",
+        ):
+            self.assertFalse(result[other])
+
 
 
 if __name__ == "__main__":
