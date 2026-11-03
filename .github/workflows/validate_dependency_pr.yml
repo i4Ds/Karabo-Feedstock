@@ -185,3 +185,18 @@ jobs:
       devDeps: "EVERYBEAM_VERSION"
       buildNumber: "0"
       publish: false
+
+  # Validate SKA SDP Datamodels when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-ska-sdp-datamodels:
+    name: Validate SKA SDP Datamodels
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-datamodels'] }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_SKA_SDP_Datamodel.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false

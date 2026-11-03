@@ -14,6 +14,10 @@ on:
       buildNumber:
         type: string
         required: true
+      publish:
+        type: boolean
+        required: false
+        default: false
 
   workflow_call:
     inputs:
@@ -27,7 +31,10 @@ on:
       buildNumber:
         type: string
         required: true
-
+      publish:
+        type: boolean
+        required: false
+        default: false
 jobs:
 
   SKA_SDP_Datamodel:
@@ -40,5 +47,6 @@ jobs:
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
+      publish: ${{ inputs.publish }}
       isNative: false
     secrets: inherit

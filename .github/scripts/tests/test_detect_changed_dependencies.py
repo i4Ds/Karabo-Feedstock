@@ -85,6 +85,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["pybdsf"])
         self.assertTrue(result["everybeam"])
         self.assertTrue(result["wsclean"])
+        self.assertTrue(result["ska-sdp-datamodels"])
 
     def test_idg_build_script_change(self):
         with patch.object(
@@ -471,6 +472,43 @@ class DependencyDetectionTests(unittest.TestCase):
             result = detector.detect("base", "head")
 
         self.assertTrue(result["wsclean"])
+    def test_ska_sdp_datamodels_version_change(self):
+        self.check_version_change(
+            "SKA_SDP_DTMDL_VERSION",
+            "ska-sdp-datamodels",
+        )
+
+    def test_ska_sdp_datamodels_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-sdp-datamodels/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["ska-sdp-datamodels"])
+
+    def test_ska_sdp_datamodels_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={
+                ".github/workflows/build_SKA_SDP_Datamodel.yml"
+            },
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["ska-sdp-datamodels"])
+
+    def test_ska_sdp_datamodels_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-sdp-datamodels/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["ska-sdp-datamodels"])
 
 
 if __name__ == "__main__":
