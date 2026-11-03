@@ -169,3 +169,19 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+
+  # Validate WSClean only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-wsclean:
+    name: Validate WSClean
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).wsclean }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_wsclean.yml
+    with:
+      label: main
+      dev: false
+      devDeps: "EVERYBEAM_VERSION"
+      buildNumber: "0"
+      publish: false

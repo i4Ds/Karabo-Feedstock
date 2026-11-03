@@ -84,6 +84,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["ska-telmodel"])
         self.assertTrue(result["pybdsf"])
         self.assertTrue(result["everybeam"])
+        self.assertTrue(result["wsclean"])
 
     def test_idg_build_script_change(self):
         with patch.object(
@@ -190,6 +191,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["tools21cm"])
         self.assertTrue(result["seqfile"])
         self.assertTrue(result["eidos"])
+        self.assertTrue(result["wsclean"])
 
     def test_aotools_release_test_change(self):
         with patch.object(
@@ -437,6 +439,38 @@ class DependencyDetectionTests(unittest.TestCase):
         ):
             self.assertFalse(result[other])
 
+    def test_wsclean_version_change(self):
+        self.check_version_change("WSCLEAN_VERSION", "wsclean")
+
+    def test_wsclean_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"wsclean/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["wsclean"])
+
+    def test_wsclean_build_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/workflows/build_wsclean.yml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["wsclean"])
+
+    def test_wsclean_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"wsclean/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["wsclean"])
 
 
 if __name__ == "__main__":
