@@ -86,6 +86,8 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["everybeam"])
         self.assertTrue(result["wsclean"])
         self.assertTrue(result["ska-sdp-datamodels"])
+        self.assertTrue(result["ska-sdp-func"])
+        self.assertTrue(result["ska-sdp-func-python"])
 
     def test_idg_build_script_change(self):
         with patch.object(
@@ -509,7 +511,72 @@ class DependencyDetectionTests(unittest.TestCase):
             result = detector.detect("base", "head")
 
         self.assertTrue(result["ska-sdp-datamodels"])
+    def test_ska_sdp_func_version_change(self):
+        self.check_version_change(
+            "SKA_SDP_FUNC_VERSION", "ska-sdp-func"
+        )
 
+    def test_ska_sdp_func_python_version_change(self):
+        self.check_version_change(
+            "SKA_SDP_FUNC_PY_VERSION", "ska-sdp-func-python"
+        )
 
+    def test_ska_sdp_func_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-sdp-func/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+        self.assertTrue(result["ska-sdp-func"])
+
+    def test_ska_sdp_func_python_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-sdp-func-python/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+        self.assertTrue(result["ska-sdp-func-python"])
+
+    def test_ska_sdp_func_native_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={
+                ".github/workflows/build_SKA_SDP_Func_Native.yml"
+            },
+        ):
+            result = detector.detect("base", "head")
+        self.assertTrue(result["ska-sdp-func"])
+
+    def test_ska_sdp_func_python_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={
+                ".github/workflows/build_SKA_SDP_Func_Python.yml"
+            },
+        ):
+            result = detector.detect("base", "head")
+        self.assertTrue(result["ska-sdp-func-python"])
+
+    def test_ska_sdp_func_native_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-sdp-func/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+        self.assertTrue(result["ska-sdp-func"])
+
+    def test_ska_sdp_func_python_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-sdp-func-python/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+        self.assertTrue(result["ska-sdp-func-python"])
 if __name__ == "__main__":
     unittest.main()

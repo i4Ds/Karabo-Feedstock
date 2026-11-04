@@ -200,3 +200,34 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+
+  # Validate SKA SDP Func Native when its files or shared infrastructure change.
+  # PR validation must never publish packages.
+  validate-ska-sdp-func:
+    name: Validate SKA SDP Func Native
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-func'] }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_SKA_SDP_Func_Native.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate SKA SDP Func Python when its dependency or shared files change.
+  # PR validation must never publish Conda packages.
+  validate-ska-sdp-func-python:
+    name: Validate SKA SDP Func Python
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-func-python'] }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_SKA_SDP_Func_Python.yml
+    with:
+      label: main
+      dev: false
+      devDeps: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
+      buildNumber: "0"
+      publish: false
