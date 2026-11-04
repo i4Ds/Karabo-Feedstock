@@ -231,3 +231,18 @@ jobs:
       devDeps: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
       buildNumber: "0"
       publish: false
+
+  # Validate ARatmospy when its dependency or shared files change.
+  # PR validation must never publish Conda packages.
+  validate-aratmospy:
+    name: Validate ARatmospy
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).aratmospy }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_ARatmospy.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false

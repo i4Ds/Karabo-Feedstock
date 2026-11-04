@@ -88,6 +88,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["ska-sdp-datamodels"])
         self.assertTrue(result["ska-sdp-func"])
         self.assertTrue(result["ska-sdp-func-python"])
+        self.assertTrue(result["aratmospy"])
 
     def test_idg_build_script_change(self):
         with patch.object(
@@ -584,5 +585,38 @@ class DependencyDetectionTests(unittest.TestCase):
             "SKA_SDP_FUNC_VERSION",
             "ska-sdp-func-python",
         )
+    def test_aratmospy_version_change(self):
+        self.check_version_change("ARATMOSPY_VERSION", "aratmospy")
+
+    def test_aratmospy_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"aratmospy/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["aratmospy"])
+
+    def test_aratmospy_build_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/workflows/build_ARatmospy.yml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["aratmospy"])
+
+    def test_aratmospy_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"aratmospy/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["aratmospy"])
+
 if __name__ == "__main__":
     unittest.main()
