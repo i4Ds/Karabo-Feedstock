@@ -191,6 +191,10 @@ def detect(base: str, head: str) -> dict[str, bool]:
         if path in files:
             affected.add(dependency_id)
 
+    # Validate the Python wrapper when its native dependency changes.
+    if "ska-sdp-func" in affected:
+        affected.add("ska-sdp-func-python")
+
     # 6. Return validation decisions, excluding unused dependencies.
     return {
         dependency.id: (

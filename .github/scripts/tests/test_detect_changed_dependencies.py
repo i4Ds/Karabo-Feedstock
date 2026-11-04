@@ -578,5 +578,11 @@ class DependencyDetectionTests(unittest.TestCase):
         ):
             result = detector.detect("base", "head")
         self.assertTrue(result["ska-sdp-func-python"])
+
+    def test_ska_sdp_func_native_change_triggers_python_wrapper(self):
+        self.check_version_change(
+            "SKA_SDP_FUNC_VERSION",
+            "ska-sdp-func-python",
+        )
 if __name__ == "__main__":
     unittest.main()
