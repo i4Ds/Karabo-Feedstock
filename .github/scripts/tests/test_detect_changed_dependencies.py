@@ -89,6 +89,7 @@ class DependencyDetectionTests(unittest.TestCase):
         self.assertTrue(result["ska-sdp-func"])
         self.assertTrue(result["ska-sdp-func-python"])
         self.assertTrue(result["aratmospy"])
+        self.assertTrue(result["pyuvdata"])
 
     def test_idg_build_script_change(self):
         with patch.object(
@@ -617,6 +618,39 @@ class DependencyDetectionTests(unittest.TestCase):
             result = detector.detect("base", "head")
 
         self.assertTrue(result["aratmospy"])
+    def test_pyuvdata_version_change(self):
+        self.check_version_change("PYUVDATA_VERSION", "pyuvdata")
+
+    def test_pyuvdata_recipe_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"pyuvdata/meta.yaml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["pyuvdata"])
+
+    def test_pyuvdata_build_workflow_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/workflows/build_pyuvdata.yml"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["pyuvdata"])
+
+    def test_pyuvdata_build_script_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"pyuvdata/build.sh"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["pyuvdata"])
+
 
 if __name__ == "__main__":
     unittest.main()
