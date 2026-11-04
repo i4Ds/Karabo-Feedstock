@@ -349,7 +349,7 @@ jobs:
         if: ${{ !inputs.publish }}
         uses: actions/download-artifact@v4
         with:
-          name: validation-${{ inputs.packageName }}-${{ inputs.isNative && matrix.os || 'ubuntu-latest' }}
+          name: validation-${{ inputs.packageName }}-${{ inputs.isNative && (inputs.useCuda && !inputs.buildArm && 'ubuntu-22.04' || matrix.os) || 'ubuntu-latest' }}
           path: ${{ runner.temp }}/validation-channel
 
       # Select the exact locally built package for each architecture.
