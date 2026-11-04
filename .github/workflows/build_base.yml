@@ -144,8 +144,9 @@ jobs:
     # recipes and unported native recipes on x86-64 only.
     strategy:
       fail-fast: false
+      # Use Ubuntu 22.04 for legacy CUDA builds to avoid the missing libxml2.so.2 issue.
       matrix:
-        os: ${{ fromJSON(inputs.isNative && inputs.buildArm && '["ubuntu-latest", "ubuntu-24.04-arm"]' || '["ubuntu-latest"]') }}
+        os: ${{ fromJSON(inputs.useCuda && !inputs.buildArm && '["ubuntu-22.04"]' || (inputs.isNative && inputs.buildArm && '["ubuntu-latest", "ubuntu-24.04-arm"]' || '["ubuntu-latest"]')) }}
     runs-on: ${{ matrix.os }}
     outputs:
       pkgv: ${{ steps.pkgv.outputs.version }}
