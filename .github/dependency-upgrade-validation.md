@@ -40,7 +40,9 @@ coupled groups. Use the existing Maintainer agent for approved version changes.
 
 ## AOtools automatic publication after merge
 
-`validate_aotools_pr.yml` reads `aotools/release.json` for the build number.
+The centralized `validate_dependency_pr.yml` workflow validates AOtools
+release metadata using `aotools/release.json` and runs the AOtools
+Conda build and Python 3.12 installation tests without publishing packages.
 The version remains in Build Base. Set build_number to 0 for a new version;
 increment it for a rebuild of the same version. Include that change in the PR.
 

@@ -107,6 +107,7 @@ class Dependency:
     project: str = ""
     tag_pattern: str = DEFAULT_TAG_PATTERN
     ignored_versions: tuple[str, ...] = ()
+    validation_workflows: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -300,6 +301,9 @@ def load_registry(path: Path) -> Registry:
             tag_pattern=str(item.get("tag_pattern", DEFAULT_TAG_PATTERN)),
             ignored_versions=_optional_string_tuple(
                 item, "ignored_versions", context
+            ),
+            validation_workflows=_optional_string_tuple(
+                item, "validation_workflows", context
             ),
         )
         dependencies.append(dependency)
