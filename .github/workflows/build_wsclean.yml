@@ -18,7 +18,7 @@ on:
       buildNumber:
         type: string
         required: true
-      Publish:
+      publish:
         type: boolean
         required: false
         default: false
@@ -39,7 +39,7 @@ on:
       buildNumber:
         type: string
         required: true
-      Publish:
+      publish:
         type: boolean
         required: false
         default: false
@@ -55,7 +55,7 @@ jobs:
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
       devDeps: ${{ inputs.devDeps }}
-      Publish: ${{ inputs.Publish }}
+      publish: ${{ inputs.publish }}
       useCuda: false
       isNative: true
       buildArm: true
