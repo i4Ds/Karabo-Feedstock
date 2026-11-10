@@ -1,0 +1,262 @@
+
+name: Validate Dependency PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  detect-changes:
+    name: Detect Changed Dependencies
+    runs-on: ubuntu-latest
+
+    outputs:
+      dependencies: ${{ steps.detect.outputs.dependencies }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      # Set up Python before running the detector.
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Detect changed dependencies
+        id: detect
+        shell: bash
+        run: |
+          result=$(python .github/scripts/detect_changed_dependencies.py \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head "${{ github.event.pull_request.head.sha }}")
+
+          echo "dependencies=$result" >> "$GITHUB_OUTPUT"
+          echo "$result"
+      - name: Run maintenance unit tests
+        run: python -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
+
+      # Check tools21cm release metadata only when tools21cm is affected.
+      - name: Validate tools21cm release identity
+        if: ${{ fromJSON(steps.detect.outputs.dependencies).tools21cm }}
+        run: python .github/scripts/tools21cm_release.py
+      # Check AOtools release metadata only when AOtools is affected.
+      - name: Validate AOtools release identity
+        if: ${{ fromJSON(steps.detect.outputs.dependencies).aotools }}
+        run: python .github/scripts/aotools_release.py
+
+  validate-idg:
+    name: Validate IDG
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).idg }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_idg.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate tools21cm only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-tools21cm:
+    name: Validate tools21cm
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).tools21cm }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_tools21cm.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate AOtools only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-aotools:
+    name: Validate AOtools
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).aotools }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_aotools.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate seqfile only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-seqfile:
+    name: Validate seqfile
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).seqfile }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_seqfile.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate Eidos only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-eidos:
+    name: Validate Eidos
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).eidos }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_eidos.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate SKA Telmodel only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-ska-telmodel:
+    name: Validate SKA Telmodel
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-telmodel'] }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_SKA_Telmodel.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate PyBDSF only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-pybdsf:
+    name: Validate PyBDSF
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).pybdsf }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_PyBDSF.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate EveryBeam only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-everybeam:
+    name: Validate EveryBeam
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).everybeam }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_everybeam.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate WSClean only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-wsclean:
+    name: Validate WSClean
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).wsclean }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_wsclean.yml
+    with:
+      label: main
+      dev: false
+      devDeps: "EVERYBEAM_VERSION"
+      buildNumber: "0"
+      publish: false
+
+  # Validate SKA SDP Datamodels when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-ska-sdp-datamodels:
+    name: Validate SKA SDP Datamodels
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-datamodels'] }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_SKA_SDP_Datamodel.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate SKA SDP Func Native when its files or shared infrastructure change.
+  # PR validation must never publish packages.
+  validate-ska-sdp-func:
+    name: Validate SKA SDP Func Native
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-func'] }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_SKA_SDP_Func_Native.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate SKA SDP Func Python when its dependency or shared files change.
+  # PR validation must never publish Conda packages.
+  validate-ska-sdp-func-python:
+    name: Validate SKA SDP Func Python
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-func-python'] }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_SKA_SDP_Func_Python.yml
+    with:
+      label: main
+      dev: false
+      devDeps: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
+      buildNumber: "0"
+      publish: false
+
+  # Validate ARatmospy when its dependency or shared files change.
+  # PR validation must never publish Conda packages.
+  validate-aratmospy:
+    name: Validate ARatmospy
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).aratmospy }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_ARatmospy.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+
+  # Validate PyUVData only when its dependency or shared build files change.
+  # PR validation must never publish Conda packages.
+  validate-pyuvdata:
+    name: Validate PyUVData
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).pyuvdata }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_pyuvdata.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false

@@ -2,14 +2,6 @@
 name: Weekly Feedstock Dependency Scan
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/scripts/**"
-      - ".github/dependency-scan.toml"
-      - ".github/workflows/weekly-dependency-scan.yml"
-      - ".github/workflows/validate-upgrade-approval.yml"
-
   schedule:
     # Monday at 09:00 UTC
     - cron: "0 9 * * 1"
@@ -25,12 +17,12 @@ on:
           - scan
           - test-notification
 
-# Read-only by default, including pull requests.
+# Read-only by default
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('dependency-scan-pr-{0}', github.event.pull_request.number) || 'dependency-scan-main' }}
+  group: dependency-scan-main
   cancel-in-progress: false
 
 jobs:

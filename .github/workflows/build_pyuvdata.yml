@@ -14,6 +14,10 @@ on:
       buildNumber:
         type: string
         required: true
+      publish:
+        type: boolean
+        required: false
+        default: false
 
   workflow_call:
     inputs:
@@ -27,6 +31,10 @@ on:
       buildNumber:
         type: string
         required: true
+      publish:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
 
@@ -42,4 +50,5 @@ jobs:
       pythonCall: import pyuvdata
       isNative: true
       buildArm: true
+      publish: ${{ inputs.publish }}
     secrets: inherit

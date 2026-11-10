@@ -56,7 +56,9 @@ def candidate_body(dependency, current: str, latest: str) -> str:
 
 
 
+
 def all_candidate_issues(client: GitHubIssueClient) -> dict[str, dict]:
+    """Fetch candidate issues and verify their trusted origin."""
     found = {}
     page = 1
 
@@ -85,6 +87,15 @@ def all_candidate_issues(client: GitHubIssueClient) -> dict[str, dict]:
 
             dep_id = match.group(1)
 
+            # Only accept candidate issues created by GitHub Actions.
+            creator = (issue.get("user") or {}).get("login", "")
+
+            if creator != "github-actions[bot]":
+                raise ScanError(
+                    f"Untrusted candidate issue for {dep_id}"
+                )
+
+            # Reject duplicate candidate issues for the same dependency.
             if dep_id in found:
                 raise ScanError(
                     f"duplicate candidate issues found for {dep_id}"
@@ -98,6 +109,7 @@ def all_candidate_issues(client: GitHubIssueClient) -> dict[str, dict]:
         page += 1
 
     return found
+
 
 
 

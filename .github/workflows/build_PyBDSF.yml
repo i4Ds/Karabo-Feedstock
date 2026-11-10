@@ -14,6 +14,10 @@ on:
       buildNumber:
         type: string
         required: true
+      publish:
+        type: boolean
+        required: false
+        default: false
         
   workflow_call:
     inputs:
@@ -27,6 +31,10 @@ on:
       buildNumber:
         type: string
         required: true
+      publish:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
 
@@ -41,6 +49,7 @@ jobs:
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
+      publish: ${{ inputs.publish }}
       isNative: true
       buildArm: true
     secrets: inherit

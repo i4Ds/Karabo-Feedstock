@@ -14,7 +14,11 @@ on:
       buildNumber:
         type: string
         required: true
-        
+      publish:
+        type: boolean
+        required: false
+        default: true
+
   workflow_call:
     inputs:
       label:
@@ -27,6 +31,10 @@ on:
       buildNumber:
         type: string
         required: true
+      publish:
+        type: boolean
+        required: false
+        default: true
 
 jobs:
   IDG:
@@ -38,6 +46,7 @@ jobs:
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
+      publish: ${{ inputs.publish }}
       useCuda: true
       isNative: true
     secrets: inherit

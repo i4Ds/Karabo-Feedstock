@@ -107,6 +107,7 @@ class Dependency:
     project: str = ""
     tag_pattern: str = DEFAULT_TAG_PATTERN
     ignored_versions: tuple[str, ...] = ()
+    validation_workflows: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -300,6 +301,9 @@ def load_registry(path: Path) -> Registry:
             tag_pattern=str(item.get("tag_pattern", DEFAULT_TAG_PATTERN)),
             ignored_versions=_optional_string_tuple(
                 item, "ignored_versions", context
+            ),
+            validation_workflows=_optional_string_tuple(
+                item, "validation_workflows", context
             ),
         )
         dependencies.append(dependency)
@@ -967,21 +971,47 @@ class GitHubIssueClient:
             raise GitHubApiError(0, f"GitHub {method} {path} failed: {error}") from error
 
     def find_open_issue(self, marker: str) -> Mapping[str, Any] | None:
+        found = None
+
         for page in range(1, 11):
-            query = urlencode({"state": "open", "per_page": 100, "page": page})
+            query = urlencode({
+                "state": "open",
+                "per_page": 100,
+                "page": page,
+            })
             issues = self._request("GET", f"/issues?{query}")
             if not isinstance(issues, list):
-                raise GitHubApiError(0, "GitHub issues response was not a list")
+                raise GitHubApiError(
+                    0, "GitHub issues response was not a list"
+                )
+
             for issue in issues:
-                if (
-                    isinstance(issue, dict)
-                    and "pull_request" not in issue
-                    and marker in str(issue.get("body", ""))
-                ):
-                    return issue
+                if not isinstance(issue, dict):
+                    continue
+
+                if "pull_request" in issue:
+                    continue
+
+                if marker not in str(issue.get("body") or ""):
+                    continue
+
+                creator = (issue.get("user") or {}).get("login", "")
+
+                if creator != "github-actions[bot]":
+                    continue
+
+                if found is not None:
+                    raise ScanError(
+                        f"duplicate trusted tracking issues found "
+                        f"for marker {marker}"
+                    )
+
+                found = issue
+
             if len(issues) < 100:
                 break
-        return None
+
+        return found
 
     def _create_assigned(self, title: str, body: str, notify_user: str) -> int:
         try:
