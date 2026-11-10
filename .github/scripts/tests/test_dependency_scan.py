@@ -375,6 +375,140 @@ class ScanAndReportTests(unittest.TestCase):
         self.assertIn("draft pull request for human review", body)
         self.assertIn("did **not** modify repository files", body)
 
+class GitHubIssueLookupTests(unittest.TestCase):
+
+    def setUp(self):
+        self.client = dependency_scan.GitHubIssueClient(
+            "i4Ds/Karabo-Feedstock", "test", 1
+        )
+        self.client._request = Mock()
+
+    def test_finds_trusted_tracking_issue(self):
+        self.client._request.return_value = [
+            {
+                "number": 70,
+                "body": dependency_scan.TRACKING_MARKER,
+                "user": {"login": "github-actions[bot]"},
+            }
+        ]
+
+        issue = self.client.find_open_issue(
+            dependency_scan.TRACKING_MARKER
+        )
+
+        self.assertEqual(issue["number"], 70)
+
+    def test_ignores_untrusted_tracking_issue(self):
+        self.client._request.return_value = [
+            {
+                "number": 71,
+                "body": dependency_scan.TRACKING_MARKER,
+                "user": {"login": "unknown-user"},
+            },
+            {
+                "number": 70,
+                "body": dependency_scan.TRACKING_MARKER,
+                "user": {"login": "github-actions[bot]"},
+            },
+        ]
+
+        issue = self.client.find_open_issue(
+            dependency_scan.TRACKING_MARKER
+        )
+
+        self.assertEqual(issue["number"], 70)
+
+    def test_returns_none_without_trusted_issue(self):
+        self.client._request.return_value = [
+            {
+                "number": 71,
+                "body": dependency_scan.TRACKING_MARKER,
+                "user": {"login": "unknown-user"},
+            }
+        ]
+
+        issue = self.client.find_open_issue(
+            dependency_scan.TRACKING_MARKER
+        )
+
+        self.assertIsNone(issue)
+
+    def test_ignores_pull_requests(self):
+        self.client._request.return_value = [
+            {
+                "number": 72,
+                "body": dependency_scan.TRACKING_MARKER,
+                "user": {"login": "github-actions[bot]"},
+                "pull_request": {"url": "https://example.org"},
+            }
+        ]
+
+        issue = self.client.find_open_issue(
+            dependency_scan.TRACKING_MARKER
+        )
+
+        self.assertIsNone(issue)
+
+    def test_rejects_duplicate_trusted_issues(self):
+        self.client._request.return_value = [
+            {
+                "number": 70,
+                "body": dependency_scan.TRACKING_MARKER,
+                "user": {"login": "github-actions[bot]"},
+            },
+            {
+                "number": 71,
+                "body": dependency_scan.TRACKING_MARKER,
+                "user": {"login": "github-actions[bot]"},
+            },
+        ]
+
+        with self.assertRaisesRegex(
+            dependency_scan.ScanError,
+            "duplicate trusted tracking issues",
+        ):
+            self.client.find_open_issue(
+                dependency_scan.TRACKING_MARKER
+            )
+
+    def test_rejects_duplicates_across_pages(self):
+        first_page = [
+            {
+                "number": 70,
+                "body": dependency_scan.TRACKING_MARKER,
+                "user": {"login": "github-actions[bot]"},
+            }
+        ]
+
+        first_page.extend(
+            {"number": number, "body": "Unrelated issue"}
+            for number in range(100, 199)
+        )
+
+        second_page = [
+            {
+                "number": 200,
+                "body": dependency_scan.TRACKING_MARKER,
+                "user": {"login": "github-actions[bot]"},
+            }
+        ]
+
+        self.client._request.side_effect = [
+            first_page,
+            second_page,
+        ]
+
+        with self.assertRaisesRegex(
+            dependency_scan.ScanError,
+            "duplicate trusted tracking issues",
+        ):
+            self.client.find_open_issue(
+                dependency_scan.TRACKING_MARKER
+            )
+
+        self.assertEqual(self.client._request.call_count, 2)
+
+
 class StructuredStateTests(unittest.TestCase):
     def setUp(self):
         self.state = {"schema_version": 1, "dependencies": {
