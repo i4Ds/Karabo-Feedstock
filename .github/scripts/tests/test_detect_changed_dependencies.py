@@ -307,12 +307,6 @@ class DependencyDetectionTests(unittest.TestCase):
     def test_ska_telmodel_version_change(self):
         self.check_version_change("SKA_TELMODEL_VERSION", "ska-telmodel")
 
-    def test_ska_telmodel_version_change(self):
-        self.check_version_change("SKA_TELMODEL_VERSION", "ska-telmodel")
-
-    def test_ska_telmodel_version_change(self):
-        self.check_version_change("SKA_TELMODEL_VERSION", "ska-telmodel")
-
     def test_ska_telmodel_recipe_change(self):
         with patch.object(
             detector,

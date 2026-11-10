@@ -23,6 +23,11 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+      # Set up Python before running the detector.
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Detect changed dependencies
         id: detect
@@ -34,12 +39,6 @@ jobs:
 
           echo "dependencies=$result" >> "$GITHUB_OUTPUT"
           echo "$result"
-      # Run shared maintenance tests before starting expensive Conda builds.
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Run maintenance unit tests
         run: python -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
 
