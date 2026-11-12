@@ -111,7 +111,7 @@ class UpgradeCandidateTests(unittest.TestCase):
         ]
 
         with self.assertRaisesRegex(
-            ScanError, "duplicate candidate issues"
+            ScanError, "duplicate open candidate issues"
         ):
             all_candidate_issues(client)
 
@@ -143,42 +143,102 @@ class UpgradeCandidateTests(unittest.TestCase):
         self.assertEqual(changes, [])
         self.assertEqual(client._request.call_count, 1)
 
-    def test_closed_candidate_reopens_for_changed_version(self):
+    def test_closed_candidate_creates_new_issue_for_changed_version(self):
         client = Mock()
         client._request.side_effect = [
             [
                 self.candidate_issue(
+                    number=123,
                     state="closed",
                     version="2.12.9",
-                    labels=[
-                        {"name": "upgrade:approved"},
-                        {"name": "priority:high"},
-                    ],
+                    labels=[{"name": "upgrade:approved"}],
                 )
             ],
-            {"number": 123},
+            {"number": 124},
         ]
 
         changes = synchronize(client, self.registry, self.state)
 
         self.assertEqual(
             changes,
-            ["Updated candidate #123 for oskar to 2.13.0"],
-        )
-
-        payload = client._request.call_args.args[2]
-
-        self.assertEqual(payload["state"], "open")
-        self.assertEqual(
-            payload["labels"],
-            ["priority:high", "upgrade:pending"],
+            ["Created candidate #124: oskar"],
         )
 
         client._request.assert_any_call(
-            "PATCH",
-            "/issues/123",
+            "POST",
+            "/issues",
             ANY,
         )
+
+        self.assertEqual(
+            client._request.call_args.args[2]["labels"],
+            ["upgrade:pending"],
+        )
+
+    def test_fresh_scan_creates_new_issue_after_closure(self):
+        """Fresh scan creates a new issue without modifying the closed one."""
+        client = Mock()
+        client._request.side_effect = [
+            [self.candidate_issue(number=123, state="closed")],
+            {"number": 124},
+        ]
+
+        changes = synchronize(
+            client,
+            self.registry,
+            self.state,
+            fresh=True,
+        )
+
+        self.assertEqual(changes, ["Created candidate #124: oskar"])
+        self.assertEqual(client._request.call_args.args[0], "POST")
+        self.assertEqual(
+            client._request.call_args.args[2]["labels"],
+            ["upgrade:pending"],
+        )
+
+    def test_fresh_scan_reuses_existing_open_candidate(self):
+        """Repeated fresh scans must not duplicate an open candidate."""
+        client = Mock()
+        client._request.return_value = [
+            self.candidate_issue(number=124, state="open"),
+            self.candidate_issue(number=123, state="closed"),
+        ]
+
+        changes = synchronize(
+            client,
+            self.registry,
+            self.state,
+            fresh=True,
+        )
+
+        self.assertEqual(changes, [])
+        self.assertEqual(client._request.call_count, 1)
+
+    def test_normal_scan_prefers_open_over_closed_candidate(self):
+        """Normal scans should use the active issue, not historical ones."""
+        client = Mock()
+        client._request.return_value = [
+            self.candidate_issue(number=123, state="closed"),
+            self.candidate_issue(number=124, state="open"),
+        ]
+
+        changes = synchronize(client, self.registry, self.state)
+
+        self.assertEqual(changes, [])
+        self.assertEqual(client._request.call_count, 1)
+
+    def test_multiple_closed_candidates_are_allowed(self):
+        """Historical candidates must not cause duplicate errors."""
+        client = Mock()
+        client._request.return_value = [
+            self.candidate_issue(number=123, state="closed"),
+            self.candidate_issue(number=124, state="closed"),
+        ]
+
+        candidates = all_candidate_issues(client)
+
+        self.assertEqual(candidates["oskar"]["number"], 124)
 
     def test_approval_requires_current_candidate_and_writer(self):
         client = Mock()
