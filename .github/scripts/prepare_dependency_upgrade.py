@@ -59,6 +59,29 @@ def replace_version_variable(
     return updated
 
 
+def prepare_dependency_version_updates(
+    content: str,
+    current_versions: dict[str, str],
+    target_version: str,
+) -> str:
+    """Prepare version updates for all variables of one dependency."""
+
+    if not current_versions:
+        raise ScanError("Dependency has no version variables")
+
+    updated = content
+
+    for variable, current_version in current_versions.items():
+        updated = replace_version_variable(
+            updated,
+            variable,
+            current_version,
+            target_version,
+        )
+
+    return updated
+
+
 def replace_recipe_sha256(
     content: str,
     current_version: str,
@@ -221,6 +244,98 @@ def apply_changes(
             temp_path.unlink(missing_ok=True)
 
 
+def verify_idg_tag(version: str, timeout: int = 20) -> None:
+    """Verify the exact IDG tag exists in the upstream GitLab repository."""
+    import subprocess
+
+    repository = "https://gitlab.com/astron-idg/idg.git"
+    ref = f"refs/tags/{version}"
+
+    try:
+        result = subprocess.run(
+            [
+                "git", "ls-remote", "--exit-code",
+                "--refs", "--tags", repository, ref,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ScanError(
+            f"Could not verify IDG tag {version}: {exc}"
+        ) from exc
+
+    if result.returncode != 0:
+        raise ScanError(
+            f"IDG tag {version} could not be verified upstream"
+        )
+
+    lines = result.stdout.splitlines()
+    if len(lines) != 1:
+        raise ScanError(f"Unexpected Git response for IDG {version}")
+
+    fields = lines[0].split()
+    if (
+        len(fields) != 2
+        or not re.fullmatch(r"[0-9a-fA-F]{40,64}", fields[0])
+        or fields[1] != ref
+    ):
+        raise ScanError(f"Unexpected Git tag reference for IDG {version}")
+
+
+def prepare_idg_changes(
+    root: Path,
+    registry,
+    dependency,
+    current: dict[str, str],
+    target: str,
+) -> dict[Path, tuple[str, str]]:
+    """Prepare a verified IDG version-only upgrade."""
+
+    if (
+        dependency.id != "idg"
+        or dependency.source_type != "gitlab-tags"
+        or tuple(dependency.version_variables) != ("IDG_VERSION",)
+        or tuple(dependency.recipes) != ("idg/meta.yaml",)
+    ):
+        raise ScanError("Unsupported IDG upgrade configuration")
+
+    recipe_path = root / "idg/meta.yaml"
+    recipe = recipe_path.read_text(encoding="utf-8")
+
+    if not re.search(
+        r"^[ \t]*git_url:[ \t]*https://gitlab\.com/astron-idg/idg\.git[ \t]*$",
+        recipe,
+        re.MULTILINE,
+    ):
+        raise ScanError("IDG recipe uses an unexpected Git repository")
+
+    if not re.search(
+        r"^[ \t]*git_tag:[ \t]*\{\{[ \t]*IDG_VERSION[ \t]*\}\}[ \t]*$",
+        recipe,
+        re.MULTILINE,
+    ):
+        raise ScanError("IDG recipe does not use the expected version tag")
+
+    verify_idg_tag(
+        target,
+        timeout=registry.settings.http_timeout_seconds,
+    )
+
+    build_path = root / registry.settings.build_base
+    original = build_path.read_text(encoding="utf-8")
+
+    updated = prepare_dependency_version_updates(
+        original,
+        current,
+        target,
+    )
+
+    return {build_path: (original, updated)}
+
+
 def main(
     argv: list[str] | None = None,
     root: Path | None = None,
@@ -256,9 +371,9 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id != "aotools":
+    if dependency.id not in {"aotools", "idg"}:
         raise ScanError(
-            "Only AOtools is supported in the initial implementation"
+            "No safe upgrade preparation strategy for this dependency"
         )
 
     target = parse_stable_version(args.version)
@@ -275,6 +390,28 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "idg":
+        changes = prepare_idg_changes(
+            root, registry, dependency, current, target.text,
+        )
+
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("Upstream IDG tag: verified")
+
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     http = HttpClient(
         timeout=registry.settings.http_timeout_seconds
