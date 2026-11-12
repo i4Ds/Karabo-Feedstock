@@ -15,25 +15,133 @@ concurrency:
 
 jobs:
   verify:
+    name: Verify dependency upgrade approval
     if: >-
       github.repository == 'i4Ds/Karabo-Feedstock' &&
       github.event.label.name == 'upgrade:approved' &&
       !github.event.issue.pull_request
+
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
+    outputs:
+      dependency: ${{ steps.approval.outputs.dependency }}
+      version: ${{ steps.approval.outputs.version }}
+      issue_number: ${{ steps.approval.outputs.issue_number }}
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Verify upgrade candidate and approving actor
+      - name: Validate approval
+        id: approval
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/approve_dependency_upgrade.py
+
+  create-draft-pr:
+    name: Create AOtools Draft PR
+    needs: verify
+    if: >-
+      needs.verify.result == 'success' &&
+      needs.verify.outputs.dependency == 'aotools'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      actions: write
+      contents: write
+      issues: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Revalidate approval
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPECTED_VERSION: ${{ needs.verify.outputs.version }}
+          EXPECTED_ISSUE_NUMBER: ${{ needs.verify.outputs.issue_number }}
+        run: |
+          python .github/scripts/approve_dependency_upgrade.py \
+            --verify-only \
+            --expected-dependency aotools \
+            --expected-version "$EXPECTED_VERSION" \
+            --expected-issue-number "$EXPECTED_ISSUE_NUMBER"
+
+      - name: Prepare AOtools upgrade
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          python .github/scripts/prepare_dependency_upgrade.py \
+            --dependency aotools \
+            --version "$VERSION" \
+            --write
+
+      - name: Verify changed files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+
+          expected=$(printf '%s\n' \
+            'aotools/meta.yaml' \
+            'aotools/release.json' | sort)
+
+          actual=$(
+            {
+              git diff --name-only
+              git diff --cached --name-only
+              git ls-files --others --exclude-standard
+            } | sort -u
+          )
+
+          [[ "$actual" == "$expected" ]] || {
+            echo "Unexpected changed files:"
+            printf '%s\n' "$actual"
+            exit 1
+          }
+      - name: Create Draft PR
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          branch: automation/aotools-${{ needs.verify.outputs.version }}-issue-${{ needs.verify.outputs.issue_number }}
+          add-paths: |
+            aotools/meta.yaml
+            aotools/release.json
+          commit-message: "chore(aotools): upgrade to ${{ needs.verify.outputs.version }}"
+          title: "chore(aotools): upgrade to ${{ needs.verify.outputs.version }}"
+          body: |
+            Automated AOtools dependency upgrade.
+
+            Approved in issue #${{ needs.verify.outputs.issue_number }}.
+
+            - Update AOtools version and source checksum
+            - Reset release build number to 0
+            - Centralized CI validation required
+            - No automatic publishing or merging
+          draft: true
+          delete-branch: false
+      - name: Trigger centralized CI
+        if: steps.create_pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.create_pr.outputs.pull-request-number }}
+        run: |
+          gh workflow run validate_dependency_pr.yml \
+            --ref main \
+            -f pr_number="$PR_NUMBER"

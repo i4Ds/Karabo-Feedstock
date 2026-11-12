@@ -6,6 +6,13 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number to validate"
+        required: true
+        type: string
+
 permissions:
   contents: read
 
@@ -16,14 +23,49 @@ jobs:
 
     outputs:
       dependencies: ${{ steps.detect.outputs.dependencies }}
+      head: ${{ steps.pr.outputs.head }}
+      aotools_version: ${{ steps.aotools_version.outputs.version }}
 
     steps:
-      - name: Checkout repository
+      - name: Resolve PR commits
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]] || exit 1
+
+            pr=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
+
+            base=$(jq -r '.base.sha' <<< "$pr")
+            head=$(jq -r '.head.sha' <<< "$pr")
+            state=$(jq -r '.state' <<< "$pr")
+            base_ref=$(jq -r '.base.ref' <<< "$pr")
+            head_repo=$(jq -r '.head.repo.full_name' <<< "$pr")
+
+            [[ "$state" == "open" &&
+               "$base_ref" == "main" &&
+               "$head_repo" == "$GITHUB_REPOSITORY" ]] || exit 1
+          else
+            base="$EVENT_BASE"
+            head="$EVENT_HEAD"
+          fi
+
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          echo "head=$head" >> "$GITHUB_OUTPUT"
+      - name: Checkout PR head
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ steps.pr.outputs.head }}
           fetch-depth: 0
-      # Set up Python before running the detector.
+          persist-credentials: false
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
@@ -31,25 +73,28 @@ jobs:
 
       - name: Detect changed dependencies
         id: detect
-        shell: bash
+        env:
+          BASE_SHA: ${{ steps.pr.outputs.base }}
+          HEAD_SHA: ${{ steps.pr.outputs.head }}
         run: |
           result=$(python .github/scripts/detect_changed_dependencies.py \
-            --base "${{ github.event.pull_request.base.sha }}" \
-            --head "${{ github.event.pull_request.head.sha }}")
+            --base "$BASE_SHA" \
+            --head "$HEAD_SHA")
 
           echo "dependencies=$result" >> "$GITHUB_OUTPUT"
           echo "$result"
       - name: Run maintenance unit tests
         run: python -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
 
-      # Check tools21cm release metadata only when tools21cm is affected.
       - name: Validate tools21cm release identity
         if: ${{ fromJSON(steps.detect.outputs.dependencies).tools21cm }}
         run: python .github/scripts/tools21cm_release.py
-      # Check AOtools release metadata only when AOtools is affected.
+
       - name: Validate AOtools release identity
+        id: aotools_version
         if: ${{ fromJSON(steps.detect.outputs.dependencies).aotools }}
         run: python .github/scripts/aotools_release.py
+
 
   validate-idg:
     name: Validate IDG
@@ -93,6 +138,8 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      versionOverride: ${{ needs.detect-changes.outputs.aotools_version }}
 
   # Validate seqfile only when its dependency or shared build files change.
   # PR validation must never publish Conda packages.

@@ -211,6 +211,7 @@ notes = "The recipe converts a three-component Feedstock version such as 3.6.0 t
 id = "aotools"
 name = "AOtools"
 version_variables = ["AOTOOLS_VERSION"]
+version_file = "aotools/release.json"
 recipes = ["aotools/meta.yaml"]
 validation_workflows = [".github/workflows/build_aotools.yml"]
 source_type = "pypi"

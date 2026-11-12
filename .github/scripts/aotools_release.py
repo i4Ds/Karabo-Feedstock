@@ -8,23 +8,41 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 
 
+
 def release_identity(root):
-    config = json.loads((root / 'aotools/release.json').read_text())
+    config = json.loads(
+        (root / 'aotools/release.json').read_text(encoding='utf-8')
+    )
+
     build = config['build_number']
     if type(build) is not int or build < 0:
         raise ValueError('build_number must be a non-negative integer')
-    workflow = (root / '.github/workflows/build_base.yml').read_text()
-    version = re.search(r'^  AOTOOLS_VERSION: ([0-9]+\.[0-9]+\.[0-9]+)\s*$', workflow, re.M)
-    if not version:
-        raise ValueError('Expected one stable AOTOOLS_VERSION in build_base.yml')
+
+    version = config.get('version')
+    if not isinstance(version, str) or not re.fullmatch(
+        r'[0-9]+\.[0-9]+\.[0-9]+', version
+    ):
+        raise ValueError('Expected a stable AOtools version in release.json')
+
     variants = (root / 'aotools/conda_build_config.yaml').read_text()
-    python_block = re.search(r'^python:\s*\n((?:[ \t]+.*\n|\n)*)', variants, re.M)
+    python_block = re.search(
+        r'^python:\s*\n((?:[ \t]+.*\n|\n)*)',
+        variants,
+        re.M,
+    )
     if not python_block:
         raise ValueError('Missing Python build variants')
-    pythons = re.findall(r'^\s+-\s+[\'"]?(3\.\d+)[\'"]?\s*$', python_block[1], re.M)
+
+    pythons = re.findall(
+        r'^\s+-\s+[\'"]?(3\.\d+)[\'"]?\s*$',
+        python_block[1],
+        re.M,
+    )
     if not pythons:
         raise ValueError('No Python build variants found')
-    return version[1], build, {'py' + p.replace('.', '') for p in pythons}
+
+    return version, build, {'py' + p.replace('.', '') for p in pythons}
+
 
 
 def publication_state(files, version, build, variants):
