@@ -1,4 +1,3 @@
-
 name: Weekly Feedstock Dependency Scan
 
 on:
@@ -9,12 +8,13 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "Run the real scan or create a safe notification test issue"
+        description: "Scan dependencies, start a fresh review cycle, or test notifications"
         required: true
         default: scan
         type: choice
         options:
           - scan
+          - fresh-scan
           - test-notification
 
 # Read-only by default
@@ -82,14 +82,29 @@ jobs:
       - name: Compare Feedstock and upstream stable releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >-
-          python .github/scripts/dependency_scan.py
-          --repo-root .
-          --config .github/dependency-scan.toml
-          --mode "$SCAN_MODE"
+        run: |
+          if [ "$SCAN_MODE" = "fresh-scan" ]; then
+            SCANNER_MODE="scan"
+          else
+            SCANNER_MODE="$SCAN_MODE"
+          fi
+
+          python .github/scripts/dependency_scan.py \
+            --repo-root . \
+            --config .github/dependency-scan.toml \
+            --mode "$SCANNER_MODE"
 
       - name: Synchronize review-only upgrade candidates
-        if: ${{ success() && env.SCAN_MODE == 'scan' }}
+        if: >-
+          ${{
+            success() &&
+            (env.SCAN_MODE == 'scan' || env.SCAN_MODE == 'fresh-scan')
+          }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python .github/scripts/upgrade_candidates.py
+        run: |
+          if [ "$SCAN_MODE" = "fresh-scan" ]; then
+            python .github/scripts/upgrade_candidates.py --fresh
+          else
+            python .github/scripts/upgrade_candidates.py
+          fi

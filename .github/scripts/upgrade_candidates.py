@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
+import argparse
 
 from dependency_scan import (
     GitHubIssueClient, ScanError, load_registry, parse_build_versions,
@@ -56,10 +57,14 @@ def candidate_body(dependency, current: str, latest: str) -> str:
 
 
 
-
-def all_candidate_issues(client: GitHubIssueClient) -> dict[str, dict]:
-    """Fetch candidate issues and verify their trusted origin."""
-    found = {}
+def all_candidate_issues(
+    client: GitHubIssueClient,
+    *,
+    fresh: bool = False,
+) -> dict[str, dict]:
+    """Select one candidate per dependency, preserving historical issues."""
+    open_candidates = {}
+    closed_candidates = {}
     page = 1
 
     while True:
@@ -76,18 +81,14 @@ def all_candidate_issues(client: GitHubIssueClient) -> dict[str, dict]:
                 continue
 
             body = issue.get("body") or ""
-
             match = re.search(
                 r"<!-- karabo-upgrade-candidate:v1 ([a-z0-9-]+) -->",
                 body,
             )
-
             if not match:
                 continue
 
             dep_id = match.group(1)
-
-            # Only accept candidate issues created by GitHub Actions.
             creator = (issue.get("user") or {}).get("login", "")
 
             if creator != "github-actions[bot]":
@@ -95,68 +96,186 @@ def all_candidate_issues(client: GitHubIssueClient) -> dict[str, dict]:
                     f"Untrusted candidate issue for {dep_id}"
                 )
 
-            # Reject duplicate candidate issues for the same dependency.
-            if dep_id in found:
-                raise ScanError(
-                    f"duplicate candidate issues found for {dep_id}"
-                )
+            if issue.get("state") == "open":
+                if dep_id in open_candidates:
+                    raise ScanError(
+                        f"duplicate open candidate issues found for {dep_id}"
+                    )
+                open_candidates[dep_id] = issue
 
-            found[dep_id] = issue
+            elif issue.get("state") == "closed":
+                # GitHub issue numbers increase over time.
+                previous = closed_candidates.get(dep_id)
+                if (
+                    previous is None
+                    or issue["number"] > previous["number"]
+                ):
+                    closed_candidates[dep_id] = issue
+            else:
+                raise ScanError(
+                    f"Unexpected issue state for {dep_id}"
+                )
 
         if len(issues) < 100:
             break
 
         page += 1
 
-    return found
+    if fresh:
+        return open_candidates
+
+    return {**closed_candidates, **open_candidates}
 
 
+def synchronize(
+    client: GitHubIssueClient,
+    registry,
+    state: dict,
+    *,
+    fresh: bool = False,
+) -> list[str]:
+    """Synchronize dependency upgrade candidates safely.
 
+    Normal scan:
+      - Preserve closed candidates for the same version.
+      - Create a new issue when a newer candidate version appears.
+      - Reuse existing open candidates.
 
-def synchronize(client: GitHubIssueClient, registry, state: dict) -> list[str]:
+    Fresh scan:
+      - Ignore closed historical candidates.
+      - Create new issues when no open candidate exists.
+      - Never duplicate existing open candidates.
+
+    Neither mode automatically approves upgrades or publishes packages.
+    """
     deps = {dep.id: dep for dep in registry.dependencies}
-    existing = all_candidate_issues(client)
+    existing = all_candidate_issues(client, fresh=fresh)
     changes = []
+
     for dep_id, entry in state["dependencies"].items():
+
+        # Only process dependencies with available updates.
         if entry["status"] != "update" or dep_id not in deps:
             continue
+
         dep = deps[dep_id]
+
+        # Skip retired or manually managed dependencies.
         if dep.source_type in {"retired", "manual"}:
             continue
+
         latest = entry["latest"]
         if not latest:
             continue
-        current = ", ".join(f"{k}={v}" for k, v in entry["configured"].items())
+
+        current = ", ".join(
+            f"{key}={value}"
+            for key, value in entry["configured"].items()
+        )
+
         body = candidate_body(dep, current, latest)
-        title = f"[Upgrade candidate] {dep.name}: {current} → {latest}"
+        title = (
+            f"[Upgrade candidate] {dep.name}: "
+            f"{current} → {latest}"
+        )
+
         found = existing.get(dep_id)
+
+        # Closed issues are historical records.
+        # Preserve a closed issue if the candidate version is unchanged.
+        # Create a new issue if a different version is detected.
+        if (
+            found is not None
+            and found["state"] == "closed"
+            and issue_version(found.get("body") or "") != latest
+        ):
+            found = None
+
+        # Create a new candidate if no applicable issue exists.
         if found is None:
-            result = client._request("POST", "/issues", {"title": title, "body": body, "labels": [PENDING]})
-            changes.append(f"Created candidate #{result['number']}: {dep_id}")
+            result = client._request(
+                "POST",
+                "/issues",
+                {
+                    "title": title,
+                    "body": body,
+                    "labels": [PENDING],
+                },
+            )
+
+            changes.append(
+                f"Created candidate #{result['number']}: {dep_id}"
+            )
             continue
-        if issue_version(found.get("body") or "") == latest:
-            # Preserve the existing decision, including manual closure.
-            # Do not reopen a candidate unless the detected version changes.
+
+        existing_version = issue_version(
+            found.get("body") or ""
+        )
+
+        # Preserve an existing candidate when its version matches.
+        # This also preserves manual closure and approval decisions.
+        if existing_version == latest:
             continue
+
+        # An open candidate exists, but its version has changed.
+        # Update it and require a new approval.
         number = found["number"]
-        # A new version needs a new approval; replace only the decision labels.
-        labels = [x["name"] for x in found.get("labels", []) if x["name"] not in {PENDING, APPROVED, DEFERRED}]
+
+        labels = [
+            label["name"]
+            for label in found.get("labels", [])
+            if label["name"] not in {
+                PENDING,
+                APPROVED,
+                DEFERRED,
+            }
+        ]
         labels.append(PENDING)
-        client._request("PATCH", f"/issues/{number}", {
-            "title": title, "body": body, "labels": labels, "state": "open",
-        })
-        changes.append(f"Updated candidate #{number} for {dep_id} to {latest}")
+
+        client._request(
+            "PATCH",
+            f"/issues/{number}",
+            {
+                "title": title,
+                "body": body,
+                "labels": labels,
+                "state": "open",
+            },
+        )
+
+        changes.append(
+            f"Updated candidate #{number} for {dep_id} to {latest}"
+        )
+
     return changes
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Synchronize dependency upgrade candidate issues."
+    )
+    parser.add_argument(
+        "--fresh",
+        action="store_true",
+        help="Create new candidates while preserving closed historical issues.",
+    )
+    args = parser.parse_args()
+
     root = Path(__file__).resolve().parents[2]
     registry = load_registry(root / ".github/dependency-scan.toml")
     build_path = root / registry.settings.build_base
-    validate_registry(registry, parse_build_versions(build_path.read_text()), root)
+
+    validate_registry(
+        registry,
+        parse_build_versions(build_path.read_text()),
+        root,
+    )
+
     repo = os.environ.get("GITHUB_REPOSITORY", "")
     if repo != registry.settings.expected_repository:
-        raise ScanError("candidate sync requires the expected upstream repository")
+        raise ScanError(
+            "candidate sync requires the expected upstream repository"
+        )
 
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
@@ -168,15 +287,27 @@ def main() -> None:
         return
     state = read_scan_state(tracking.get("body") or "")
     if state is None:
-        raise ScanError("tracking issue has no valid structured scan state")
+        raise ScanError(
+            "tracking issue has no valid structured scan state"
+        )
+
     for name, color in LABELS.items():
-        # Treat an existing GitHub label (HTTP 422) as already configured.
         try:
-            client._request("POST", "/labels", {"name": name, "color": color})
+            client._request(
+                "POST",
+                "/labels",
+                {"name": name, "color": color},
+            )
         except Exception as exc:
             if getattr(exc, "status", None) != 422:
                 raise
-    for line in synchronize(client, registry, state):
+
+    for line in synchronize(
+        client,
+        registry,
+        state,
+        fresh=args.fresh,
+    ):
         print(line)
 
 
