@@ -1,17 +1,37 @@
 #!/usr/bin/env python3
-"""Fail-closed approval audit; intentionally does not start an AI agent or build."""
+"""Fail-closed approval audit; does not start an agent or build."""
 from __future__ import annotations
-
+import argparse
+from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
 
-from dependency_scan import GitHubIssueClient, ScanError, TRACKING_MARKER, load_registry, read_scan_state
+from dependency_scan import (
+    GitHubIssueClient,
+    ScanError,
+    TRACKING_MARKER,
+    load_registry,
+    read_scan_state,
+)
 from upgrade_candidates import APPROVED, marker, issue_version
 
 
+@dataclass(frozen=True)
+class ApprovedUpgrade:
+    dependency_id: str
+    version: str
+    actor: str
+    issue_number: int
 
-def validate_approval(event: dict, client: GitHubIssueClient, registry) -> str:
+
+def validate_approval(
+    event: dict,
+    client: GitHubIssueClient,
+    registry,
+    *,
+    structured: bool = False,
+) -> str | ApprovedUpgrade:
     # 1. Validate the GitHub event before making API requests.
     if (
         event.get("action") != "labeled"
@@ -32,7 +52,6 @@ def validate_approval(event: dict, client: GitHubIssueClient, registry) -> str:
 
     # 2. Fetch the current issue directly from GitHub.
     issue = client._request("GET", f"/issues/{issue_no}")
-    # Verify that the candidate was created by our GitHub Actions workflow.
     creator = (issue.get("user") or {}).get("login", "")
 
     if creator != "github-actions[bot]":
@@ -116,35 +135,121 @@ def validate_approval(event: dict, client: GitHubIssueClient, registry) -> str:
         )
 
     # 7. Approval verified. No build or agent is started.
-    return (
-        f"Authorized upgrade preparation: "
-        f"{dependency.id} → {version} by {actor}"
+    approval = ApprovedUpgrade(
+        dependency_id=dependency.id,
+        version=version,
+        actor=actor,
+        issue_number=issue_no,
     )
 
+    if structured:
+        return approval
+
+    return (
+        f"Authorized upgrade preparation: "
+        f"{approval.dependency_id} → {approval.version} "
+        f"by {approval.actor}"
+    )
+
+def export_approval_outputs(approval: ApprovedUpgrade) -> None:
+    output_path = os.environ.get("GITHUB_OUTPUT")
+
+    if output_path:
+        with open(output_path, "a", encoding="utf-8") as output:
+            output.write(f"dependency={approval.dependency_id}\n")
+            output.write(f"version={approval.version}\n")
+            output.write(f"issue_number={approval.issue_number}\n")
 
 
-def main() -> None:
-    event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description="Validate a dependency upgrade approval."
+    )
+    parser.add_argument(
+        "--verify-only",
+        action="store_true",
+        help="Revalidate approval without posting an audit comment.",
+    )
+    parser.add_argument(
+        "--expected-dependency",
+        default=None,
+    )
+    parser.add_argument(
+        "--expected-version",
+        default=None,
+    )
+    parser.add_argument(
+        "--expected-issue-number",
+        type=int,
+        default=None,
+    )
+    args = parser.parse_args(argv)
+
+    # 1. Load the GitHub event and dependency registry.
+    event = json.loads(
+        Path(os.environ["GITHUB_EVENT_PATH"]).read_text(
+            encoding="utf-8"
+        )
+    )
+
     repo = os.environ.get("GITHUB_REPOSITORY", "")
-    registry = load_registry(Path(__file__).resolve().parents[2] / ".github/dependency-scan.toml")
+    registry = load_registry(
+        Path(__file__).resolve().parents[2]
+        / ".github/dependency-scan.toml"
+    )
+
+    # 2. Verify repository identity and GitHub token.
     if repo != registry.settings.expected_repository:
         raise ScanError("wrong repository")
+
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
         raise ScanError("GITHUB_TOKEN is required")
-    client = GitHubIssueClient(repo, token, 20)
-    message = validate_approval(event, client, registry)
-    issue_no = event["issue"]["number"]
-    issue = client._request("GET", f"/issues/{issue_no}")
-    version = issue_version(issue.get("body") or "")
 
-    if not version:
-        raise ScanError("approved candidate has no target version")
+    client = GitHubIssueClient(repo, token, 20)
+
+    # 3. Validate the approval against current GitHub state.
+    approval = validate_approval(
+        event,
+        client,
+        registry,
+        structured=True,
+    )
+
+    # 4. Read-only verification for the Draft PR job.
+    if args.verify_only:
+        if (
+            approval.dependency_id != args.expected_dependency
+            or approval.version != args.expected_version
+            or approval.issue_number != args.expected_issue_number
+        ):
+            raise ScanError(
+                "Approval does not match the expected upgrade."
+            )
+
+        print(
+            f"Approval revalidated: "
+            f"{approval.dependency_id} → {approval.version} "
+            f"(issue #{approval.issue_number})"
+        )
+        return
+
+    # 5. Preserve the existing approval audit behavior.
+    message = (
+        f"Authorized upgrade preparation: "
+        f"{approval.dependency_id} → {approval.version} "
+        f"by {approval.actor}"
+    )
+
+    issue_no = approval.issue_number
+    version = approval.version
 
     # Unique audit marker for this issue and candidate version.
-    approval_marker = f"<!-- karabo-approval:{issue_no}:{version} -->"
+    approval_marker = (
+        f"<!-- karabo-approval:{issue_no}:{version} -->"
+    )
 
-    # Check existing comments before creating another.
+    # 6. Check existing comments to prevent duplicate audits.
     page = 1
 
     while True:
@@ -154,13 +259,18 @@ def main() -> None:
         )
 
         if not isinstance(comments, list):
-            raise ScanError("GitHub comments API did not return a list")
+            raise ScanError(
+                "GitHub comments API did not return a list"
+            )
 
         if any(
             approval_marker in (comment.get("body") or "")
             for comment in comments
         ):
-            print(f"Approval already recorded for issue #{issue_no}")
+            export_approval_outputs(approval)
+            print(
+                f"Approval already recorded for issue #{issue_no}"
+            )
             return
 
         if len(comments) < 100:
@@ -168,6 +278,7 @@ def main() -> None:
 
         page += 1
 
+    # 7. Record the verified approval.
     client._request(
         "POST",
         f"/issues/{issue_no}/comments",
@@ -183,6 +294,8 @@ def main() -> None:
         },
     )
 
+    # 8. Export validated outputs for downstream jobs.
+    export_approval_outputs(approval)
     print(message)
 
 

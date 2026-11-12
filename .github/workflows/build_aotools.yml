@@ -25,6 +25,14 @@ on:
       ANACONDA_SECRET:
         required: false
     inputs:
+      checkoutRef:
+        required: false
+        default: ""
+        type: string
+      versionOverride:
+        type: string
+        required: false
+        default: ""
       label:
         type: string
         required: true
@@ -47,11 +55,13 @@ jobs:
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: aotools
+      checkoutRef: ${{ inputs.checkoutRef }}
       packageVersion: $AOTOOLS_VERSION
       packageVersionName: AOTOOLS_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
+      versionOverride: ${{ inputs.versionOverride }}
       pythonCall: import aotools
       publish: ${{ inputs.publish }}
       isNative: true

@@ -79,7 +79,15 @@ on:
       packageVersion:
         required: true
         type: string
-
+      checkoutRef:
+        required: false
+        default: ""
+        type: string
+      versionOverride:
+        description: "Optional package version override for PR validation"
+        type: string
+        required: false
+        default: ""
       packageVersionName:  # env.VAR_NAME of the corresponding build
         required: true
         type: string
@@ -155,6 +163,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkoutRef || github.sha }}
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -196,13 +206,14 @@ jobs:
         id: pkgv
         run: |
           BUILD_NR=${{ inputs.buildNumber }}
+          PACKAGE_VERSION="${{ inputs.versionOverride || inputs.packageVersion }}"
           if [[ ${{ inputs.dev }} == "true" ]]
           then
             BUILD_NR="$(($BUILD_NR + 1000))"
-            PKG_VERSION=$(echo "${{ inputs.packageVersion }}" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
+            PKG_VERSION=$(echo "$PACKAGE_VERSION" | sed 's/\([0-9]*\.[0-9]*\.\)\([0-9]*\)/\1dev\2/g')
             DEV_DEPS_LIST=$(echo "${{ inputs.packageVersionName }}, ${{ inputs.devDeps }}")
           else
-            PKG_VERSION=${{ inputs.packageVersion }}
+            PKG_VERSION="$PACKAGE_VERSION"
             DEV_DEPS_LIST=""
           fi
           echo "build=$BUILD_NR" >> "$GITHUB_ENV"
@@ -211,6 +222,10 @@ jobs:
 
 
           PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
+          if [[ -n "${{ inputs.versionOverride }}" ]]; then
+            export "${{ inputs.packageVersionName }}=$PACKAGE_VERSION"
+            echo "${{ inputs.packageVersionName }}=$PACKAGE_VERSION" >> "$GITHUB_ENV"
+          fi
           for PKG_KEY in $PKG_KEYS; do
             if [[ $DEV_DEPS_LIST == *"$PKG_KEY"* ]]
             then

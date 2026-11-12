@@ -3,7 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import ANY, Mock
+from unittest.mock import ANY, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -14,7 +14,11 @@ from upgrade_candidates import (
     marker,
     synchronize,
 )
-from approve_dependency_upgrade import validate_approval
+from approve_dependency_upgrade import (
+    ApprovedUpgrade,
+    main,
+    validate_approval,
+)
 from dependency_scan import ScanError
 
 
@@ -220,6 +224,24 @@ class UpgradeCandidateTests(unittest.TestCase):
         result = validate_approval(event, client, self.registry)
         self.assertIn("oskar", result)
         self.assertIn("2.13.0", result)
+        # Case 1b: Structured approval data for automation.
+        client._request.reset_mock()
+        client._request.side_effect = [
+            issue,
+            {"permission": "write"},
+        ]
+
+        approval = validate_approval(
+            event,
+            client,
+            self.registry,
+            structured=True,
+        )
+
+        self.assertEqual(approval.dependency_id, "oskar")
+        self.assertEqual(approval.version, "2.13.0")
+        self.assertEqual(approval.actor, "reviewer")
+        self.assertEqual(approval.issue_number, 2)
 
         # Case 2: Insufficient permissions.
         client._request.reset_mock()
@@ -271,6 +293,199 @@ class UpgradeCandidateTests(unittest.TestCase):
 
         with self.assertRaises(ScanError):
             validate_approval(event, client, self.registry)
+
+
+class ApprovalEntryPointTests(unittest.TestCase):
+    def setUp(self):
+        self.event = {
+            "action": "labeled",
+            "label": {"name": "upgrade:approved"},
+            "sender": {"login": "reviewer"},
+            "issue": {"number": 123},
+        }
+        self.registry = SimpleNamespace(
+            settings=SimpleNamespace(
+                expected_repository="i4Ds/Karabo-Feedstock"
+            )
+        )
+
+    def run_main(self, repo, token, client=None, argv=None):
+        import json
+        import tempfile
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as directory:
+            event_path = Path(directory) / "event.json"
+            event_path.write_text(json.dumps(self.event))
+
+            with (
+                patch.dict(
+                    "os.environ",
+                    {
+                        "GITHUB_EVENT_PATH": str(event_path),
+                        "GITHUB_REPOSITORY": repo,
+                        "GITHUB_TOKEN": token,
+                    },
+                ),
+                patch(
+                    "approve_dependency_upgrade.load_registry",
+                    return_value=self.registry,
+                ),
+                patch(
+                    "approve_dependency_upgrade.GitHubIssueClient",
+                    return_value=client,
+                ) as client_class,
+            ):
+                main([] if argv is None else argv)
+
+        return client_class
+
+    def test_rejects_wrong_repository(self):
+        with self.assertRaisesRegex(ScanError, "wrong repository"):
+            self.run_main("another/repository", "token")
+
+    def test_rejects_missing_token(self):
+        with self.assertRaisesRegex(ScanError, "GITHUB_TOKEN"):
+            self.run_main("i4Ds/Karabo-Feedstock", "")
+
+
+    def test_records_approval_once(self):
+        client = Mock()
+
+        with patch(
+            "approve_dependency_upgrade.validate_approval",
+            return_value=ApprovedUpgrade(
+                dependency_id="oskar",
+                version="2.13.0",
+                actor="reviewer",
+                issue_number=123,
+            ),
+        ):
+            # First execution: no audit comment exists.
+            client._request.side_effect = [
+                [],           # GET existing comments
+                {"id": 456},  # POST new audit comment
+            ]
+
+            self.run_main(
+                "i4Ds/Karabo-Feedstock", "token", client
+            )
+
+            posts = [
+                call
+                for call in client._request.call_args_list
+                if call.args[0] == "POST"
+            ]
+
+            self.assertEqual(len(posts), 1)
+            self.assertIn(
+                "karabo-approval:123:2.13.0",
+                posts[0].args[2]["body"],
+            )
+
+            # Second execution: audit comment already exists.
+            client._request.reset_mock()
+            client._request.side_effect = [
+                [
+                    {
+                        "body": (
+                            "<!-- karabo-approval:123:2.13.0 -->"
+                        )
+                    }
+                ],
+            ]
+
+            self.run_main(
+                "i4Ds/Karabo-Feedstock", "token", client
+            )
+
+            self.assertFalse(
+                any(
+                    call.args[0] == "POST"
+                    for call in client._request.call_args_list
+                )
+            )
+    def test_exports_approval_outputs(self):
+        import os
+        import tempfile
+
+        from approve_dependency_upgrade import export_approval_outputs
+
+        approval = ApprovedUpgrade(
+            dependency_id="aotools",
+            version="1.0.9",
+            actor="reviewer",
+            issue_number=123,
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_path = Path(directory) / "github_output.txt"
+
+            with patch.dict(
+                os.environ,
+                {"GITHUB_OUTPUT": str(output_path)},
+            ):
+                export_approval_outputs(approval)
+
+            self.assertEqual(
+                output_path.read_text(encoding="utf-8"),
+                "dependency=aotools\n"
+                "version=1.0.9\n"
+                "issue_number=123\n",
+            )
+
+
+    def test_verify_only_revalidates_without_audit_comment(self):
+        approval = ApprovedUpgrade(
+            dependency_id="aotools",
+            version="1.0.9",
+            actor="reviewer",
+            issue_number=123,
+        )
+
+        valid_args = [
+            "--verify-only",
+            "--expected-dependency", "aotools",
+            "--expected-version", "1.0.9",
+            "--expected-issue-number", "123",
+        ]
+
+        client = Mock()
+
+        with patch(
+            "approve_dependency_upgrade.validate_approval",
+            return_value=approval,
+        ) as validate:
+            # Matching approval must succeed without writing comments.
+            self.run_main(
+                "i4Ds/Karabo-Feedstock",
+                "token",
+                client,
+                argv=valid_args,
+            )
+
+            validate.assert_called_once()
+            client._request.assert_not_called()
+
+            # A mismatched version must fail.
+            with self.assertRaisesRegex(
+                ScanError,
+                "Approval does not match",
+            ):
+                self.run_main(
+                    "i4Ds/Karabo-Feedstock",
+                    "token",
+                    client,
+                    argv=[
+                        "--verify-only",
+                        "--expected-dependency", "aotools",
+                        "--expected-version", "9.9.9",
+                        "--expected-issue-number", "123",
+                    ],
+                )
+
+            client._request.assert_not_called()
+
 
 
 if __name__ == "__main__":
