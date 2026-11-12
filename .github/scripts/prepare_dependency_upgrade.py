@@ -21,11 +21,10 @@ from dependency_scan import (
     HttpClient,
     ScanError,
     load_registry,
-    parse_build_versions,
+    load_declared_versions,
     parse_stable_version,
     validate_registry,
 )
-
 
 def replace_version_variable(
     content: str,
@@ -96,9 +95,8 @@ def replace_recipe_sha256(
     return updated
 
 
-def reset_build_number(content: str) -> str:
-    """Reset the release build number while preserving other fields."""
-
+def update_release_metadata(content: str, target_version: str) -> str:
+    """Update the release version and reset the build number."""
     try:
         data = json.loads(content)
     except json.JSONDecodeError as exc:
@@ -108,14 +106,13 @@ def reset_build_number(content: str) -> str:
         raise ScanError("release.json must contain a JSON object")
 
     build_number = data.get("build_number")
-
-    if (
-        isinstance(build_number, bool)
-        or not isinstance(build_number, int)
-        or build_number < 0
-    ):
+    if type(build_number) is not int or build_number < 0:
         raise ScanError("Invalid build_number in release.json")
 
+    if "version" not in data:
+        raise ScanError("Missing version in release.json")
+
+    data["version"] = target_version
     data["build_number"] = 0
 
     return json.dumps(data, indent=2) + "\n"
@@ -246,11 +243,7 @@ def main(
 
     registry = load_registry(root / ".github/dependency-scan.toml")
 
-    build_path = root / registry.settings.build_base
-    build_versions = parse_build_versions(
-        build_path.read_text(encoding="utf-8")
-    )
-
+    build_versions = load_declared_versions(registry, root)
     validate_registry(registry, build_versions, root)
 
     dependencies = {
@@ -292,17 +285,6 @@ def main(
         target.text,
         http,
     )
-
-    # Prepare the version update in memory.
-    original_build = build_path.read_text(encoding="utf-8")
-
-    updated_build = replace_version_variable(
-        original_build,
-        "AOTOOLS_VERSION",
-        current["AOTOOLS_VERSION"],
-        target.text,
-    )
-
     # Prepare the AOtools recipe checksum update in memory.
     recipe_path = root / "aotools/meta.yaml"
     original_recipe = recipe_path.read_text(encoding="utf-8")
@@ -318,11 +300,13 @@ def main(
     release_path = root / "aotools/release.json"
     original_release = release_path.read_text(encoding="utf-8")
 
-    updated_release = reset_build_number(original_release)
+    updated_release = update_release_metadata(
+        original_release,
+        target.text,
+    )
 
     # Collect all validated changes before applying anything.
     changes = {
-        build_path: (original_build, updated_build),
         recipe_path: (original_recipe, updated_recipe),
         release_path: (original_release, updated_release),
     }

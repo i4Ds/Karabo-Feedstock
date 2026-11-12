@@ -97,7 +97,6 @@ jobs:
           git diff --check
 
           expected=$(printf '%s\n' \
-            '.github/workflows/build_base.yml' \
             'aotools/meta.yaml' \
             'aotools/release.json' | sort)
 
@@ -122,7 +121,6 @@ jobs:
           base: main
           branch: automation/aotools-${{ needs.verify.outputs.version }}-issue-${{ needs.verify.outputs.issue_number }}
           add-paths: |
-            .github/workflows/build_base.yml
             aotools/meta.yaml
             aotools/release.json
           commit-message: "chore(aotools): upgrade to ${{ needs.verify.outputs.version }}"

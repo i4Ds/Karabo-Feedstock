@@ -38,3 +38,33 @@ class ReleaseTests(unittest.TestCase):
             (root/'aotools/release.json').write_text('{"build_number": true}')
             with self.assertRaisesRegex(ValueError,'non-negative'):
                 release.release_identity(root)
+
+    def test_version_and_build_read_from_release_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / 'aotools').mkdir()
+
+            (root / 'aotools/release.json').write_text(
+                '{"version": "1.0.9", "build_number": 0}'
+            )
+            (root / 'aotools/conda_build_config.yaml').write_text(
+                'python:\n  - "3.12"\n'
+            )
+
+            version, build, variants = release.release_identity(root)
+
+            self.assertEqual(version, '1.0.9')
+            self.assertEqual(build, 0)
+            self.assertEqual(variants, {'py312'})
+
+    def test_invalid_release_version_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / 'aotools').mkdir()
+
+            (root / 'aotools/release.json').write_text(
+                '{"version": "invalid", "build_number": 0}'
+            )
+
+            with self.assertRaisesRegex(ValueError, 'stable AOtools version'):
+                release.release_identity(root)

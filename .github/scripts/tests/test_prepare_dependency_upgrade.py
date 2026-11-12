@@ -26,7 +26,7 @@ from prepare_dependency_upgrade import (
     get_pypi_sdist,
     replace_version_variable,
     replace_recipe_sha256,
-    reset_build_number,
+    update_release_metadata,
     show_diff,
     apply_changes,
 )
@@ -300,58 +300,53 @@ class TestRecipeChecksumReplacement(unittest.TestCase):
                 "b" * 64,
             )
 
-class TestBuildNumberReset(unittest.TestCase):
+class TestReleaseMetadataUpdate(unittest.TestCase):
 
-    def test_reset_build_number(self):
-        """Reset the build number without changing other fields."""
-
+    def test_update_version_and_reset_build_number(self):
         original = (
             '{\n'
+            '  "version": "1.0.8",\n'
             '  "build_number": 1,\n'
             '  "channel": "main"\n'
             '}\n'
         )
 
-        expected = (
-            '{\n'
-            '  "build_number": 0,\n'
-            '  "channel": "main"\n'
-            '}\n'
-        )
+        updated = update_release_metadata(original, "1.0.9")
+        data = json.loads(updated)
 
-        updated = reset_build_number(original)
-
-        self.assertEqual(updated, expected)
+        self.assertEqual(data["version"], "1.0.9")
+        self.assertEqual(data["build_number"], 0)
+        self.assertEqual(data["channel"], "main")
 
     def test_invalid_build_numbers_are_rejected(self):
-        """Reject missing, negative, and non-integer build numbers."""
+        for build_number in [-1, "1", True, None]:
+            config = json.dumps({
+                "version": "1.0.8",
+                "build_number": build_number,
+            })
 
-        invalid_configs = [
-            '{}',
-            '{"build_number": -1}',
-            '{"build_number": "1"}',
-            '{"build_number": true}',
-            '{"build_number": null}',
-        ]
-
-        for config in invalid_configs:
-            with self.subTest(config=config):
+            with self.subTest(build_number=build_number):
                 with self.assertRaisesRegex(
                     ScanError,
                     "Invalid build_number in release.json",
                 ):
-                    reset_build_number(config)
+                    update_release_metadata(config, "1.0.9")
+
+    def test_missing_version_is_rejected(self):
+        config = '{"build_number": 1}'
+
+        with self.assertRaisesRegex(
+            ScanError,
+            "Missing version in release.json",
+        ):
+            update_release_metadata(config, "1.0.9")
 
     def test_malformed_json_is_rejected(self):
-        """Reject malformed release.json content."""
-
-        malformed_content = '{"build_number": 1'
-
         with self.assertRaisesRegex(
             ScanError,
             "Invalid release.json content",
         ):
-            reset_build_number(malformed_content)
+            update_release_metadata('{"build_number": 1', "1.0.9")
 
 
 class TestDryRunDiff(unittest.TestCase):
@@ -382,25 +377,28 @@ class TestDryRunDiff(unittest.TestCase):
 
 class TestDryRunIntegration(unittest.TestCase):
 
-    def test_three_file_dry_run(self):
-        """Preview all three AOtools changes without writing files."""
+    def test_two_file_dry_run(self):
+        """Preview AOtools recipe and release changes without writing files."""
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
 
-            build_path = root / "build_base.yml"
             recipe_path = root / "aotools/meta.yaml"
             release_path = root / "aotools/release.json"
 
             recipe_path.parent.mkdir(parents=True)
 
             originals = {
-                build_path: "  AOTOOLS_VERSION: 1.0.8\n",
                 recipe_path: (
                     "source:\n"
                     f"  sha256: {'a' * 64}  # 1.0.8 sdist\n"
                 ),
-                release_path: '{\n  "build_number": 1\n}\n',
+                release_path: (
+                    '{\n'
+                    '  "version": "1.0.8",\n'
+                    '  "build_number": 1\n'
+                    '}\n'
+                ),
             }
 
             for path, content in originals.items():
@@ -409,17 +407,6 @@ class TestDryRunIntegration(unittest.TestCase):
             output = io.StringIO()
 
             with redirect_stdout(output):
-                show_diff(
-                    build_path.relative_to(root),
-                    originals[build_path],
-                    replace_version_variable(
-                        originals[build_path],
-                        "AOTOOLS_VERSION",
-                        "1.0.8",
-                        "1.0.9",
-                    ),
-                )
-
                 show_diff(
                     recipe_path.relative_to(root),
                     originals[recipe_path],
@@ -434,21 +421,25 @@ class TestDryRunIntegration(unittest.TestCase):
                 show_diff(
                     release_path.relative_to(root),
                     originals[release_path],
-                    reset_build_number(originals[release_path]),
+                    update_release_metadata(
+                        originals[release_path],
+                        "1.0.9",
+                    ),
                 )
 
             diff = output.getvalue()
 
-            self.assertIn("+  AOTOOLS_VERSION: 1.0.9", diff)
             self.assertIn(f"+  sha256: {'b' * 64}", diff)
+            self.assertIn('+"version":"1.0.9"', diff.replace(" ", ""))
             self.assertIn('+"build_number":0', diff.replace(" ", ""))
+
+            self.assertNotIn("build_base.yml", diff)
 
             for path, original in originals.items():
                 self.assertEqual(
                     path.read_text(encoding="utf-8"),
                     original,
                 )
-
 
 
 class TestMainDryRun(unittest.TestCase):
@@ -475,7 +466,12 @@ class TestMainDryRun(unittest.TestCase):
                 "source:\n"
                 f"  sha256: {'a' * 64}  # 1.0.8 sdist\n"
             ),
-            self.release_path: '{\n  "build_number": 1\n}\n',
+            self.release_path: (
+                '{\n'
+                '  "version": "1.0.8",\n'
+                '  "build_number": 1\n'
+                '}\n'
+            ),
         }
 
         for path, content in self.originals.items():
@@ -493,6 +489,7 @@ class TestMainDryRun(unittest.TestCase):
         dependency.package = "aotools"
         dependency.version_variables = ["AOTOOLS_VERSION"]
         dependency.recipes = ["aotools/meta.yaml"]
+        dependency.version_file = "aotools/release.json"
 
         self.registry.dependencies = [dependency]
 
@@ -532,13 +529,14 @@ class TestMainDryRun(unittest.TestCase):
 
         return output.getvalue()
 
-    def test_main_previews_three_files_without_writing(self):
-        """Dry-run must preview changes without modifying files."""
+    def test_main_previews_two_files_without_writing(self):
+        """Dry-run previews two changes without modifying files."""
 
         preview = self.run_planner(write=False)
 
-        self.assertIn("+  AOTOOLS_VERSION: 1.0.9", preview)
+        self.assertNotIn("build_base.yml", preview)
         self.assertIn(f"+  sha256: {'b' * 64}", preview)
+        self.assertIn('+  "version": "1.0.9"', preview)
         self.assertIn('+  "build_number": 0', preview)
         self.assertIn("Mode: read-only planning", preview)
         self.assertIn("No files were modified.", preview)
@@ -549,8 +547,8 @@ class TestMainDryRun(unittest.TestCase):
                 original,
             )
 
-    def test_main_writes_three_files(self):
-        """Write mode must update all three AOtools files."""
+    def test_main_writes_two_files(self):
+        """Write mode updates only recipe and release metadata."""
 
         preview = self.run_planner(write=True)
 
@@ -560,20 +558,24 @@ class TestMainDryRun(unittest.TestCase):
             preview,
         )
 
-        self.assertIn(
-            "AOTOOLS_VERSION: 1.0.9",
+        # Workflow must remain unchanged.
+        self.assertEqual(
             self.build_path.read_text(encoding="utf-8"),
+            self.originals[self.build_path],
         )
 
+        # Recipe checksum must be updated.
         self.assertIn(
             f"sha256: {'b' * 64}  # 1.0.9 sdist",
             self.recipe_path.read_text(encoding="utf-8"),
         )
 
+        # Release metadata must contain the new version and build number.
         release_data = json.loads(
             self.release_path.read_text(encoding="utf-8")
         )
 
+        self.assertEqual(release_data["version"], "1.0.9")
         self.assertEqual(release_data["build_number"], 0)
 
 

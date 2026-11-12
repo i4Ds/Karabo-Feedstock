@@ -99,6 +99,7 @@ class Dependency:
     source_type: str
     release_page: str
     notes: str = ""
+    version_file: str = ""
     manual_reason: str = ""
     retired_reason: str = ""
     package: str = ""
@@ -177,6 +178,42 @@ def parse_build_versions(content: str) -> dict[str, str]:
         versions[variable] = value
     if not versions:
         raise ScanError("no *_VERSION variables found in build_base.yml")
+    return versions
+
+
+def load_declared_versions(
+    registry: Registry,
+    repo_root: Path,
+) -> dict[str, str]:
+    """Load dependency versions from workflows and registered version files."""
+    build_path = _safe_repo_path(repo_root, registry.settings.build_base)
+    versions = parse_build_versions(build_path.read_text(encoding="utf-8"))
+
+    for dependency in registry.dependencies:
+        if not dependency.version_file:
+            continue
+
+        version_path = _safe_repo_path(repo_root, dependency.version_file)
+
+        try:
+            data = json.loads(version_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ScanError(
+                f"{dependency.id}: cannot read version file: {error}"
+            ) from error
+
+        if not isinstance(data, dict):
+            raise ScanError(f"{dependency.id}: version file must contain an object")
+
+        version = data.get("version")
+        if not isinstance(version, str):
+            raise ScanError(f"{dependency.id}: missing version")
+
+        version = parse_stable_version(version).text
+
+        for variable in dependency.version_variables:
+            versions[variable] = version
+
     return versions
 
 
@@ -287,6 +324,7 @@ def load_registry(path: Path) -> Registry:
         dependency = Dependency(
             id=_required_string(item, "id", context),
             name=_required_string(item, "name", context),
+            version_file=str(item.get("version_file", "")).strip(),
             version_variables=_string_tuple(item, "version_variables", context),
             recipes=_string_tuple(item, "recipes", context, allow_empty=True),
             source_type=source_type,
@@ -1127,8 +1165,7 @@ def run(argv: Sequence[str] | None = None) -> int:
     repo_root = args.repo_root.resolve()
     config_path = _safe_repo_path(repo_root, args.config)
     registry = load_registry(config_path)
-    build_base_path = _safe_repo_path(repo_root, registry.settings.build_base)
-    build_versions = parse_build_versions(build_base_path.read_text(encoding="utf-8"))
+    build_versions = load_declared_versions(registry, repo_root)
     validate_registry(registry, build_versions, repo_root)
 
     repository = os.environ.get(
