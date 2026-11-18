@@ -34,6 +34,7 @@ requirements:
     - python
 
   host:
+    - pybind11
     - libboost-devel        ={{ BOOST_VERSION_ALT }}
     - libboost-python-devel ={{ BOOST_VERSION_ALT }}
     - casacore={{ CASACORE_VERSION_ALT }}
