@@ -27,6 +27,7 @@ jobs:
       aotools_version: ${{ steps.aotools_version.outputs.version }}
       idg_version: ${{ steps.idg_version.outputs.version }}
       everybeam_version: ${{ steps.everybeam_version.outputs.version }}
+      wsclean_version: ${{ steps.wsclean_version.outputs.version }}
 
     steps:
       - name: Resolve PR commits
@@ -132,6 +133,23 @@ jobs:
           version = data["version"]
           if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
               raise ValueError("Invalid EveryBeam release version")
+          print(version)
+          ')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve WSClean version from PR head
+        id: wsclean_version
+        if: ${{ fromJSON(steps.detect.outputs.dependencies).wsclean }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c '
+          import json, re
+          with open("wsclean/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+          version = data["version"]
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.0", version):
+              raise ValueError("Invalid WSClean release version")
           print(version)
           ')
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -281,6 +299,8 @@ jobs:
       devDeps: "EVERYBEAM_VERSION"
       buildNumber: "0"
       publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      versionOverride: ${{ needs.detect-changes.outputs.wsclean_version }}
 
   # Validate SKA SDP Datamodels when its dependency or shared build files change.
   # PR validation must never publish Conda packages.
