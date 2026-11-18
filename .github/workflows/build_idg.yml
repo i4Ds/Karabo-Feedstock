@@ -18,6 +18,14 @@ on:
         type: boolean
         required: false
         default: true
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
 
   workflow_call:
     inputs:
@@ -35,6 +43,14 @@ on:
         type: boolean
         required: false
         default: true
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
 
 jobs:
   IDG:
@@ -47,6 +63,8 @@ jobs:
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
       publish: ${{ inputs.publish }}
+      checkoutRef: ${{ inputs.checkoutRef }}
+      versionOverride: ${{ inputs.versionOverride }}
       useCuda: true
       isNative: true
     secrets: inherit

@@ -29,6 +29,7 @@ from prepare_dependency_upgrade import (
     update_release_metadata,
     show_diff,
     apply_changes,
+    prepare_dependency_version_updates,
 )
 
 class TestPyPISdist(unittest.TestCase):
@@ -229,6 +230,63 @@ class TestVersionReplacement(unittest.TestCase):
         )
 
         self.assertEqual(result, expected)
+class TestDependencyVersionUpdates(unittest.TestCase):
+    def test_single_dependency_version(self):
+        content = (
+            "env:\n"
+            "  IDG_VERSION: 1.2.0\n"
+            "  EVERYBEAM_VERSION: 0.8.0\n"
+        )
+
+        updated = prepare_dependency_version_updates(
+            content,
+            {"IDG_VERSION": "1.2.0"},
+            "1.3.0",
+        )
+
+        self.assertEqual(
+            updated,
+            (
+                "env:\n"
+                "  IDG_VERSION: 1.3.0\n"
+                "  EVERYBEAM_VERSION: 0.8.0\n"
+            ),
+        )
+
+    def test_coupled_dependency_versions(self):
+        content = (
+            "env:\n"
+            "  OSKAR_VERSION: 2.12.2\n"
+            "  OSKARPY_VERSION: 2.12.2  # keep synchronized\n"
+        )
+
+        updated = prepare_dependency_version_updates(
+            content,
+            {
+                "OSKAR_VERSION": "2.12.2",
+                "OSKARPY_VERSION": "2.12.2",
+            },
+            "2.13.0",
+        )
+
+        self.assertIn("OSKAR_VERSION: 2.13.0\n", updated)
+        self.assertIn(
+            "OSKARPY_VERSION: 2.13.0  # keep synchronized",
+            updated,
+        )
+
+    def test_missing_variable_rejects_entire_update(self):
+        content = "env:\n  OSKAR_VERSION: 2.12.2\n"
+
+        with self.assertRaises(ScanError):
+            prepare_dependency_version_updates(
+                content,
+                {
+                    "OSKAR_VERSION": "2.12.2",
+                    "OSKARPY_VERSION": "2.12.2",
+                },
+                "2.13.0",
+            )
 
 class TestRecipeChecksumReplacement(unittest.TestCase):
 
@@ -663,6 +721,318 @@ class TestApplyChanges(unittest.TestCase):
                 second.read_text(encoding="utf-8"),
                 "old-second\n",
             )
+
+
+
+
+
+class TestIDGMainIntegration(unittest.TestCase):
+    """Test IDG through the complete CLI preparation entry point."""
+
+    def setUp(self):
+        from types import SimpleNamespace
+
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.root = Path(self.directory.name)
+
+        self.build_path = (
+            self.root / ".github/workflows/build_base.yml"
+        )
+        self.build_path.parent.mkdir(parents=True)
+
+        self.original = (
+            "env:\n"
+            "  IDG_VERSION: 1.2.0\n"
+            "  EVERYBEAM_VERSION: 0.8.0\n"
+        )
+        self.build_path.write_text(
+            self.original, encoding="utf-8"
+        )
+
+        recipe = self.root / "idg/meta.yaml"
+        recipe.parent.mkdir(parents=True)
+        recipe.write_text(
+            "source:\n"
+            "  git_url: https://gitlab.com/astron-idg/idg.git\n"
+            "  git_tag: {{ IDG_VERSION }}\n",
+            encoding="utf-8",
+        )
+
+        registry_path = self.root / ".github/dependency-scan.toml"
+        registry_path.parent.mkdir(parents=True, exist_ok=True)
+        registry_path.write_text("", encoding="utf-8")
+
+        self.idg = SimpleNamespace(
+            id="idg",
+            name="IDG",
+            source_type="gitlab-tags",
+            version_variables=("IDG_VERSION",),
+            recipes=("idg/meta.yaml",),
+        )
+
+        self.unsupported = SimpleNamespace(
+            id="everybeam",
+            name="EveryBeam",
+            source_type="gitlab-tags",
+            version_variables=("EVERYBEAM_VERSION",),
+            recipes=("everybeam/meta.yaml",),
+        )
+
+        self.registry = SimpleNamespace(
+            dependencies=[self.idg, self.unsupported],
+            settings=SimpleNamespace(
+                build_base=".github/workflows/build_base.yml",
+                http_timeout_seconds=20,
+            ),
+        )
+
+        self.versions = {
+            "IDG_VERSION": "1.2.0",
+            "EVERYBEAM_VERSION": "0.8.0",
+        }
+
+    def run_main(self, args):
+        from prepare_dependency_upgrade import main
+
+        output = io.StringIO()
+
+        with (
+            patch(
+                "prepare_dependency_upgrade.load_registry",
+                return_value=self.registry,
+            ),
+            patch(
+                "prepare_dependency_upgrade.load_declared_versions",
+                return_value=self.versions,
+            ),
+            patch("prepare_dependency_upgrade.validate_registry"),
+            patch("prepare_dependency_upgrade.verify_idg_tag") as verify,
+            redirect_stdout(output),
+        ):
+            main(args, root=self.root)
+
+        return output.getvalue(), verify
+
+    def test_idg_main_dry_run_does_not_write(self):
+        output, verify = self.run_main(
+            ["--dependency", "idg", "--version", "1.3.0"]
+        )
+
+        self.assertIn("-  IDG_VERSION: 1.2.0", output)
+        self.assertIn("+  IDG_VERSION: 1.3.0", output)
+        self.assertIn("Mode: read-only planning", output)
+        self.assertEqual(
+            self.build_path.read_text(encoding="utf-8"),
+            self.original,
+        )
+        verify.assert_called_once_with("1.3.0", timeout=20)
+
+    def test_idg_main_write_updates_only_idg(self):
+        output, verify = self.run_main(
+            [
+                "--dependency", "idg",
+                "--version", "1.3.0",
+                "--write",
+            ]
+        )
+
+        updated = self.build_path.read_text(encoding="utf-8")
+
+        self.assertIn("IDG_VERSION: 1.3.0", updated)
+        self.assertIn("EVERYBEAM_VERSION: 0.8.0", updated)
+        self.assertNotIn("IDG_VERSION: 1.2.0", updated)
+        self.assertIn("Mode: write", output)
+        verify.assert_called_once_with("1.3.0", timeout=20)
+
+    def test_unsupported_dependency_is_rejected(self):
+        from prepare_dependency_upgrade import main
+        from dependency_scan import ScanError
+
+        with (
+            patch(
+                "prepare_dependency_upgrade.load_registry",
+                return_value=self.registry,
+            ),
+            patch(
+                "prepare_dependency_upgrade.load_declared_versions",
+                return_value=self.versions,
+            ),
+            patch("prepare_dependency_upgrade.validate_registry"),
+            patch("prepare_dependency_upgrade.verify_idg_tag") as verify,
+        ):
+            with self.assertRaisesRegex(
+                ScanError,
+                "No safe upgrade preparation strategy",
+            ):
+                main(
+                    [
+                        "--dependency", "everybeam",
+                        "--version", "0.9.1",
+                    ],
+                    root=self.root,
+                )
+
+        verify.assert_not_called()
+        self.assertEqual(
+            self.build_path.read_text(encoding="utf-8"),
+            self.original,
+        )
+
+
+class TestIDGUpgradePreparation(unittest.TestCase):
+    """IDG strategy must be verified, targeted and read-only."""
+
+    def setUp(self):
+        from types import SimpleNamespace
+
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.root = Path(self.directory.name)
+
+        self.build_path = (
+            self.root / ".github/workflows/build_base.yml"
+        )
+        self.build_path.parent.mkdir(parents=True)
+
+        self.original = (
+            "env:\n"
+            "  IDG_VERSION: 1.2.0\n"
+            "  EVERYBEAM_VERSION: 0.8.0\n"
+        )
+        self.build_path.write_text(
+            self.original, encoding="utf-8"
+        )
+
+        recipe_path = self.root / "idg/meta.yaml"
+        recipe_path.parent.mkdir(parents=True)
+        recipe_path.write_text(
+            "source:\n"
+            "  git_url: https://gitlab.com/astron-idg/idg.git\n"
+            "  git_tag: {{ IDG_VERSION }}\n",
+            encoding="utf-8",
+        )
+
+        self.registry = SimpleNamespace(
+            settings=SimpleNamespace(
+                build_base=".github/workflows/build_base.yml",
+                http_timeout_seconds=20,
+            )
+        )
+        self.dependency = SimpleNamespace(
+            id="idg",
+            source_type="gitlab-tags",
+            version_variables=("IDG_VERSION",),
+            recipes=("idg/meta.yaml",),
+        )
+
+    @patch("prepare_dependency_upgrade.verify_idg_tag")
+    def test_prepares_only_build_base(self, verify):
+        from prepare_dependency_upgrade import prepare_idg_changes
+
+        changes = prepare_idg_changes(
+            self.root,
+            self.registry,
+            self.dependency,
+            {"IDG_VERSION": "1.2.0"},
+            "1.3.0",
+        )
+
+        self.assertEqual(list(changes), [self.build_path])
+        original, updated = changes[self.build_path]
+        self.assertEqual(original, self.original)
+        self.assertIn("IDG_VERSION: 1.3.0", updated)
+        self.assertIn("EVERYBEAM_VERSION: 0.8.0", updated)
+        self.assertEqual(
+            self.build_path.read_text(encoding="utf-8"),
+            self.original,
+        )
+        verify.assert_called_once_with("1.3.0", timeout=20)
+
+    @patch("prepare_dependency_upgrade.verify_idg_tag")
+    def test_rejects_missing_version_variable(self, verify):
+        from prepare_dependency_upgrade import prepare_idg_changes
+
+        self.build_path.write_text(
+            "env:\\n  EVERYBEAM_VERSION: 0.8.0\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaises(ScanError):
+            prepare_idg_changes(
+                self.root,
+                self.registry,
+                self.dependency,
+                {"IDG_VERSION": "1.2.0"},
+                "1.3.0",
+            )
+
+    @patch("prepare_dependency_upgrade.verify_idg_tag")
+    def test_rejects_incompatible_recipe(self, verify):
+        from prepare_dependency_upgrade import prepare_idg_changes
+
+        (self.root / "idg/meta.yaml").write_text(
+            "source:\\n  git_tag: main\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaises(ScanError):
+            prepare_idg_changes(
+                self.root,
+                self.registry,
+                self.dependency,
+                {"IDG_VERSION": "1.2.0"},
+                "1.3.0",
+            )
+        verify.assert_not_called()
+
+    @patch("prepare_dependency_upgrade.verify_idg_tag")
+    def test_rejects_unexpected_git_repository(self, verify):
+        from prepare_dependency_upgrade import prepare_idg_changes
+
+        (self.root / "idg/meta.yaml").write_text(
+            "source:\\n"
+            "  git_url: https://example.com/other/idg.git\\n"
+            "  git_tag: {{ IDG_VERSION }}\\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(
+            ScanError, "unexpected Git repository"
+        ):
+            prepare_idg_changes(
+                self.root,
+                self.registry,
+                self.dependency,
+                {"IDG_VERSION": "1.2.0"},
+                "1.3.0",
+            )
+
+        verify.assert_not_called()
+
+    @patch("subprocess.run")
+    def test_verifies_exact_upstream_tag(self, run):
+        from prepare_dependency_upgrade import verify_idg_tag
+
+        run.return_value.returncode = 0
+        run.return_value.stdout = (
+            "a" * 40 + "\trefs/tags/1.3.0\n"
+        )
+
+        verify_idg_tag("1.3.0")
+        command = run.call_args.args[0]
+        self.assertEqual(command[-1], "refs/tags/1.3.0")
+
+    @patch("subprocess.run")
+    def test_rejects_missing_upstream_tag(self, run):
+        from prepare_dependency_upgrade import verify_idg_tag
+
+        run.return_value.returncode = 2
+        run.return_value.stdout = ""
+
+        with self.assertRaises(ScanError):
+            verify_idg_tag("1.3.0")
+
 
 if __name__ == "__main__":
     unittest.main()

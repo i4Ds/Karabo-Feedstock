@@ -45,11 +45,11 @@ jobs:
         run: python .github/scripts/approve_dependency_upgrade.py
 
   create-draft-pr:
-    name: Create AOtools Draft PR
+    name: Create dependency Draft PR
     needs: verify
     if: >-
       needs.verify.result == 'success' &&
-      needs.verify.outputs.dependency == 'aotools'
+      contains(fromJSON('["aotools","idg"]'), needs.verify.outputs.dependency)
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -72,33 +72,48 @@ jobs:
       - name: Revalidate approval
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPECTED_DEPENDENCY: ${{ needs.verify.outputs.dependency }}
           EXPECTED_VERSION: ${{ needs.verify.outputs.version }}
           EXPECTED_ISSUE_NUMBER: ${{ needs.verify.outputs.issue_number }}
         run: |
           python .github/scripts/approve_dependency_upgrade.py \
             --verify-only \
-            --expected-dependency aotools \
+            --expected-dependency "$EXPECTED_DEPENDENCY" \
             --expected-version "$EXPECTED_VERSION" \
             --expected-issue-number "$EXPECTED_ISSUE_NUMBER"
 
-      - name: Prepare AOtools upgrade
+      - name: Prepare dependency upgrade
         env:
+          DEPENDENCY: ${{ needs.verify.outputs.dependency }}
           VERSION: ${{ needs.verify.outputs.version }}
         run: |
           python .github/scripts/prepare_dependency_upgrade.py \
-            --dependency aotools \
+            --dependency "$DEPENDENCY" \
             --version "$VERSION" \
             --write
 
       - name: Verify changed files
         shell: bash
+        env:
+          DEPENDENCY: ${{ needs.verify.outputs.dependency }}
         run: |
           set -euo pipefail
           git diff --check
 
-          expected=$(printf '%s\n' \
-            'aotools/meta.yaml' \
-            'aotools/release.json' | sort)
+          case "$DEPENDENCY" in
+            aotools)
+              expected=$(printf '%s\n' \
+                'aotools/meta.yaml' \
+                'aotools/release.json' | sort)
+              ;;
+            idg)
+              expected='.github/workflows/build_base.yml'
+              ;;
+            *)
+              echo "Unsupported dependency: $DEPENDENCY"
+              exit 1
+              ;;
+          esac
 
           actual=$(
             {
@@ -119,19 +134,20 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: main
-          branch: automation/aotools-${{ needs.verify.outputs.version }}-issue-${{ needs.verify.outputs.issue_number }}
+          branch: automation/${{ needs.verify.outputs.dependency }}-${{ needs.verify.outputs.version }}-issue-${{ needs.verify.outputs.issue_number }}
           add-paths: |
             aotools/meta.yaml
             aotools/release.json
-          commit-message: "chore(aotools): upgrade to ${{ needs.verify.outputs.version }}"
-          title: "chore(aotools): upgrade to ${{ needs.verify.outputs.version }}"
+            .github/workflows/build_base.yml
+          commit-message: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
+          title: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
           body: |
-            Automated AOtools dependency upgrade.
+            Automated ${{ needs.verify.outputs.dependency }} dependency upgrade.
 
             Approved in issue #${{ needs.verify.outputs.issue_number }}.
 
-            - Update AOtools version and source checksum
-            - Reset release build number to 0
+            - Apply dependency-specific version changes
+            - Verify the exact changed-file allowlist
             - Centralized CI validation required
             - No automatic publishing or merging
           draft: true
