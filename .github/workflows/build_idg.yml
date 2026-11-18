@@ -17,7 +17,7 @@ on:
       publish:
         type: boolean
         required: false
-        default: true
+        default: false
       checkoutRef:
         type: string
         required: false
@@ -42,7 +42,7 @@ on:
       publish:
         type: boolean
         required: false
-        default: true
+        default: false
       checkoutRef:
         type: string
         required: false
@@ -53,7 +53,45 @@ on:
         default: ""
 
 jobs:
+  resolve-version:
+    name: Resolve IDG version
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkoutRef || github.sha }}
+
+      - name: Read IDG release version
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version=$(python3 -c '
+          import json
+          import re
+
+          with open("idg/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+
+          version = data["version"]
+
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid IDG release version")
+
+          print(version)
+          ')
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
   IDG:
+    name: Build IDG
+    needs: resolve-version
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: idg
@@ -64,7 +102,7 @@ jobs:
       buildNumber: ${{ inputs.buildNumber }}
       publish: ${{ inputs.publish }}
       checkoutRef: ${{ inputs.checkoutRef }}
-      versionOverride: ${{ inputs.versionOverride }}
+      versionOverride: ${{ inputs.versionOverride || needs.resolve-version.outputs.version }}
       useCuda: true
       isNative: true
     secrets: inherit

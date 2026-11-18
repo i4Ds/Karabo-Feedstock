@@ -299,6 +299,7 @@ def prepare_idg_changes(
         or dependency.source_type != "gitlab-tags"
         or tuple(dependency.version_variables) != ("IDG_VERSION",)
         or tuple(dependency.recipes) != ("idg/meta.yaml",)
+        or dependency.version_file != "idg/release.json"
     ):
         raise ScanError("Unsupported IDG upgrade configuration")
 
@@ -324,16 +325,15 @@ def prepare_idg_changes(
         timeout=registry.settings.http_timeout_seconds,
     )
 
-    build_path = root / registry.settings.build_base
-    original = build_path.read_text(encoding="utf-8")
+    release_path = root / "idg/release.json"
+    original = release_path.read_text(encoding="utf-8")
 
-    updated = prepare_dependency_version_updates(
+    updated = update_release_metadata(
         original,
-        current,
         target,
     )
 
-    return {build_path: (original, updated)}
+    return {release_path: (original, updated)}
 
 
 def main(

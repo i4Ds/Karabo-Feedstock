@@ -749,9 +749,26 @@ class TestIDGMainIntegration(unittest.TestCase):
         self.build_path.write_text(
             self.original, encoding="utf-8"
         )
+        self.release_path = self.root / "idg/release.json"
+        self.release_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        self.original_release = (
+            '{\n'
+            '  "version": "1.2.0",\n'
+            '  "build_number": 0\n'
+            '}\n'
+        )
+
+        self.release_path.write_text(
+            self.original_release,
+            encoding="utf-8",
+        )
 
         recipe = self.root / "idg/meta.yaml"
-        recipe.parent.mkdir(parents=True)
+        recipe.parent.mkdir(parents=True, exist_ok=True)
         recipe.write_text(
             "source:\n"
             "  git_url: https://gitlab.com/astron-idg/idg.git\n"
@@ -768,6 +785,7 @@ class TestIDGMainIntegration(unittest.TestCase):
             name="IDG",
             source_type="gitlab-tags",
             version_variables=("IDG_VERSION",),
+            version_file="idg/release.json",
             recipes=("idg/meta.yaml",),
         )
 
@@ -814,35 +832,29 @@ class TestIDGMainIntegration(unittest.TestCase):
 
         return output.getvalue(), verify
 
+
     def test_idg_main_dry_run_does_not_write(self):
         output, verify = self.run_main(
             ["--dependency", "idg", "--version", "1.3.0"]
         )
 
-        self.assertIn("-  IDG_VERSION: 1.2.0", output)
-        self.assertIn("+  IDG_VERSION: 1.3.0", output)
+        self.assertIn("--- a/idg/release.json", output)
+        self.assertIn("+++ b/idg/release.json", output)
+        self.assertIn('-  "version": "1.2.0"', output)
+        self.assertIn('+  "version": "1.3.0"', output)
         self.assertIn("Mode: read-only planning", output)
+        self.assertNotIn("build_base.yml", output)
+
+        # Dry-run must not change either file.
+        self.assertEqual(
+            self.release_path.read_text(encoding="utf-8"),
+            self.original_release,
+        )
         self.assertEqual(
             self.build_path.read_text(encoding="utf-8"),
             self.original,
         )
-        verify.assert_called_once_with("1.3.0", timeout=20)
 
-    def test_idg_main_write_updates_only_idg(self):
-        output, verify = self.run_main(
-            [
-                "--dependency", "idg",
-                "--version", "1.3.0",
-                "--write",
-            ]
-        )
-
-        updated = self.build_path.read_text(encoding="utf-8")
-
-        self.assertIn("IDG_VERSION: 1.3.0", updated)
-        self.assertIn("EVERYBEAM_VERSION: 0.8.0", updated)
-        self.assertNotIn("IDG_VERSION: 1.2.0", updated)
-        self.assertIn("Mode: write", output)
         verify.assert_called_once_with("1.3.0", timeout=20)
 
     def test_unsupported_dependency_is_rejected(self):
@@ -881,7 +893,7 @@ class TestIDGMainIntegration(unittest.TestCase):
 
 
 class TestIDGUpgradePreparation(unittest.TestCase):
-    """IDG strategy must be verified, targeted and read-only."""
+    """IDG upgrades must be verified, targeted and read-only."""
 
     def setUp(self):
         from types import SimpleNamespace
@@ -890,6 +902,7 @@ class TestIDGUpgradePreparation(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
 
+        # Shared build configuration must remain unchanged.
         self.build_path = (
             self.root / ".github/workflows/build_base.yml"
         )
@@ -901,11 +914,27 @@ class TestIDGUpgradePreparation(unittest.TestCase):
             "  EVERYBEAM_VERSION: 0.8.0\n"
         )
         self.build_path.write_text(
-            self.original, encoding="utf-8"
+            self.original,
+            encoding="utf-8",
         )
 
+        # IDG version is now stored in release.json.
+        self.release_path = self.root / "idg/release.json"
+        self.release_path.parent.mkdir(parents=True, exist_ok=True)
+
+        self.original_release = (
+            '{\n'
+            '  "version": "1.2.0",\n'
+            '  "build_number": 0\n'
+            '}\n'
+        )
+
+        self.release_path.write_text(
+            self.original_release,
+            encoding="utf-8",
+        )
+        # Preserve the existing IDG recipe.
         recipe_path = self.root / "idg/meta.yaml"
-        recipe_path.parent.mkdir(parents=True)
         recipe_path.write_text(
             "source:\n"
             "  git_url: https://gitlab.com/astron-idg/idg.git\n"
@@ -923,11 +952,12 @@ class TestIDGUpgradePreparation(unittest.TestCase):
             id="idg",
             source_type="gitlab-tags",
             version_variables=("IDG_VERSION",),
+            version_file="idg/release.json",
             recipes=("idg/meta.yaml",),
         )
 
     @patch("prepare_dependency_upgrade.verify_idg_tag")
-    def test_prepares_only_build_base(self, verify):
+    def test_prepares_only_release_metadata(self, verify):
         from prepare_dependency_upgrade import prepare_idg_changes
 
         changes = prepare_idg_changes(
@@ -938,11 +968,25 @@ class TestIDGUpgradePreparation(unittest.TestCase):
             "1.3.0",
         )
 
-        self.assertEqual(list(changes), [self.build_path])
-        original, updated = changes[self.build_path]
-        self.assertEqual(original, self.original)
-        self.assertIn("IDG_VERSION: 1.3.0", updated)
-        self.assertIn("EVERYBEAM_VERSION: 0.8.0", updated)
+        # Only release.json may be changed.
+        self.assertEqual(list(changes), [self.release_path])
+
+        original, updated = changes[self.release_path]
+
+        self.assertEqual(original, self.original_release)
+
+        import json
+
+        updated_data = json.loads(updated)
+
+        self.assertEqual(updated_data["version"], "1.3.0")
+        self.assertEqual(updated_data["build_number"], 0)
+
+        # Preparation must not write files.
+        self.assertEqual(
+            self.release_path.read_text(encoding="utf-8"),
+            self.original_release,
+        )
         self.assertEqual(
             self.build_path.read_text(encoding="utf-8"),
             self.original,
@@ -950,12 +994,26 @@ class TestIDGUpgradePreparation(unittest.TestCase):
         verify.assert_called_once_with("1.3.0", timeout=20)
 
     @patch("prepare_dependency_upgrade.verify_idg_tag")
-    def test_rejects_missing_version_variable(self, verify):
+    def test_rejects_missing_release_metadata(self, verify):
         from prepare_dependency_upgrade import prepare_idg_changes
 
-        self.build_path.write_text(
-            "env:\\n  EVERYBEAM_VERSION: 0.8.0\n",
-            encoding="utf-8",
+        self.release_path.unlink()
+
+        with self.assertRaises((ScanError, FileNotFoundError)):
+            prepare_idg_changes(
+                self.root,
+                self.registry,
+                self.dependency,
+                {"IDG_VERSION": "1.2.0"},
+                "1.3.0",
+            )
+
+    @patch("prepare_dependency_upgrade.verify_idg_tag")
+    def test_rejects_incorrect_version_file(self, verify):
+        from prepare_dependency_upgrade import prepare_idg_changes
+
+        self.dependency.version_file = (
+            ".github/workflows/build_base.yml"
         )
 
         with self.assertRaises(ScanError):
@@ -967,12 +1025,15 @@ class TestIDGUpgradePreparation(unittest.TestCase):
                 "1.3.0",
             )
 
+        verify.assert_not_called()
+
     @patch("prepare_dependency_upgrade.verify_idg_tag")
     def test_rejects_incompatible_recipe(self, verify):
         from prepare_dependency_upgrade import prepare_idg_changes
 
         (self.root / "idg/meta.yaml").write_text(
-            "source:\\n  git_tag: main\n",
+            "source:\n"
+            "  git_tag: main\n",
             encoding="utf-8",
         )
 
@@ -991,14 +1052,15 @@ class TestIDGUpgradePreparation(unittest.TestCase):
         from prepare_dependency_upgrade import prepare_idg_changes
 
         (self.root / "idg/meta.yaml").write_text(
-            "source:\\n"
-            "  git_url: https://example.com/other/idg.git\\n"
-            "  git_tag: {{ IDG_VERSION }}\\n",
+            "source:\n"
+            "  git_url: https://example.com/other/idg.git\n"
+            "  git_tag: {{ IDG_VERSION }}\n",
             encoding="utf-8",
         )
 
         with self.assertRaisesRegex(
-            ScanError, "unexpected Git repository"
+            ScanError,
+            "unexpected Git repository",
         ):
             prepare_idg_changes(
                 self.root,
@@ -1021,7 +1083,10 @@ class TestIDGUpgradePreparation(unittest.TestCase):
 
         verify_idg_tag("1.3.0")
         command = run.call_args.args[0]
-        self.assertEqual(command[-1], "refs/tags/1.3.0")
+        self.assertEqual(
+            command[-1],
+            "refs/tags/1.3.0",
+        )
 
     @patch("subprocess.run")
     def test_rejects_missing_upstream_tag(self, run):
