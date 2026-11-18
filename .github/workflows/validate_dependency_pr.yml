@@ -26,6 +26,7 @@ jobs:
       head: ${{ steps.pr.outputs.head }}
       aotools_version: ${{ steps.aotools_version.outputs.version }}
       idg_version: ${{ steps.idg_version.outputs.version }}
+      everybeam_version: ${{ steps.everybeam_version.outputs.version }}
 
     steps:
       - name: Resolve PR commits
@@ -116,6 +117,23 @@ jobs:
           print(version)
           ')
 
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve EveryBeam version from PR head
+        id: everybeam_version
+        if: ${{ fromJSON(steps.detect.outputs.dependencies).everybeam }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c '
+          import json, re
+          with open("everybeam/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+          version = data["version"]
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid EveryBeam release version")
+          print(version)
+          ')
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Validate AOtools release identity
@@ -245,6 +263,8 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      versionOverride: ${{ needs.detect-changes.outputs.everybeam_version }}
 
   # Validate WSClean only when its dependency or shared build files change.
   # PR validation must never publish Conda packages.

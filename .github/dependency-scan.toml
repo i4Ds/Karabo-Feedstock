@@ -189,6 +189,7 @@ release_page = "https://gitlab.com/astron-idg/idg/-/tags"
 id = "everybeam"
 name = "EveryBeam"
 version_variables = ["EVERYBEAM_VERSION"]
+version_file = "everybeam/release.json"
 recipes = ["everybeam/meta.yaml"]
 validation_workflows = [".github/workflows/build_everybeam.yml"]
 source_type = "gitlab-tags"
