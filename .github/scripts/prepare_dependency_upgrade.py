@@ -409,6 +409,76 @@ def prepare_everybeam_changes(root, registry, dependency, current, target):
     }
 
 
+
+def verify_wsclean_tag(version: str, timeout: int = 20) -> None:
+    """Verify exact upstream vMAJOR.MINOR tag without trusting a branch."""
+    import subprocess
+
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.0", version):
+        raise ScanError("WSClean requires a MAJOR.MINOR.0 version")
+    upstream = version.rsplit(".", 1)[0]
+    ref = f"refs/tags/v{upstream}"
+    try:
+        result = subprocess.run(
+            ["git", "ls-remote", "--exit-code", "--refs", "--tags",
+             "https://gitlab.com/aroffringa/wsclean.git", ref],
+            capture_output=True, text=True, timeout=timeout, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ScanError(f"Could not verify WSClean tag: {exc}") from exc
+    if result.returncode != 0:
+        raise ScanError(f"WSClean tag v{upstream} not found upstream")
+    lines = result.stdout.splitlines()
+    if len(lines) != 1:
+        raise ScanError("Unexpected WSClean Git tag response")
+    fields = lines[0].split()
+    if (len(fields) != 2 or
+            not re.fullmatch(r"[0-9a-fA-F]{40,64}", fields[0]) or
+            fields[1] != ref):
+        raise ScanError("Invalid WSClean Git tag response")
+
+
+def prepare_wsclean_changes(root, registry, dependency, current, target):
+    """Verify recipe and upstream tag; update release metadata only."""
+    if (dependency.id != "wsclean" or
+            dependency.source_type != "gitlab-tags" or
+            dependency.base_url != "https://gitlab.com" or
+            dependency.project != "aroffringa/wsclean" or
+            tuple(dependency.version_variables) != ("WSCLEAN_VERSION",) or
+            tuple(dependency.recipes) != ("wsclean/meta.yaml",) or
+            dependency.version_file != "wsclean/release.json"):
+        raise ScanError("Unsupported WSClean upgrade configuration")
+
+    recipe = (root / "wsclean/meta.yaml").read_text(encoding="utf-8")
+    if len(re.findall(r"^[ \t]*git_url:", recipe, re.MULTILINE)) != 1 or not re.search(
+        r"^[ \t]*git_url:[ \t]*https://gitlab\.com/aroffringa/wsclean\.git[ \t]*$",
+        recipe, re.MULTILINE,
+    ):
+        raise ScanError("Unexpected WSClean Git repository")
+    if len(re.findall(r"^[ \t]*git_tag:", recipe, re.MULTILINE)) != 1 or not re.search(
+        re.escape('git_tag: "v{{ WSCLEAN_VERSION[:-2] }}"') + r'[ 	]*$',
+        recipe, re.MULTILINE,
+    ):
+        raise ScanError("Unexpected WSClean Git tag template")
+    if not re.search(
+        r"^[ \t]*version:[ \t]*\{\{[ \t]*WSCLEAN_VERSION_ALT[ \t]*\}\}[ \t]*$",
+        recipe, re.MULTILINE,
+    ):
+        raise ScanError("Unexpected WSClean package version template")
+
+    release_path = root / "wsclean/release.json"
+    original = release_path.read_text(encoding="utf-8")
+    try:
+        data = json.loads(original)
+    except json.JSONDecodeError as exc:
+        raise ScanError("Invalid WSClean release metadata") from exc
+    if not isinstance(data, dict) or data.get("version") != current["WSCLEAN_VERSION"]:
+        raise ScanError("WSClean release metadata/version mismatch")
+
+    verify_wsclean_tag(target, registry.settings.http_timeout_seconds)
+    return {release_path: (original, update_release_metadata(original, target))}
+
+
 def main(
     argv: list[str] | None = None,
     root: Path | None = None,
@@ -444,7 +514,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg", "everybeam"}:
+    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean"}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -463,6 +533,30 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "wsclean":
+        # GitLab uses v3.7; Feedstock needs 3.7.0 for its recipe.
+        if target.post is not None or len(target.release) not in (2, 3) or (
+            len(target.release) == 3 and target.release[2] != 0
+        ):
+            raise ScanError("WSClean requires MAJOR.MINOR or MAJOR.MINOR.0")
+        normalized = f"{target.release[0]}.{target.release[1]}.0"
+        changes = prepare_wsclean_changes(
+            root, registry, dependency, current, normalized,
+        )
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+        print(f"Dependency: {dependency.name}")
+        print(f"Target version: {normalized}")
+        print("Upstream WSClean tag: verified")
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id == "everybeam":
         changes = prepare_everybeam_changes(

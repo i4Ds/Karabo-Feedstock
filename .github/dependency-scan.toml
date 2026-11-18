@@ -201,6 +201,7 @@ release_page = "https://git.astron.nl/RD/EveryBeam/-/tags"
 id = "wsclean"
 name = "WSClean"
 version_variables = ["WSCLEAN_VERSION"]
+version_file = "wsclean/release.json"
 recipes = ["wsclean/meta.yaml"]
 validation_workflows = [".github/workflows/build_wsclean.yml"]
 source_type = "gitlab-tags"
