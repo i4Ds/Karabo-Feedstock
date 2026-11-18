@@ -790,8 +790,8 @@ class TestIDGMainIntegration(unittest.TestCase):
         )
 
         self.unsupported = SimpleNamespace(
-            id="everybeam",
-            name="EveryBeam",
+            id="unimplemented",
+            name="Unimplemented",
             source_type="gitlab-tags",
             version_variables=("EVERYBEAM_VERSION",),
             recipes=("everybeam/meta.yaml",),
@@ -879,7 +879,7 @@ class TestIDGMainIntegration(unittest.TestCase):
             ):
                 main(
                     [
-                        "--dependency", "everybeam",
+                        "--dependency", "unimplemented",
                         "--version", "0.9.1",
                     ],
                     root=self.root,

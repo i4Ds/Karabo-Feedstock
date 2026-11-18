@@ -336,6 +336,79 @@ def prepare_idg_changes(
     return {release_path: (original, updated)}
 
 
+
+def resolve_everybeam_tag(version: str, timeout: int = 20) -> str:
+    """Resolve exact upstream vVERSION tag to its commit SHA."""
+    import subprocess
+
+    ref = f"refs/tags/v{version}"
+    try:
+        result = subprocess.run(
+            ["git", "ls-remote", "--exit-code", "--tags",
+             "https://git.astron.nl/RD/EveryBeam.git", ref, ref + "^{}"],
+            capture_output=True, text=True, timeout=timeout, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ScanError(f"Could not verify EveryBeam tag: {exc}") from exc
+
+    if result.returncode != 0:
+        raise ScanError(f"EveryBeam tag v{version} not found upstream")
+
+    refs = {}
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if (len(fields) != 2 or
+                not re.fullmatch(r"[0-9a-fA-F]{40}", fields[0]) or
+                fields[1] not in (ref, ref + "^{}") or
+                fields[1] in refs):
+            raise ScanError("Unexpected EveryBeam Git tag response")
+        refs[fields[1]] = fields[0].lower()
+    if ref not in refs:
+        raise ScanError("Missing EveryBeam tag reference")
+    return refs.get(ref + "^{}", refs[ref])
+
+
+def prepare_everybeam_changes(root, registry, dependency, current, target):
+    """Prepare release metadata and exact pinned upstream source update."""
+    if (dependency.id != "everybeam" or
+            dependency.source_type != "gitlab-tags" or
+            tuple(dependency.version_variables) != ("EVERYBEAM_VERSION",) or
+            tuple(dependency.recipes) != ("everybeam/meta.yaml",) or
+            dependency.version_file != "everybeam/release.json"):
+        raise ScanError("Unsupported EveryBeam upgrade configuration")
+
+    recipe_path = root / "everybeam/meta.yaml"
+    recipe = recipe_path.read_text(encoding="utf-8")
+    if not re.search(
+        r"^[ 	]*git_url:[ 	]*https://git\.astron\.nl/RD/EveryBeam\.git[ 	]*$",
+        recipe, re.MULTILINE,
+    ):
+        raise ScanError("Unexpected EveryBeam Git repository")
+    if len(re.findall(r"^[ 	]*git_rev:[ 	]*", recipe, re.MULTILINE)) != 1:
+        raise ScanError("Expected exactly one EveryBeam git_rev")
+    pattern = r"^([ 	]*git_rev:[ 	]*)([0-9a-fA-F]{40})([ 	]*)$"
+    if not re.search(pattern, recipe, re.MULTILINE):
+        raise ScanError("Expected a pinned EveryBeam source commit")
+
+    release_path = root / "everybeam/release.json"
+    original_release = release_path.read_text(encoding="utf-8")
+    data = json.loads(original_release)
+    if data.get("version") != current["EVERYBEAM_VERSION"]:
+        raise ScanError("EveryBeam release metadata/version mismatch")
+
+    sha = resolve_everybeam_tag(target, registry.settings.http_timeout_seconds)
+    updated_recipe, count = re.subn(
+        pattern, lambda m: m.group(1) + sha + m.group(3),
+        recipe, count=1, flags=re.MULTILINE,
+    )
+    if count != 1:
+        raise ScanError("Could not update EveryBeam source commit")
+    return {
+        recipe_path: (recipe, updated_recipe),
+        release_path: (original_release, update_release_metadata(original_release, target)),
+    }
+
+
 def main(
     argv: list[str] | None = None,
     root: Path | None = None,
@@ -371,7 +444,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg"}:
+    if dependency.id not in {"aotools", "idg", "everybeam"}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -390,6 +463,24 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "everybeam":
+        changes = prepare_everybeam_changes(
+            root, registry, dependency, current, target.text,
+        )
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+        print(f"Dependency: {dependency.name}")
+        print(f"Target version: {target.text}")
+        print("Upstream EveryBeam tag: verified")
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id == "idg":
         changes = prepare_idg_changes(
