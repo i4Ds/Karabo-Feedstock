@@ -39,8 +39,34 @@ class DependencyDetectionTests(unittest.TestCase):
             if other != dependency:
                 self.assertFalse(result[other])
 
-    def test_idg_version_change(self):
-        self.check_version_change("IDG_VERSION", "idg")
+    def test_idg_release_metadata_change(self):
+            with patch.object(
+                detector,
+                "changed_files",
+                return_value={"idg/release.json"},
+            ):
+                result = detector.detect("base", "head")
+
+            self.assertTrue(result["idg"])
+
+            # An IDG-only change must not trigger unrelated builds.
+            for dependency in (
+                "aotools",
+                "tools21cm",
+                "seqfile",
+                "eidos",
+                "ska-telmodel",
+                "pybdsf",
+                "everybeam",
+                "wsclean",
+                "ska-sdp-datamodels",
+                "ska-sdp-func",
+                "ska-sdp-func-python",
+                "aratmospy",
+                "pyuvdata",
+            ):
+                with self.subTest(dependency=dependency):
+                    self.assertFalse(result[dependency])
 
     def test_aotools_version_change(self):
         self.check_version_change("AOTOOLS_VERSION", "aotools")

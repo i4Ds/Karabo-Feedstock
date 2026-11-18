@@ -177,6 +177,7 @@ retired_reason = "Pycsou is no longer built from this Feedstock and was part of 
 id = "idg"
 name = "IDG"
 version_variables = ["IDG_VERSION"]
+version_file = "idg/release.json"
 recipes = ["idg/meta.yaml"]
 validation_workflows = [".github/workflows/build_idg.yml"]
 source_type = "gitlab-tags"

@@ -82,7 +82,7 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
         )
         self.assertIsNotNone(
             re.search(
-                r"idg\).*?\.github/workflows/build_base\.yml",
+                r"idg\).*?expected='idg/release\.json'",
                 script,
                 re.DOTALL,
             )
@@ -117,7 +117,7 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
             {
                 "aotools/meta.yaml",
                 "aotools/release.json",
-                ".github/workflows/build_base.yml",
+                "idg/release.json",
             },
         )
 

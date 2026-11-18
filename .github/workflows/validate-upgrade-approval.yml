@@ -107,7 +107,7 @@ jobs:
                 'aotools/release.json' | sort)
               ;;
             idg)
-              expected='.github/workflows/build_base.yml'
+              expected='idg/release.json'
               ;;
             *)
               echo "Unsupported dependency: $DEPENDENCY"
@@ -138,7 +138,7 @@ jobs:
           add-paths: |
             aotools/meta.yaml
             aotools/release.json
-            .github/workflows/build_base.yml
+            idg/release.json
           commit-message: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
           title: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
           body: |
