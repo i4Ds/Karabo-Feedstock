@@ -1,4 +1,3 @@
-
 """Tests for the automated dependency upgrade preparation."""
 
 import os
@@ -31,6 +30,96 @@ from prepare_dependency_upgrade import (
     apply_changes,
     prepare_dependency_version_updates,
 )
+
+class TestOskarTag(unittest.TestCase):
+    def test_valid_tag(self):
+        from prepare_dependency_upgrade import verify_oskar_tag
+        result = Mock(returncode=0, stdout="a" * 40 + "  refs/tags/2.13.0\n")
+        with patch("subprocess.run", return_value=result):
+            verify_oskar_tag("2.13.0")
+
+    def test_missing_tag(self):
+        from prepare_dependency_upgrade import verify_oskar_tag
+        with patch("subprocess.run", return_value=Mock(returncode=2, stdout="")):
+            with self.assertRaises(ScanError):
+                verify_oskar_tag("2.13.0")
+
+    def test_prepare_oskar_with_empty_version_file(self):
+        """Accept the real registry default and update both versions."""
+        from prepare_dependency_upgrade import prepare_oskar_changes
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            (root / ".github/workflows").mkdir(parents=True)
+            (root / "oskar").mkdir()
+            (root / "oskar-py").mkdir()
+
+            workflow = root / ".github/workflows/build_base.yml"
+            workflow.write_text(
+                "env:\n"
+                "  OSKAR_VERSION: 2.12.2\n"
+                "  OSKARPY_VERSION: 2.12.2\n",
+                encoding="utf-8",
+            )
+
+            (root / "oskar/meta.yaml").write_text(
+                "git_url: https://github.com/OxfordSKA/OSKAR.git\n"
+                "git_tag: {{ OSKAR_VERSION }}\n"
+                "- 0001-fix-optional-phase-convention-tag.patch\n"
+                "- 0002-fix-strtok-r-with-old-glibc.patch\n",
+                encoding="utf-8",
+            )
+
+            (root / "oskar-py/meta.yaml").write_text(
+                "git_url: https://github.com/OxfordSKA/OSKAR.git\n"
+                "git_tag: {{ OSKARPY_VERSION }}\n",
+                encoding="utf-8",
+            )
+
+            for name in (
+                "0001-fix-optional-phase-convention-tag.patch",
+                "0002-fix-strtok-r-with-old-glibc.patch",
+            ):
+                (root / "oskar" / name).write_text(
+                    "test patch\n", encoding="utf-8"
+                )
+
+            dependency = Mock(
+                id="oskar",
+                source_type="github-tags",
+                version_variables=("OSKAR_VERSION", "OSKARPY_VERSION"),
+                recipes=("oskar/meta.yaml", "oskar-py/meta.yaml"),
+                version_file="",
+            )
+            registry = Mock()
+            registry.settings.http_timeout_seconds = 20
+
+            current = {
+                "OSKAR_VERSION": "2.12.2",
+                "OSKARPY_VERSION": "2.12.2",
+            }
+
+            with patch(
+                "prepare_dependency_upgrade.verify_oskar_tag"
+            ) as verify_tag:
+                changes = prepare_oskar_changes(
+                    root, registry, dependency, current, "2.13.0"
+                )
+
+            verify_tag.assert_called_once_with("2.13.0", 20)
+
+            original, updated = changes[workflow]
+
+            self.assertIn("OSKAR_VERSION: 2.13.0", updated)
+            self.assertIn("OSKARPY_VERSION: 2.13.0", updated)
+            self.assertIn("OSKAR_VERSION: 2.12.2", original)
+
+            # Planning must not modify the actual workflow.
+            self.assertEqual(
+                workflow.read_text(encoding="utf-8"), original
+            )
+
 
 class TestPyPISdist(unittest.TestCase):
 
@@ -274,6 +363,23 @@ class TestDependencyVersionUpdates(unittest.TestCase):
             "OSKARPY_VERSION: 2.13.0  # keep synchronized",
             updated,
         )
+
+    def test_coupled_dependency_rejects_mismatched_versions(self):
+        content = (
+            "env:\n"
+            "  OSKAR_VERSION: 2.12.2\n"
+            "  OSKARPY_VERSION: 2.12.1\n"
+        )
+
+        with self.assertRaises(ScanError):
+            prepare_dependency_version_updates(
+                content,
+                {
+                    "OSKAR_VERSION": "2.12.2",
+                    "OSKARPY_VERSION": "2.12.1",
+                },
+                "2.13.0",
+            )
 
     def test_missing_variable_rejects_entire_update(self):
         content = "env:\n  OSKAR_VERSION: 2.12.2\n"
