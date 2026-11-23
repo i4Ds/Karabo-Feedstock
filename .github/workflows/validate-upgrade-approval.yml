@@ -49,7 +49,7 @@ jobs:
     needs: verify
     if: >-
       needs.verify.result == 'success' &&
-      contains(fromJSON('["aotools","idg","everybeam","wsclean"]'), needs.verify.outputs.dependency)
+      contains(fromJSON('["aotools","idg","everybeam","wsclean","oskar"]'), needs.verify.outputs.dependency)
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -117,6 +117,9 @@ jobs:
             wsclean)
               expected='wsclean/release.json'
               ;;
+            oskar)
+              expected='.github/workflows/build_base.yml'
+              ;;
             *)
               echo "Unsupported dependency: $DEPENDENCY"
               exit 1
@@ -150,6 +153,7 @@ jobs:
             everybeam/meta.yaml
             everybeam/release.json
             wsclean/release.json
+            .github/workflows/build_base.yml
           commit-message: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
           title: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
           body: |

@@ -141,6 +141,18 @@ on:
         default: true  # Preserve existing publishing callers.
         type: boolean
 
+      # OSKARPY must be validated against the OSKAR package built in the
+      # same PR, because the new OSKAR version is not published yet.
+      # This optional input lets the workflow download the matching
+      # architecture-specific Conda artifact (AMD64/ARM64) and use it
+      # as a local dependency during build and installation tests.
+      # Other builds remain unchanged when this input is empty.
+      dependencyArtifact:
+        description: "Optional native dependency artifact for PR validation"
+        type: string
+        required: false
+        default: ""
+
       skipTest:
         required: false
         default: false
@@ -242,6 +254,13 @@ jobs:
         # channels from the CLI `conda build -c ...` call when resolving *pinned*
         # dependencies inside the build environment.
         # Conda-build 25 no longer inherits CLI channels → we now configure channels explicitly
+      - name: Download native dependency for build
+        if: ${{ !inputs.publish && inputs.dependencyArtifact != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: validation-${{ inputs.dependencyArtifact }}-${{ matrix.os }}
+          path: ${{ runner.temp }}/dependency-channel
+
       - name: Install Conda-Build and create target
         shell: bash -el {0}
         run: |
@@ -255,13 +274,23 @@ jobs:
           conda config --add channels defaults
           conda config --set channel_priority flexible
           conda install -y -n base "conda-build>=25"
+          if [[ -n "${{ inputs.dependencyArtifact }}" && "${{ inputs.publish }}" == "false" ]]; then
+            conda install -y -n base conda-index
+            conda index "$RUNNER_TEMP/dependency-channel"
+            conda config --prepend channels "file://$RUNNER_TEMP/dependency-channel"
+            conda config --set channel_priority strict
+          fi
           conda activate base
           conda build --version
 
 
           mkdir -p "$RUNNER_TEMP/validation-logs"
           set -o pipefail
-          conda build --no-anaconda-upload -c ${{ env.CHANNEL }}/label/${{ inputs.label }} -c ${{ env.CHANNEL }} -c conda-forge ${{ env.recipePath }} 2>&1 | tee "$RUNNER_TEMP/validation-logs/build.log"
+          extra_channels=()
+          if [[ -n "${{ inputs.dependencyArtifact }}" && "${{ inputs.publish }}" == "false" ]]; then
+            extra_channels=(-c "file://$RUNNER_TEMP/dependency-channel")
+          fi
+          conda build --no-anaconda-upload "${extra_channels[@]}" -c ${{ env.CHANNEL }}/label/${{ inputs.label }} -c ${{ env.CHANNEL }} -c conda-forge ${{ env.recipePath }} 2>&1 | tee "$RUNNER_TEMP/validation-logs/build.log"
 
       - name: Set native platform as architecture
         if: ${{ inputs.isNative }}
@@ -367,6 +396,13 @@ jobs:
           name: validation-${{ inputs.packageName }}-${{ inputs.isNative && (inputs.useCuda && !inputs.buildArm && 'ubuntu-22.04' || matrix.os) || 'ubuntu-latest' }}
           path: ${{ runner.temp }}/validation-channel
 
+      - name: Download native dependency for install test
+        if: ${{ !inputs.publish && inputs.dependencyArtifact != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: validation-${{ inputs.dependencyArtifact }}-${{ matrix.os }}
+          path: ${{ runner.temp }}/dependency-channel
+
       # Select the exact locally built package for each architecture.
       # This avoids incorrect build numbers from shared matrix outputs
       # and ensures AMD64/ARM64 tests validate the correct artifact.
@@ -380,6 +416,9 @@ jobs:
           set -o pipefail
           {
             conda install -y -n base conda-index
+            if [[ -n "${{ inputs.dependencyArtifact }}" ]]; then
+              cp -a "$RUNNER_TEMP/dependency-channel/." "$RUNNER_TEMP/validation-channel/"
+            fi
             conda index "$RUNNER_TEMP/validation-channel"
 
             # Some recipes, such as IDG, produce multiple MPI variants.
@@ -401,6 +440,7 @@ jobs:
               # Use an isolated environment and the local channel-qualified
               # package to avoid mixing variants or selecting a remote build.
               conda create -y -n "$env_name" --override-channels \
+                $([[ -n "${{ inputs.dependencyArtifact }}" ]] && printf '%s ' '--strict-channel-priority') \
                 -c "file://$RUNNER_TEMP/validation-channel" \
                 -c "$CHANNEL/label/$CHANNEL_LABEL" -c "$CHANNEL" -c conda-forge \
                 python=3.12 "file://$RUNNER_TEMP/validation-channel::$package_spec"

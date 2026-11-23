@@ -28,6 +28,7 @@ jobs:
       idg_version: ${{ steps.idg_version.outputs.version }}
       everybeam_version: ${{ steps.everybeam_version.outputs.version }}
       wsclean_version: ${{ steps.wsclean_version.outputs.version }}
+      oskar_version: ${{ steps.oskar_version.outputs.version }}
 
     steps:
       - name: Resolve PR commits
@@ -154,11 +155,64 @@ jobs:
           ')
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve OSKAR/OSKARPY versions from PR head
+        id: oskar_version
+        if: ${{ fromJSON(steps.detect.outputs.dependencies).oskar }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c '
+          import re
+          from pathlib import Path
+          content = Path(".github/workflows/build_base.yml").read_text()
+          versions = []
+          for key in ("OSKAR_VERSION", "OSKARPY_VERSION"):
+              found = re.findall(r"^  " + key + r":\s*([0-9]+\.[0-9]+\.[0-9]+)(?:\s*(?:#.*)?)?$", content, re.M)
+              if len(found) != 1:
+                  raise ValueError("Invalid OSKAR version declaration: " + key)
+              versions.append(found[0])
+          if versions[0] != versions[1]:
+              raise ValueError("OSKAR and OSKARPY versions differ")
+          print(versions[0])
+          ')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Validate AOtools release identity
         id: aotools_version
         if: ${{ fromJSON(steps.detect.outputs.dependencies).aotools }}
         run: python .github/scripts/aotools_release.py
 
+
+  validate-oskar:
+    name: Validate OSKAR (AMD64/ARM64)
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).oskar }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_oskar.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      versionOverride: ${{ needs.detect-changes.outputs.oskar_version }}
+
+  validate-oskarpy:
+    name: Validate OSKARPY against local OSKAR (AMD64/ARM64)
+    needs: [detect-changes, validate-oskar]
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).oskar }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_oskar_py.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      versionOverride: ${{ needs.detect-changes.outputs.oskar_version }}
+      dependencyArtifact: oskar
 
   validate-idg:
     name: Validate IDG
