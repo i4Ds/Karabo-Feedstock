@@ -75,8 +75,8 @@ class RegistryTests(unittest.TestCase):
         cls.registry = dependency_scan.load_registry(
             REPO_ROOT / ".github/dependency-scan.toml"
         )
-        cls.build_versions = dependency_scan.parse_build_versions(
-            (REPO_ROOT / cls.registry.settings.build_base).read_text(encoding="utf-8")
+        cls.build_versions = dependency_scan.load_declared_versions(
+            cls.registry, REPO_ROOT
         )
 
     def test_build_variable_parser_handles_quoted_and_plain_values(self) -> None:

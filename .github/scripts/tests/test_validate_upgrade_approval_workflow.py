@@ -92,6 +92,46 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
             script,
         )
 
+    def test_oskar_release_metadata_allowlist(self):
+        step = self.get_step("Verify changed files")
+        script = step["run"]
+
+        self.assertRegex(
+            script,
+            r"oskar\)\s+expected='oskar/release\.json'",
+        )
+        self.assertNotIn(
+            ".github/workflows/build_base.yml",
+            script,
+        )
+
+    def test_workflow_modifications_are_blocked(self):
+        step = self.get_step("Verify changed files")
+        script = step["run"]
+
+        self.assertIn(
+            r"grep -q '^\.github/workflows/'",
+            script,
+        )
+        self.assertRegex(
+            script,
+            r"Automated upgrades must not modify workflow files."
+            r'"\s+exit 1',
+        )
+
+        steps = self.job["steps"]
+        self.assertLess(
+            steps.index(step),
+            steps.index(self.get_step("Create Draft PR")),
+        )
+
+        config = self.get_step("Create Draft PR")["with"]
+
+        for allowed_path in config["add-paths"].splitlines():
+            self.assertFalse(
+                allowed_path.strip().startswith(".github/workflows/")
+            )
+
     def test_draft_pr_configuration(self):
         step = self.get_step("Create Draft PR")
         self.assertEqual(
@@ -121,7 +161,7 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
                 "everybeam/meta.yaml",
                 "everybeam/release.json",
                 "wsclean/release.json",
-                ".github/workflows/build_base.yml",
+                "oskar/release.json",
             },
         )
 

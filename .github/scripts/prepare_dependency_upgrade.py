@@ -516,7 +516,7 @@ def prepare_oskar_changes(root, registry, dependency, current, target):
             dependency.source_type != "github-tags" or
             tuple(dependency.version_variables) != ("OSKAR_VERSION", "OSKARPY_VERSION") or
             tuple(dependency.recipes) != ("oskar/meta.yaml", "oskar-py/meta.yaml") or
-            bool(dependency.version_file)):
+            dependency.version_file != "oskar/release.json"):
         raise ScanError("Unsupported OSKAR upgrade configuration")
     if current["OSKAR_VERSION"] != current["OSKARPY_VERSION"]:
         raise ScanError("OSKAR and OSKARPY versions must match")
@@ -532,10 +532,37 @@ def prepare_oskar_changes(root, registry, dependency, current, target):
                 if recipe.count("- " + patch_name) != 1 or not (root / "oskar" / patch_name).is_file():
                     raise ScanError(f"OSKAR patch missing or duplicated: {patch_name}")
     verify_oskar_tag(target, registry.settings.http_timeout_seconds)
-    path = root / ".github/workflows/build_base.yml"
+    path = root / dependency.version_file
     original = path.read_text(encoding="utf-8")
-    updated = prepare_dependency_version_updates(original, current, target)
+    updated = update_release_metadata(original, target)
     return {path: (original, updated)}
+
+
+def validate_upgrade_paths(
+    root: Path,
+    changes: dict[Path, tuple[str, str]],
+) -> None:
+    """Reject unsafe paths and automated workflow modifications."""
+    repo_root = root.resolve()
+    protected = repo_root / ".github/workflows"
+
+    for path in changes:
+        resolved = path.resolve()
+
+        if not resolved.is_relative_to(repo_root):
+            raise ScanError(
+                f"Upgrade path is outside the repository: {path}"
+            )
+
+        relative = path.absolute().relative_to(root.absolute())
+
+        if (
+            relative.is_relative_to(Path(".github/workflows"))
+            or resolved.is_relative_to(protected.resolve())
+        ):
+            raise ScanError(
+                f"Automated upgrades must not modify workflow files: {path}"
+            )
 
 
 def main(
@@ -595,6 +622,8 @@ def main(
 
     if dependency.id == "oskar":
         changes = prepare_oskar_changes(root, registry, dependency, current, target.text)
+        validate_upgrade_paths(root, changes)
+
         for path, (original, updated) in changes.items():
             show_diff(path.relative_to(root), original, updated)
         print(f"Dependency: {dependency.name}")
@@ -618,6 +647,8 @@ def main(
         changes = prepare_wsclean_changes(
             root, registry, dependency, current, normalized,
         )
+        validate_upgrade_paths(root, changes)
+
         for path, (original, updated) in changes.items():
             show_diff(path.relative_to(root), original, updated)
         print(f"Dependency: {dependency.name}")
@@ -636,6 +667,8 @@ def main(
         changes = prepare_everybeam_changes(
             root, registry, dependency, current, target.text,
         )
+        validate_upgrade_paths(root, changes)
+
         for path, (original, updated) in changes.items():
             show_diff(path.relative_to(root), original, updated)
         print(f"Dependency: {dependency.name}")
@@ -654,6 +687,8 @@ def main(
         changes = prepare_idg_changes(
             root, registry, dependency, current, target.text,
         )
+
+        validate_upgrade_paths(root, changes)
 
         for path, (original, updated) in changes.items():
             show_diff(path.relative_to(root), original, updated)
@@ -706,6 +741,8 @@ def main(
         recipe_path: (original_recipe, updated_recipe),
         release_path: (original_release, updated_release),
     }
+
+    validate_upgrade_paths(root, changes)
 
     # Display the complete upgrade preview.
     for path, (original, updated) in changes.items():

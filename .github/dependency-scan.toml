@@ -105,6 +105,7 @@ notes = "Check compatibility with ska-sdp-func-python before updating."
 id = "oskar"
 name = "OSKAR / OSKARPY"
 version_variables = ["OSKAR_VERSION", "OSKARPY_VERSION"]
+version_file = "oskar/release.json"
 recipes = ["oskar/meta.yaml", "oskar-py/meta.yaml"]
 validation_workflows = [
     ".github/workflows/build_oskar.yml",

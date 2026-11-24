@@ -118,7 +118,7 @@ jobs:
               expected='wsclean/release.json'
               ;;
             oskar)
-              expected='.github/workflows/build_base.yml'
+              expected='oskar/release.json'
               ;;
             *)
               echo "Unsupported dependency: $DEPENDENCY"
@@ -133,6 +133,12 @@ jobs:
               git ls-files --others --exclude-standard
             } | sort -u
           )
+
+          # Automated dependency upgrades must never modify workflows.
+          if grep -q '^\.github/workflows/' <<< "$actual"; then
+            echo "Automated upgrades must not modify workflow files."
+            exit 1
+          fi
 
           [[ "$actual" == "$expected" ]] || {
             echo "Unexpected changed files:"
@@ -153,7 +159,7 @@ jobs:
             everybeam/meta.yaml
             everybeam/release.json
             wsclean/release.json
-            .github/workflows/build_base.yml
+            oskar/release.json
           commit-message: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
           title: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
           body: |
