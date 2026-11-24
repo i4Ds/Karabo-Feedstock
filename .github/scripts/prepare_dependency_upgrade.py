@@ -538,6 +538,54 @@ def prepare_oskar_changes(root, registry, dependency, current, target):
     return {path: (original, updated)}
 
 
+def verify_fftw_tag(version: str, timeout: int = 20) -> None:
+    """Verify the exact upstream FFTW release tag."""
+    import subprocess
+
+    ref = f"refs/tags/fftw-{version}"
+    try:
+        result = subprocess.run(
+            ["git", "ls-remote", "--exit-code", "--refs", "--tags",
+             "https://github.com/FFTW/fftw3.git", ref],
+            capture_output=True, text=True, timeout=timeout, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ScanError(f"Could not verify FFTW tag {version}: {exc}") from exc
+    if result.returncode != 0:
+        raise ScanError(f"FFTW tag fftw-{version} not found upstream")
+    lines = result.stdout.splitlines()
+    if len(lines) != 1:
+        raise ScanError("Unexpected FFTW Git response")
+    fields = lines[0].split()
+    if (len(fields) != 2 or
+            not re.fullmatch(r"[0-9a-fA-F]{40,64}", fields[0]) or
+            fields[1] != ref):
+        raise ScanError("Invalid FFTW Git tag response")
+
+
+def prepare_fftw_changes(root, registry, dependency, current, target):
+    """Prepare an independent FFTW dependency upgrade."""
+    if (dependency.id != "fftw" or
+            dependency.source_type != "github-tags" or
+            dependency.repository != "FFTW/fftw3" or
+            tuple(dependency.version_variables) != ("FFTW3_VERSION",) or
+            tuple(dependency.recipes) != ("finufft/meta.yaml",) or
+            bool(dependency.version_file)):
+        raise ScanError("Unsupported FFTW upgrade configuration")
+    recipe = (root / "finufft/meta.yaml").read_text(encoding="utf-8")
+    pins = re.findall(
+        r"^[ \t]*-[ \t]+fftw[ \t]+==[ \t]*\{\{[ \t]*"
+        r"FFTW3_VERSION_ALT[ \t]*\}\}[ \t]*$", recipe, re.MULTILINE,
+    )
+    if len(pins) != 2:
+        raise ScanError("Expected exactly two FFTW version pins in FINUFFT recipe")
+    verify_fftw_tag(target, registry.settings.http_timeout_seconds)
+    path = root / ".github/workflows/build_base.yml"
+    original = path.read_text(encoding="utf-8")
+    updated = prepare_dependency_version_updates(original, current, target)
+    return {path: (original, updated)}
+
+
 def main(
     argv: list[str] | None = None,
     root: Path | None = None,
@@ -573,7 +621,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar"}:
+    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw"}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -592,6 +640,23 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "fftw":
+        changes = prepare_fftw_changes(root, registry, dependency, current, target.text)
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("Upstream FFTW tag: verified")
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id == "oskar":
         changes = prepare_oskar_changes(root, registry, dependency, current, target.text)

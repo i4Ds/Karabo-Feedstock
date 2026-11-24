@@ -1205,5 +1205,99 @@ class TestIDGUpgradePreparation(unittest.TestCase):
             verify_idg_tag("1.3.0")
 
 
+
+
+class TestFFTWPreparation(unittest.TestCase):
+    def setUp(self):
+        import sys
+        import tempfile
+        from pathlib import Path
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        self.patch = patch
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+        self.addCleanup(sys.path.pop, 0)
+        import prepare_dependency_upgrade as planner
+        self.planner = planner
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        self.path = self.root / '.github/workflows/build_base.yml'
+        self.path.parent.mkdir(parents=True)
+        self.original = 'env:\n  FFTW3_VERSION: 3.3.10\n  FFTW3F_VERSION: 3.3.10\n  FINUFFT_VERSION: 2.2.0\n'
+        self.path.write_text(self.original, encoding='utf-8')
+        self.recipe = self.root / 'finufft/meta.yaml'
+        self.recipe.parent.mkdir()
+        self.pins = 'host:\n  - fftw =={{ FFTW3_VERSION_ALT }}\nrun:\n  - fftw =={{ FFTW3_VERSION_ALT }}\n'
+        self.recipe.write_text(self.pins, encoding='utf-8')
+        self.dependency = SimpleNamespace(id='fftw', name='FFTW', source_type='github-tags', repository='FFTW/fftw3', version_variables=('FFTW3_VERSION',), recipes=('finufft/meta.yaml',), version_file=None)
+        self.registry = SimpleNamespace(settings=SimpleNamespace(http_timeout_seconds=20), dependencies=[self.dependency])
+        self.current = {'FFTW3_VERSION': '3.3.10'}
+
+    def prepare(self):
+        with self.patch.object(self.planner, 'verify_fftw_tag') as verify:
+            changes = self.planner.prepare_fftw_changes(self.root, self.registry, self.dependency, self.current, '3.3.11')
+            verify.assert_called_once_with('3.3.11', 20)
+            return changes
+
+    def test_prepares_only_fftw_version(self):
+        changes = self.prepare()
+        self.assertEqual(changes, {self.path: (self.original, self.original.replace('FFTW3_VERSION: 3.3.10', 'FFTW3_VERSION: 3.3.11'))})
+        self.assertEqual(self.path.read_text(), self.original)
+
+    def test_rejects_invalid_registry(self):
+        self.dependency.repository = 'unexpected/repo'
+        with self.assertRaises(self.planner.ScanError):
+            self.prepare()
+
+    def test_rejects_missing_or_duplicate_pins(self):
+        for content in ('', self.pins + '  - fftw =={{ FFTW3_VERSION_ALT }}\n'):
+            with self.subTest(content=content):
+                self.recipe.write_text(content)
+                with self.assertRaises(self.planner.ScanError):
+                    self.prepare()
+
+    def test_valid_tag(self):
+        from subprocess import CompletedProcess
+        ref = 'refs/tags/fftw-3.3.11'
+        with self.patch('subprocess.run', return_value=CompletedProcess([], 0, 'a'*40 + '\t' + ref + '\n', '')) as run:
+            self.planner.verify_fftw_tag('3.3.11')
+            self.assertEqual(run.call_args.args[0][-1], ref)
+
+    def test_missing_or_invalid_tag(self):
+        from subprocess import CompletedProcess
+        for result in (CompletedProcess([], 2, '', ''), CompletedProcess([], 0, 'invalid\n', ''), CompletedProcess([], 0, 'a'*40 + '\trefs/tags/wrong\n', '')):
+            with self.subTest(result=result), self.patch('subprocess.run', return_value=result):
+                with self.assertRaises(self.planner.ScanError):
+                    self.planner.verify_fftw_tag('3.3.11')
+
+    def run_main(self, version='3.3.11', write=False):
+        from contextlib import ExitStack, redirect_stdout
+        from io import StringIO
+        with ExitStack() as stack:
+            for name, value in [('load_registry', self.registry), ('load_declared_versions', self.current), ('validate_registry', None), ('verify_fftw_tag', None)]:
+                stack.enter_context(self.patch.object(self.planner, name, return_value=value))
+            stack.enter_context(redirect_stdout(StringIO()))
+            args = ['--dependency', 'fftw', '--version', version]
+            if write:
+                args.append('--write')
+            self.planner.main(args, root=self.root)
+
+    def test_main_read_only(self):
+        self.run_main()
+        self.assertEqual(self.path.read_text(), self.original)
+        self.assertEqual(self.recipe.read_text(), self.pins)
+
+    def test_main_write(self):
+        self.run_main(write=True)
+        self.assertEqual(self.path.read_text(), self.original.replace('FFTW3_VERSION: 3.3.10', 'FFTW3_VERSION: 3.3.11'))
+        self.assertEqual(self.recipe.read_text(), self.pins)
+
+    def test_main_rejects_equal_or_older_version(self):
+        for version in ('3.3.10', '3.3.9'):
+            with self.subTest(version=version), self.assertRaises(self.planner.ScanError):
+                self.run_main(version, write=True)
+        self.assertEqual(self.path.read_text(), self.original)
+
 if __name__ == "__main__":
     unittest.main()
