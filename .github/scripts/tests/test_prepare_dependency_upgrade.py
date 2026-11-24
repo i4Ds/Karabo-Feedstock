@@ -44,9 +44,13 @@ class TestOskarTag(unittest.TestCase):
             with self.assertRaises(ScanError):
                 verify_oskar_tag("2.13.0")
 
-    def test_prepare_oskar_with_empty_version_file(self):
-        """Accept the real registry default and update both versions."""
-        from prepare_dependency_upgrade import prepare_oskar_changes
+    def test_prepare_oskar_with_release_metadata(self):
+        """Upgrade shared release metadata without modifying workflows."""
+        import json
+        from prepare_dependency_upgrade import (
+            prepare_oskar_changes,
+            validate_upgrade_paths,
+        )
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -56,10 +60,15 @@ class TestOskarTag(unittest.TestCase):
             (root / "oskar-py").mkdir()
 
             workflow = root / ".github/workflows/build_base.yml"
-            workflow.write_text(
-                "env:\n"
-                "  OSKAR_VERSION: 2.12.2\n"
-                "  OSKARPY_VERSION: 2.12.2\n",
+            workflow_content = "# Shared build workflow\n"
+            workflow.write_text(workflow_content, encoding="utf-8")
+
+            release = root / "oskar/release.json"
+            release.write_text(
+                json.dumps({
+                    "version": "2.12.2",
+                    "build_number": 1,
+                }, indent=2) + "\n",
                 encoding="utf-8",
             )
 
@@ -90,8 +99,9 @@ class TestOskarTag(unittest.TestCase):
                 source_type="github-tags",
                 version_variables=("OSKAR_VERSION", "OSKARPY_VERSION"),
                 recipes=("oskar/meta.yaml", "oskar-py/meta.yaml"),
-                version_file="",
+                version_file="oskar/release.json",
             )
+
             registry = Mock()
             registry.settings.http_timeout_seconds = 20
 
@@ -109,15 +119,127 @@ class TestOskarTag(unittest.TestCase):
 
             verify_tag.assert_called_once_with("2.13.0", 20)
 
-            original, updated = changes[workflow]
+            # Only release metadata may change.
+            self.assertEqual(set(changes), {release})
+            validate_upgrade_paths(root, changes)
 
-            self.assertIn("OSKAR_VERSION: 2.13.0", updated)
-            self.assertIn("OSKARPY_VERSION: 2.13.0", updated)
-            self.assertIn("OSKAR_VERSION: 2.12.2", original)
+            original, updated = changes[release]
 
-            # Planning must not modify the actual workflow.
             self.assertEqual(
-                workflow.read_text(encoding="utf-8"), original
+                json.loads(original),
+                {"version": "2.12.2", "build_number": 1},
+            )
+            self.assertEqual(
+                json.loads(updated),
+                {"version": "2.13.0", "build_number": 0},
+            )
+
+            # Planning must not modify files.
+            self.assertEqual(
+                release.read_text(encoding="utf-8"), original
+            )
+            self.assertEqual(
+                workflow.read_text(encoding="utf-8"),
+                workflow_content,
+            )
+
+            # Reject the previous workflow-based architecture.
+            dependency.version_file = ""
+            with self.assertRaises(ScanError):
+                prepare_oskar_changes(
+                    root, registry, dependency, current, "2.13.0"
+                )
+
+            # Reject mismatched OSKAR and OSKARPY versions.
+            dependency.version_file = "oskar/release.json"
+            current["OSKARPY_VERSION"] = "2.12.1"
+
+            with self.assertRaises(ScanError):
+                prepare_oskar_changes(
+                    root, registry, dependency, current, "2.13.0"
+                )
+
+
+class TestUpgradePathProtection(unittest.TestCase):
+
+    def setUp(self):
+        from prepare_dependency_upgrade import validate_upgrade_paths
+
+        self.validate = validate_upgrade_paths
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+
+        self.root = Path(temporary.name) / "repository"
+        self.root.mkdir()
+
+        self.workflow = (
+            self.root / ".github/workflows/build_base.yml"
+        )
+        self.workflow.parent.mkdir(parents=True)
+        self.workflow.write_text("original", encoding="utf-8")
+
+        self.release = self.root / "oskar/release.json"
+        self.release.parent.mkdir()
+
+        self.change = ("original", "updated")
+
+    def test_allows_release_metadata_and_recipe(self):
+        self.validate(
+            self.root,
+            {
+                self.release: self.change,
+                self.root / "oskar/meta.yaml": self.change,
+            },
+        )
+
+    def test_rejects_workflow_modification(self):
+        with self.assertRaisesRegex(
+            ScanError, "must not modify workflow files"
+        ):
+            self.validate(
+                self.root,
+                {self.workflow: self.change},
+            )
+
+    def test_rejects_new_workflow_file(self):
+        with self.assertRaises(ScanError):
+            self.validate(
+                self.root,
+                {
+                    self.workflow.parent / "new.yml": self.change,
+                },
+            )
+
+    def test_rejects_path_outside_repository(self):
+        outside = self.root.parent / "outside.json"
+
+        with self.assertRaisesRegex(
+            ScanError, "outside the repository"
+        ):
+            self.validate(
+                self.root,
+                {outside: self.change},
+            )
+
+    def test_rejects_symlink_to_workflow(self):
+        self.release.symlink_to(self.workflow)
+
+        with self.assertRaisesRegex(
+            ScanError, "must not modify workflow files"
+        ):
+            self.validate(
+                self.root,
+                {self.release: self.change},
+            )
+
+    def test_rejects_mixed_allowed_and_protected_changes(self):
+        with self.assertRaises(ScanError):
+            self.validate(
+                self.root,
+                {
+                    self.release: self.change,
+                    self.workflow: self.change,
+                },
             )
 
 

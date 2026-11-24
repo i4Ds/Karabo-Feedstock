@@ -68,6 +68,48 @@ class DependencyDetectionTests(unittest.TestCase):
                 with self.subTest(dependency=dependency):
                     self.assertFalse(result[dependency])
 
+    def test_oskar_release_metadata_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"oskar/release.json"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["oskar"])
+
+        for dependency, affected in result.items():
+            if dependency != "oskar":
+                with self.subTest(dependency=dependency):
+                    self.assertFalse(affected)
+
+    def test_oskar_recipe_changes(self):
+        for changed_file in (
+            "oskar/meta.yaml",
+            "oskar-py/meta.yaml",
+            "oskar/patches/example.patch",
+        ):
+            with self.subTest(changed_file=changed_file):
+                with patch.object(
+                    detector,
+                    "changed_files",
+                    return_value={changed_file},
+                ):
+                    result = detector.detect("base", "head")
+
+                self.assertTrue(result["oskar"])
+
+    def test_unrelated_release_metadata_does_not_trigger_oskar(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"aotools/release.json"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["aotools"])
+        self.assertFalse(result["oskar"])
+
     def test_aotools_version_change(self):
         self.check_version_change("AOTOOLS_VERSION", "aotools")
 

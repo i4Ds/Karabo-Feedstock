@@ -162,18 +162,13 @@ jobs:
         run: |
           set -euo pipefail
           version=$(python3 -c '
-          import re
-          from pathlib import Path
-          content = Path(".github/workflows/build_base.yml").read_text()
-          versions = []
-          for key in ("OSKAR_VERSION", "OSKARPY_VERSION"):
-              found = re.findall(r"^  " + key + r":\s*([0-9]+\.[0-9]+\.[0-9]+)(?:\s*(?:#.*)?)?$", content, re.M)
-              if len(found) != 1:
-                  raise ValueError("Invalid OSKAR version declaration: " + key)
-              versions.append(found[0])
-          if versions[0] != versions[1]:
-              raise ValueError("OSKAR and OSKARPY versions differ")
-          print(versions[0])
+          import json, re
+          with open("oskar/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+          version = data["version"]
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid OSKAR release version")
+          print(version)
           ')
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
