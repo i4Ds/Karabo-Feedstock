@@ -45,8 +45,8 @@ about:
   summary: 'Nonuniform Fast Fourier Transform library'
   description: |
    Flatiron Institute Nonuniform Fast Fourier Transform library: FINUFFT
-  doc_url: https://github.com/epfl-radio-astro/bipp#readme
-  dev_url: https://github.com/epfl-radio-astro/bipp
+  doc_url: https://finufft.readthedocs.io/
+  dev_url: https://github.com/flatironinstitute/finufft
 
 extra:
   recipe-maintainers:
