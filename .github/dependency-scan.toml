@@ -39,6 +39,7 @@ retired_reason = "The dedicated FFTW3F package is no longer built. FFTW3_VERSION
 id = "pybdsf"
 name = "PyBDSF"
 version_variables = ["PYBDSF_VERSION"]
+version_file = "pybdsf/release.json"
 recipes = ["pybdsf/meta.yaml"]
 validation_workflows = [".github/workflows/build_PyBDSF.yml"]
 source_type = "pypi"
