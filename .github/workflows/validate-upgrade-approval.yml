@@ -49,7 +49,7 @@ jobs:
     needs: verify
     if: >-
       needs.verify.result == 'success' &&
-      contains(fromJSON('["aotools","idg","everybeam","wsclean","oskar"]'), needs.verify.outputs.dependency)
+      contains(fromJSON('["aotools","idg","everybeam","wsclean","oskar","fftw","finufft"]'), needs.verify.outputs.dependency)
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -68,6 +68,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Install Python validation dependencies
+        run: python -m pip install packaging
 
       - name: Revalidate approval
         env:
@@ -120,6 +123,12 @@ jobs:
             oskar)
               expected='oskar/release.json'
               ;;
+            fftw)
+              expected='fftw/release.json'
+              ;;
+            finufft)
+              expected='finufft/release.json'
+              ;;
             *)
               echo "Unsupported dependency: $DEPENDENCY"
               exit 1
@@ -160,6 +169,8 @@ jobs:
             everybeam/release.json
             wsclean/release.json
             oskar/release.json
+            fftw/release.json
+            finufft/release.json
           commit-message: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
           title: "chore(${{ needs.verify.outputs.dependency }}): upgrade to ${{ needs.verify.outputs.version }}"
           body: |

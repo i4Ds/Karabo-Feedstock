@@ -88,7 +88,7 @@ jobs:
           echo "dependencies=$result" >> "$GITHUB_OUTPUT"
           echo "$result"
       - name: Install maintenance test dependencies
-        run: python -m pip install "PyYAML==6.0.3"
+        run: python -m pip install "PyYAML==6.0.3" "packaging"
 
       - name: Run maintenance unit tests
         run: python -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
@@ -208,6 +208,20 @@ jobs:
       checkoutRef: ${{ needs.detect-changes.outputs.head }}
       versionOverride: ${{ needs.detect-changes.outputs.oskar_version }}
       dependencyArtifact: oskar
+
+  validate-finufft:
+    name: Validate FINUFFT (AMD64)
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).fftw || fromJSON(needs.detect-changes.outputs.dependencies).finufft }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_finufft.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
 
   validate-idg:
     name: Validate IDG

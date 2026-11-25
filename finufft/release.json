@@ -1,0 +1,9 @@
+{
+  "version": "2.2.0",
+  "build_number": 2,
+  "wheel": {
+    "filename": "finufft-2.2.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "url": "https://files.pythonhosted.org/packages/0c/ed/7aaec33936e5a7b09354e8509b25ea90e2989245a2be30f4d67f5be7297a/finufft-2.2.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "687830358678a60359c85c4807a0a0bf2c2188ba8f97064d4f7b9a4cc5a994e6"
+  }
+}

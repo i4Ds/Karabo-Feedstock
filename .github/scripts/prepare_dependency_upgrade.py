@@ -125,8 +125,13 @@ def replace_recipe_sha256(
     return updated
 
 
-def update_release_metadata(content: str, target_version: str) -> str:
-    """Update the release version and reset the build number."""
+def update_release_metadata(
+    content: str,
+    target_version: str,
+    *,
+    require_build_number: bool = True,
+) -> str:
+    """Update release metadata and reset the build number when required."""
     try:
         data = json.loads(content)
     except json.JSONDecodeError as exc:
@@ -135,15 +140,20 @@ def update_release_metadata(content: str, target_version: str) -> str:
     if not isinstance(data, dict):
         raise ScanError("release.json must contain a JSON object")
 
-    build_number = data.get("build_number")
-    if type(build_number) is not int or build_number < 0:
-        raise ScanError("Invalid build_number in release.json")
+    if require_build_number:
+        build_number = data.get("build_number")
+        if type(build_number) is not int or build_number < 0:
+            raise ScanError("Invalid build_number in release.json")
+    elif "build_number" in data:
+        raise ScanError("Unexpected build_number in external release.json")
 
     if "version" not in data:
         raise ScanError("Missing version in release.json")
 
     data["version"] = target_version
-    data["build_number"] = 0
+
+    if require_build_number:
+        data["build_number"] = 0
 
     return json.dumps(data, indent=2) + "\n"
 
@@ -538,6 +548,129 @@ def prepare_oskar_changes(root, registry, dependency, current, target):
     return {path: (original, updated)}
 
 
+def verify_fftw_tag(version: str, timeout: int = 20) -> None:
+    """Verify the exact upstream FFTW release tag."""
+    import subprocess
+
+    ref = f"refs/tags/fftw-{version}"
+    try:
+        result = subprocess.run(
+            ["git", "ls-remote", "--exit-code", "--refs", "--tags",
+             "https://github.com/FFTW/fftw3.git", ref],
+            capture_output=True, text=True, timeout=timeout, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ScanError(f"Could not verify FFTW tag {version}: {exc}") from exc
+    if result.returncode != 0:
+        raise ScanError(f"FFTW tag fftw-{version} not found upstream")
+    lines = result.stdout.splitlines()
+    if len(lines) != 1:
+        raise ScanError("Unexpected FFTW Git response")
+    fields = lines[0].split()
+    if (len(fields) != 2 or
+            not re.fullmatch(r"[0-9a-fA-F]{40,64}", fields[0]) or
+            fields[1] != ref):
+        raise ScanError("Invalid FFTW Git tag response")
+
+
+def prepare_fftw_changes(root, registry, dependency, current, target):
+    """Prepare an independent FFTW dependency upgrade."""
+    if (dependency.id != "fftw" or
+            dependency.source_type != "github-tags" or
+            dependency.repository != "FFTW/fftw3" or
+            tuple(dependency.version_variables) != ("FFTW3_VERSION",) or
+            tuple(dependency.recipes) != ("finufft/meta.yaml",) or
+            dependency.version_file != "fftw/release.json"):
+        raise ScanError("Unsupported FFTW upgrade configuration")
+    recipe = (root / "finufft/meta.yaml").read_text(encoding="utf-8")
+    pins = re.findall(
+        r"^[ \t]*-[ \t]+fftw[ \t]+==[ \t]*\{\{[ \t]*"
+        r"FFTW3_VERSION_ALT[ \t]*\}\}[ \t]*$", recipe, re.MULTILINE,
+    )
+    if len(pins) != 3:
+        raise ScanError("Expected exactly three FFTW version pins in FINUFFT recipe")
+    verify_fftw_tag(target, registry.settings.http_timeout_seconds)
+    path = root / dependency.version_file
+    original = path.read_text(encoding="utf-8")
+    updated = update_release_metadata(
+        original,
+        target,
+        require_build_number=False,
+    )
+    return {path: (original, updated)}
+
+
+def verify_finufft_native_version(
+    version: str,
+    http: HttpClient,
+) -> None:
+    """Verify the native FINUFFT release version."""
+    import base64
+    import binascii
+
+    url = (
+        "https://api.github.com/repos/flatironinstitute/finufft/"
+        f"contents/CMakeLists.txt?ref=v{quote(version, safe='')}"
+    )
+
+    data = http.get_json(url)
+
+    if (
+        not isinstance(data, dict)
+        or data.get("encoding") != "base64"
+        or not isinstance(data.get("content"), str)
+    ):
+        raise ScanError("Invalid FINUFFT native source response")
+
+    try:
+        source = base64.b64decode(
+            "".join(data["content"].split()),
+            validate=True,
+        ).decode("utf-8")
+    except (ValueError, binascii.Error) as exc:
+        raise ScanError("Invalid FINUFFT CMakeLists.txt") from exc
+
+    versions = re.findall(
+        r"^\s*project\s*\(\s*FINUFFT\s+VERSION\s+"
+        r"([0-9]+\.[0-9]+\.[0-9]+)\b",
+        source,
+        re.IGNORECASE | re.MULTILINE,
+    )
+
+    if versions != [version]:
+        raise ScanError(
+            f"FINUFFT native version mismatch: "
+            f"expected {version}, found {versions}"
+        )
+
+
+def prepare_finufft_changes(root, registry, dependency, current, target):
+    """Prepare a FINUFFT release metadata update."""
+    if (dependency.id != "finufft" or
+            dependency.source_type != "pypi" or
+            dependency.package != "finufft" or
+            tuple(dependency.version_variables) != ("FINUFFT_VERSION",) or
+            tuple(dependency.recipes) != ("finufft/meta.yaml",) or
+            dependency.version_file != "finufft/release.json"):
+        raise ScanError("Unsupported FINUFFT upgrade configuration")
+
+    path = root / dependency.version_file
+    original = path.read_text(encoding="utf-8")
+    http = HttpClient(
+        timeout=registry.settings.http_timeout_seconds
+    )
+
+    verify_finufft_native_version(target, http)
+    wheel = get_finufft_wheel(target, http)
+
+    data = json.loads(update_release_metadata(original, target))
+    data["wheel"] = wheel
+
+    updated = json.dumps(data, indent=2) + "\n"
+
+    return {path: (original, updated)}
+
+
 def validate_upgrade_paths(
     root: Path,
     changes: dict[Path, tuple[str, str]],
@@ -600,7 +733,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar"}:
+    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft"}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -619,6 +752,47 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "finufft":
+        changes = prepare_finufft_changes(
+            root, registry, dependency, current, target.text
+        )
+        validate_upgrade_paths(root, changes)
+
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("FINUFFT wheel and native version: verified")
+
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
+
+    if dependency.id == "fftw":
+        changes = prepare_fftw_changes(root, registry, dependency, current, target.text)
+        validate_upgrade_paths(root, changes)
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("Upstream FFTW tag: verified")
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id == "oskar":
         changes = prepare_oskar_changes(root, registry, dependency, current, target.text)
@@ -819,6 +993,89 @@ def get_pypi_sdist(
         raise ScanError("Missing or invalid SHA256 checksum")
 
     return expected_filename, digest.lower()
+
+
+def get_finufft_wheel(
+    version: str,
+    http: HttpClient,
+) -> dict[str, str]:
+    """Select a non-yanked FINUFFT wheel for Python 3.12 on AMD64."""
+
+    url = f"https://pypi.org/pypi/finufft/{quote(version, safe='')}/json"
+    data = http.get_json(url)
+
+    if not isinstance(data, dict):
+        raise ScanError("Unexpected FINUFFT PyPI response")
+
+    files = data.get("urls")
+
+    if not isinstance(files, list):
+        raise ScanError("FINUFFT release contains no files")
+
+    suffix = "manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+
+    filenames = {
+        f"finufft-{version}-cp312-cp312-{suffix}",
+        f"finufft-{version}-py3-none-{suffix}",
+    }
+
+    matches = [
+        item
+        for item in files
+        if isinstance(item, dict)
+        and item.get("packagetype") == "bdist_wheel"
+        and item.get("filename") in filenames
+        and item.get("yanked") is False
+    ]
+
+    if len(matches) != 1:
+        raise ScanError(
+            "Expected exactly one compatible FINUFFT wheel"
+        )
+
+    wheel = matches[0]
+
+    from packaging.specifiers import SpecifierSet, InvalidSpecifier
+
+    requires_python = wheel.get("requires_python")
+
+    if not isinstance(requires_python, str) or not requires_python:
+        raise ScanError("Missing FINUFFT Python requirements")
+
+    try:
+        compatible = SpecifierSet(requires_python).contains("3.12.0")
+    except InvalidSpecifier as exc:
+        raise ScanError("Invalid FINUFFT Python requirements") from exc
+
+    if not compatible:
+        raise ScanError("FINUFFT wheel does not support Python 3.12")
+
+    filename = wheel["filename"]
+    download_url = wheel.get("url")
+    digests = wheel.get("digests")
+
+    if not isinstance(digests, dict):
+        raise ScanError("Missing FINUFFT wheel digests")
+
+    digest = digests.get("sha256")
+
+    if not isinstance(digest, str) or not re.fullmatch(
+        r"[0-9a-fA-F]{64}", digest
+    ):
+        raise ScanError("Invalid FINUFFT wheel SHA256")
+
+    if not isinstance(download_url, str) or not re.fullmatch(
+        r"https://files\.pythonhosted\.org/packages/"
+        r"[0-9a-f/]+/" + re.escape(filename),
+        download_url,
+    ):
+        raise ScanError("Invalid FINUFFT wheel download URL")
+
+    return {
+        "filename": filename,
+        "url": download_url,
+        "sha256": digest.lower(),
+    }
 
 
 if __name__ == "__main__":
