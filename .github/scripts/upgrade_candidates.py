@@ -11,7 +11,7 @@ from pathlib import Path
 import argparse
 
 from dependency_scan import (
-    GitHubIssueClient, ScanError, load_registry, parse_build_versions,
+    GitHubIssueClient, ScanError, load_registry, load_declared_versions,
     read_scan_state, validate_registry, TRACKING_MARKER,
 )
 
@@ -263,13 +263,8 @@ def main() -> None:
 
     root = Path(__file__).resolve().parents[2]
     registry = load_registry(root / ".github/dependency-scan.toml")
-    build_path = root / registry.settings.build_base
-
-    validate_registry(
-        registry,
-        parse_build_versions(build_path.read_text()),
-        root,
-    )
+    build_versions = load_declared_versions(registry, root)
+    validate_registry(registry, build_versions, root)
 
     repo = os.environ.get("GITHUB_REPOSITORY", "")
     if repo != registry.settings.expected_repository:

@@ -162,18 +162,13 @@ jobs:
         run: |
           set -euo pipefail
           version=$(python3 -c '
-          import re
-          from pathlib import Path
-          content = Path(".github/workflows/build_base.yml").read_text()
-          versions = []
-          for key in ("OSKAR_VERSION", "OSKARPY_VERSION"):
-              found = re.findall(r"^  " + key + r":\s*([0-9]+\.[0-9]+\.[0-9]+)(?:\s*(?:#.*)?)?$", content, re.M)
-              if len(found) != 1:
-                  raise ValueError("Invalid OSKAR version declaration: " + key)
-              versions.append(found[0])
-          if versions[0] != versions[1]:
-              raise ValueError("OSKAR and OSKARPY versions differ")
-          print(versions[0])
+          import json, re
+          with open("oskar/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+          version = data["version"]
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid OSKAR release version")
+          print(version)
           ')
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
@@ -213,6 +208,20 @@ jobs:
       checkoutRef: ${{ needs.detect-changes.outputs.head }}
       versionOverride: ${{ needs.detect-changes.outputs.oskar_version }}
       dependencyArtifact: oskar
+
+  validate-finufft:
+    name: Validate FINUFFT (AMD64)
+    needs: detect-changes
+    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies).fftw || fromJSON(needs.detect-changes.outputs.dependencies).finufft }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build_finufft.yml
+    with:
+      label: main
+      dev: false
+      buildNumber: "0"
+      publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
 
   validate-idg:
     name: Validate IDG

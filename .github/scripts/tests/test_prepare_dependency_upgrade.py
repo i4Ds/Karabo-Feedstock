@@ -44,9 +44,13 @@ class TestOskarTag(unittest.TestCase):
             with self.assertRaises(ScanError):
                 verify_oskar_tag("2.13.0")
 
-    def test_prepare_oskar_with_empty_version_file(self):
-        """Accept the real registry default and update both versions."""
-        from prepare_dependency_upgrade import prepare_oskar_changes
+    def test_prepare_oskar_with_release_metadata(self):
+        """Upgrade shared release metadata without modifying workflows."""
+        import json
+        from prepare_dependency_upgrade import (
+            prepare_oskar_changes,
+            validate_upgrade_paths,
+        )
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -56,10 +60,15 @@ class TestOskarTag(unittest.TestCase):
             (root / "oskar-py").mkdir()
 
             workflow = root / ".github/workflows/build_base.yml"
-            workflow.write_text(
-                "env:\n"
-                "  OSKAR_VERSION: 2.12.2\n"
-                "  OSKARPY_VERSION: 2.12.2\n",
+            workflow_content = "# Shared build workflow\n"
+            workflow.write_text(workflow_content, encoding="utf-8")
+
+            release = root / "oskar/release.json"
+            release.write_text(
+                json.dumps({
+                    "version": "2.12.2",
+                    "build_number": 1,
+                }, indent=2) + "\n",
                 encoding="utf-8",
             )
 
@@ -90,8 +99,9 @@ class TestOskarTag(unittest.TestCase):
                 source_type="github-tags",
                 version_variables=("OSKAR_VERSION", "OSKARPY_VERSION"),
                 recipes=("oskar/meta.yaml", "oskar-py/meta.yaml"),
-                version_file="",
+                version_file="oskar/release.json",
             )
+
             registry = Mock()
             registry.settings.http_timeout_seconds = 20
 
@@ -109,15 +119,127 @@ class TestOskarTag(unittest.TestCase):
 
             verify_tag.assert_called_once_with("2.13.0", 20)
 
-            original, updated = changes[workflow]
+            # Only release metadata may change.
+            self.assertEqual(set(changes), {release})
+            validate_upgrade_paths(root, changes)
 
-            self.assertIn("OSKAR_VERSION: 2.13.0", updated)
-            self.assertIn("OSKARPY_VERSION: 2.13.0", updated)
-            self.assertIn("OSKAR_VERSION: 2.12.2", original)
+            original, updated = changes[release]
 
-            # Planning must not modify the actual workflow.
             self.assertEqual(
-                workflow.read_text(encoding="utf-8"), original
+                json.loads(original),
+                {"version": "2.12.2", "build_number": 1},
+            )
+            self.assertEqual(
+                json.loads(updated),
+                {"version": "2.13.0", "build_number": 0},
+            )
+
+            # Planning must not modify files.
+            self.assertEqual(
+                release.read_text(encoding="utf-8"), original
+            )
+            self.assertEqual(
+                workflow.read_text(encoding="utf-8"),
+                workflow_content,
+            )
+
+            # Reject the previous workflow-based architecture.
+            dependency.version_file = ""
+            with self.assertRaises(ScanError):
+                prepare_oskar_changes(
+                    root, registry, dependency, current, "2.13.0"
+                )
+
+            # Reject mismatched OSKAR and OSKARPY versions.
+            dependency.version_file = "oskar/release.json"
+            current["OSKARPY_VERSION"] = "2.12.1"
+
+            with self.assertRaises(ScanError):
+                prepare_oskar_changes(
+                    root, registry, dependency, current, "2.13.0"
+                )
+
+
+class TestUpgradePathProtection(unittest.TestCase):
+
+    def setUp(self):
+        from prepare_dependency_upgrade import validate_upgrade_paths
+
+        self.validate = validate_upgrade_paths
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+
+        self.root = Path(temporary.name) / "repository"
+        self.root.mkdir()
+
+        self.workflow = (
+            self.root / ".github/workflows/build_base.yml"
+        )
+        self.workflow.parent.mkdir(parents=True)
+        self.workflow.write_text("original", encoding="utf-8")
+
+        self.release = self.root / "oskar/release.json"
+        self.release.parent.mkdir()
+
+        self.change = ("original", "updated")
+
+    def test_allows_release_metadata_and_recipe(self):
+        self.validate(
+            self.root,
+            {
+                self.release: self.change,
+                self.root / "oskar/meta.yaml": self.change,
+            },
+        )
+
+    def test_rejects_workflow_modification(self):
+        with self.assertRaisesRegex(
+            ScanError, "must not modify workflow files"
+        ):
+            self.validate(
+                self.root,
+                {self.workflow: self.change},
+            )
+
+    def test_rejects_new_workflow_file(self):
+        with self.assertRaises(ScanError):
+            self.validate(
+                self.root,
+                {
+                    self.workflow.parent / "new.yml": self.change,
+                },
+            )
+
+    def test_rejects_path_outside_repository(self):
+        outside = self.root.parent / "outside.json"
+
+        with self.assertRaisesRegex(
+            ScanError, "outside the repository"
+        ):
+            self.validate(
+                self.root,
+                {outside: self.change},
+            )
+
+    def test_rejects_symlink_to_workflow(self):
+        self.release.symlink_to(self.workflow)
+
+        with self.assertRaisesRegex(
+            ScanError, "must not modify workflow files"
+        ):
+            self.validate(
+                self.root,
+                {self.release: self.change},
+            )
+
+    def test_rejects_mixed_allowed_and_protected_changes(self):
+        with self.assertRaises(ScanError):
+            self.validate(
+                self.root,
+                {
+                    self.release: self.change,
+                    self.workflow: self.change,
+                },
             )
 
 
@@ -511,6 +633,69 @@ class TestReleaseMetadataUpdate(unittest.TestCase):
             "Invalid release.json content",
         ):
             update_release_metadata('{"build_number": 1', "1.0.9")
+
+
+class TestExternalReleaseMetadata(unittest.TestCase):
+
+    def test_update_fftw_version_without_build_number(self):
+        original = '{"version": "3.3.10"}'
+
+        updated = update_release_metadata(
+            original,
+            "3.3.11",
+            require_build_number=False,
+        )
+
+        self.assertEqual(
+            json.loads(updated),
+            {"version": "3.3.11"},
+        )
+        self.assertTrue(updated.endswith("\n"))
+
+    def test_preserve_additional_metadata(self):
+        original = json.dumps({
+            "version": "3.3.10",
+            "channel": "conda-forge",
+        })
+
+        updated = update_release_metadata(
+            original,
+            "3.3.11",
+            require_build_number=False,
+        )
+
+        self.assertEqual(json.loads(updated), {
+            "version": "3.3.11",
+            "channel": "conda-forge",
+        })
+
+    def test_external_build_number_is_rejected(self):
+        original = '{"version": "3.3.10", "build_number": 0}'
+
+        with self.assertRaisesRegex(
+            ScanError,
+            "Unexpected build_number",
+        ):
+            update_release_metadata(
+                original,
+                "3.3.11",
+                require_build_number=False,
+            )
+
+    def test_external_missing_version_is_rejected(self):
+        with self.assertRaisesRegex(ScanError, "Missing version"):
+            update_release_metadata(
+                '{}',
+                "3.3.11",
+                require_build_number=False,
+            )
+
+    def test_internal_missing_build_number_is_rejected(self):
+        with self.assertRaisesRegex(ScanError, "Invalid build_number"):
+            update_release_metadata(
+                '{"version": "2.2.0"}',
+                "2.5.1",
+            )
 
 
 class TestDryRunDiff(unittest.TestCase):
@@ -1226,11 +1411,16 @@ class TestFFTWPreparation(unittest.TestCase):
         self.path.parent.mkdir(parents=True)
         self.original = 'env:\n  FFTW3_VERSION: 3.3.10\n  FFTW3F_VERSION: 3.3.10\n  FINUFFT_VERSION: 2.2.0\n'
         self.path.write_text(self.original, encoding='utf-8')
+        self.release = self.root / "fftw/release.json"
+        self.release.parent.mkdir()
+        self.release_original = '{\n  "version": "3.3.10"\n}\n'
+        self.release_updated = '{\n  "version": "3.3.11"\n}\n'
+        self.release.write_text(self.release_original, encoding="utf-8")
         self.recipe = self.root / 'finufft/meta.yaml'
         self.recipe.parent.mkdir()
-        self.pins = 'host:\n  - fftw =={{ FFTW3_VERSION_ALT }}\nrun:\n  - fftw =={{ FFTW3_VERSION_ALT }}\n'
+        self.pins = 'build:\n  - fftw =={{ FFTW3_VERSION_ALT }}\nhost:\n  - fftw =={{ FFTW3_VERSION_ALT }}\nrun:\n  - fftw =={{ FFTW3_VERSION_ALT }}\n'
         self.recipe.write_text(self.pins, encoding='utf-8')
-        self.dependency = SimpleNamespace(id='fftw', name='FFTW', source_type='github-tags', repository='FFTW/fftw3', version_variables=('FFTW3_VERSION',), recipes=('finufft/meta.yaml',), version_file=None)
+        self.dependency = SimpleNamespace(id='fftw', name='FFTW', source_type='github-tags', repository='FFTW/fftw3', version_variables=('FFTW3_VERSION',), recipes=('finufft/meta.yaml',), version_file='fftw/release.json')
         self.registry = SimpleNamespace(settings=SimpleNamespace(http_timeout_seconds=20), dependencies=[self.dependency])
         self.current = {'FFTW3_VERSION': '3.3.10'}
 
@@ -1242,7 +1432,13 @@ class TestFFTWPreparation(unittest.TestCase):
 
     def test_prepares_only_fftw_version(self):
         changes = self.prepare()
-        self.assertEqual(changes, {self.path: (self.original, self.original.replace('FFTW3_VERSION: 3.3.10', 'FFTW3_VERSION: 3.3.11'))})
+        self.assertEqual(
+            changes,
+            {self.release: (self.release_original, self.release_updated)},
+        )
+        self.planner.validate_upgrade_paths(self.root, changes)
+        self.assertEqual(self.release.read_text(), self.release_original)
+        self.assertEqual(self.recipe.read_text(), self.pins)
         self.assertEqual(self.path.read_text(), self.original)
 
     def test_rejects_invalid_registry(self):
@@ -1287,10 +1483,47 @@ class TestFFTWPreparation(unittest.TestCase):
         self.run_main()
         self.assertEqual(self.path.read_text(), self.original)
         self.assertEqual(self.recipe.read_text(), self.pins)
+        self.assertEqual(self.release.read_text(), self.release_original)
 
     def test_main_write(self):
         self.run_main(write=True)
-        self.assertEqual(self.path.read_text(), self.original.replace('FFTW3_VERSION: 3.3.10', 'FFTW3_VERSION: 3.3.11'))
+        self.assertEqual(self.path.read_text(), self.original)
+        self.assertEqual(self.release.read_text(), self.release_updated)
+        self.assertEqual(self.recipe.read_text(), self.pins)
+
+    def test_rejects_invalid_metadata_path(self):
+        for metadata in ("", ".github/workflows/build_base.yml"):
+            with self.subTest(metadata=metadata):
+                self.dependency.version_file = metadata
+                with self.assertRaises(self.planner.ScanError):
+                    self.prepare()
+
+    def test_rejects_external_build_number(self):
+        self.release.write_text(
+            '{"version": "3.3.10", "build_number": 0}',
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            self.planner.ScanError, "Unexpected build_number"
+        ):
+            self.prepare()
+
+    def test_main_rejects_workflow_modification(self):
+        changes = {self.path: (self.original, "forbidden")}
+
+        with self.patch.object(
+            self.planner, "prepare_fftw_changes", return_value=changes
+        ):
+            for write in (False, True):
+                with self.subTest(write=write):
+                    with self.assertRaisesRegex(
+                        self.planner.ScanError,
+                        "must not modify workflow files",
+                    ):
+                        self.run_main(write=write)
+
+        self.assertEqual(self.path.read_text(), self.original)
+        self.assertEqual(self.release.read_text(), self.release_original)
         self.assertEqual(self.recipe.read_text(), self.pins)
 
     def test_main_rejects_equal_or_older_version(self):
@@ -1298,6 +1531,211 @@ class TestFFTWPreparation(unittest.TestCase):
             with self.subTest(version=version), self.assertRaises(self.planner.ScanError):
                 self.run_main(version, write=True)
         self.assertEqual(self.path.read_text(), self.original)
+        self.assertEqual(self.release.read_text(), self.release_original)
+        self.assertEqual(self.recipe.read_text(), self.pins)
+
+
+
+class TestFINUFFTPreparation(unittest.TestCase):
+
+    def setUp(self):
+        import prepare_dependency_upgrade as planner
+        from types import SimpleNamespace
+
+        self.planner = planner
+        self.version = "2.5.1"
+        self.http = Mock()
+
+        self.filename = (
+            "finufft-2.5.1-py3-none-"
+            "manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+        )
+
+        self.wheel = {
+            "filename": self.filename,
+            "packagetype": "bdist_wheel",
+            "yanked": False,
+            "url": (
+                "https://files.pythonhosted.org/packages/ab/cd/"
+                + self.filename
+            ),
+            "digests": {"sha256": "a" * 64},
+            "requires_python": ">=3.8",
+        }
+
+        import base64
+
+        self.native_response = {
+            "encoding": "base64",
+            "content": base64.b64encode(
+                b"project(FINUFFT VERSION 2.5.1 LANGUAGES C CXX)"
+            ).decode(),
+        }
+
+        self.http.get_json.return_value = {"urls": [self.wheel]}
+
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+
+        self.release = self.root / "finufft/release.json"
+        self.release.parent.mkdir()
+
+        self.original = json.dumps({
+            "version": "2.2.0",
+            "build_number": 2,
+            "wheel": {"filename": "old.whl"},
+        })
+
+        self.release.write_text(self.original)
+
+        self.dependency = SimpleNamespace(
+            id="finufft",
+            source_type="pypi",
+            package="finufft",
+            version_variables=("FINUFFT_VERSION",),
+            recipes=("finufft/meta.yaml",),
+            version_file="finufft/release.json",
+        )
+
+        self.registry = SimpleNamespace(
+            settings=SimpleNamespace(http_timeout_seconds=20)
+        )
+
+    def select_wheel(self):
+        return self.planner.get_finufft_wheel(
+            self.version, self.http
+        )
+
+    def test_selects_py3_wheel(self):
+        result = self.select_wheel()
+        self.assertEqual(result["filename"], self.filename)
+        self.assertEqual(result["url"], self.wheel["url"])
+        self.assertEqual(result["sha256"], "a" * 64)
+
+    def test_selects_cp312_wheel(self):
+        filename = self.filename.replace(
+            "py3-none", "cp312-cp312"
+        )
+        self.wheel["filename"] = filename
+        self.wheel["url"] = (
+            "https://files.pythonhosted.org/packages/ab/cd/"
+            + filename
+        )
+        self.assertEqual(
+            self.select_wheel()["filename"], filename
+        )
+
+    def test_rejects_yanked_wheel(self):
+        self.wheel["yanked"] = True
+        with self.assertRaises(ScanError):
+            self.select_wheel()
+
+    def test_rejects_missing_wheel(self):
+        self.http.get_json.return_value = {"urls": []}
+        with self.assertRaises(ScanError):
+            self.select_wheel()
+
+    def test_rejects_incompatible_wheel(self):
+        self.wheel["filename"] = self.filename.replace(
+            "x86_64", "aarch64"
+        )
+        with self.assertRaises(ScanError):
+            self.select_wheel()
+
+    def test_rejects_invalid_checksum(self):
+        self.wheel["digests"]["sha256"] = "invalid"
+        with self.assertRaises(ScanError):
+            self.select_wheel()
+
+    def test_rejects_invalid_url(self):
+        self.wheel["url"] = "https://example.com/" + self.filename
+        with self.assertRaises(ScanError):
+            self.select_wheel()
+
+    def test_rejects_ambiguous_wheels(self):
+        self.http.get_json.return_value = {
+            "urls": [self.wheel, self.wheel.copy()]
+        }
+        with self.assertRaises(ScanError):
+            self.select_wheel()
+
+    def test_accepts_matching_native_version(self):
+        self.http.get_json.return_value = self.native_response
+        self.planner.verify_finufft_native_version(
+            self.version, self.http
+        )
+
+    def test_rejects_native_version_mismatch(self):
+        import base64
+
+        self.native_response["content"] = base64.b64encode(
+            b"project(FINUFFT VERSION 2.5.0 LANGUAGES C CXX)"
+        ).decode()
+
+        self.http.get_json.return_value = self.native_response
+
+        with self.assertRaisesRegex(ScanError, "native version mismatch"):
+            self.planner.verify_finufft_native_version(
+                self.version, self.http
+            )
+
+    def test_rejects_invalid_native_response(self):
+        self.http.get_json.return_value = {}
+
+        with self.assertRaises(ScanError):
+            self.planner.verify_finufft_native_version(
+                self.version, self.http
+            )
+
+    def test_rejects_incompatible_python(self):
+        self.wheel["requires_python"] = ">=3.13"
+
+        with self.assertRaises(ScanError):
+            self.select_wheel()
+
+    def test_rejects_invalid_python_requirement(self):
+        self.wheel["requires_python"] = "invalid"
+
+        with self.assertRaises(ScanError):
+            self.select_wheel()
+
+    def test_rejects_missing_python_requirement(self):
+        del self.wheel["requires_python"]
+
+        with self.assertRaises(ScanError):
+            self.select_wheel()
+
+    def test_prepares_only_release_metadata(self):
+        self.http.get_json.side_effect = [
+            self.native_response,
+            {"urls": [self.wheel]},
+        ]
+        with patch.object(
+            self.planner, "HttpClient", return_value=self.http
+        ):
+            changes = self.planner.prepare_finufft_changes(
+                self.root,
+                self.registry,
+                self.dependency,
+                {"FINUFFT_VERSION": "2.2.0"},
+                self.version,
+            )
+
+        self.assertEqual(set(changes), {self.release})
+
+        original, updated = changes[self.release]
+        data = json.loads(updated)
+
+        self.assertEqual(original, self.original)
+        self.assertEqual(data["version"], "2.5.1")
+        self.assertEqual(data["build_number"], 0)
+        self.http.get_json.side_effect = None
+        self.assertEqual(data["wheel"], self.select_wheel())
+
+        self.planner.validate_upgrade_paths(self.root, changes)
+        self.assertEqual(self.release.read_text(), self.original)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,7 +2,6 @@ name: Build Base
 
 env:
   # Native Global Libs
-  FFTW3_VERSION: 3.3.10
   FFTW3F_VERSION: 3.3.10
 
   # Rascil Line
@@ -13,9 +12,7 @@ env:
   SKA_SDP_FUNC_PY_VERSION: 1.0.0  #0.1.4
   SKA_SDP_FUNC_VERSION: 1.0.0 #0.0.6
 
-  # Oskar Line
-  OSKAR_VERSION: 2.12.2
-  OSKARPY_VERSION: 2.12.2  # oskarpy should have same version as `OSKAR_VERSION`
+  # OSKAR and OSKARPY versions are resolved from oskar/release.json.
 
   # casacore possible combinations from https://anaconda.org/conda-forge/casacore/files
   # | casacore | build     | boost   | hdf5    | numpy    | cfitsio |
@@ -55,7 +52,6 @@ env:
   MONTAGEPY_VERSION: 6.0.0 # version is pinned through python-wheel in conda_build_config.yaml
 
   # SKACH contributions
-  FINUFFT_VERSION: 2.2.0
   BLUEBILD_VERSION: 1.0.0
 
   # Other
@@ -217,8 +213,65 @@ jobs:
         # included in `devDeps` gets a PEP440 dev-version added and exported for the underlying conda-build process.
         id: pkgv
         run: |
+          OSKAR_RELEASE_VERSION=$(python3 -c '
+          import json
+          import re
+
+          with open("oskar/release.json", encoding="utf-8") as f:
+              version = json.load(f)["version"]
+
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid OSKAR release version")
+
+          print(version)
+          ') || exit 1
+
+          read_release_version() {
+            python3 -c '
+          import json
+          import re
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as f:
+              version = json.load(f)["version"]
+
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid release version")
+
+          print(version)
+          ' "$1"
+          }
+
+          FFTW_RELEASE_VERSION=$(read_release_version fftw/release.json) || exit 1
+          FINUFFT_RELEASE_VERSION=$(read_release_version finufft/release.json) || exit 1
+
+          export FFTW3_VERSION="$FFTW_RELEASE_VERSION"
+          export FINUFFT_VERSION="$FINUFFT_RELEASE_VERSION"
+
+          export OSKAR_VERSION="$OSKAR_RELEASE_VERSION"
+          export OSKARPY_VERSION="$OSKAR_RELEASE_VERSION"
+
           BUILD_NR=${{ inputs.buildNumber }}
           PACKAGE_VERSION="${{ inputs.versionOverride || inputs.packageVersion }}"
+
+          case "${{ inputs.packageVersionName }}" in
+            OSKAR_VERSION|OSKARPY_VERSION)
+              PACKAGE_VERSION="${{ inputs.versionOverride || '' }}"
+              PACKAGE_VERSION="${PACKAGE_VERSION:-$OSKAR_RELEASE_VERSION}"
+              export OSKAR_VERSION="$PACKAGE_VERSION"
+              export OSKARPY_VERSION="$PACKAGE_VERSION"
+              ;;
+            FINUFFT_VERSION)
+              PACKAGE_VERSION="${{ inputs.versionOverride || '' }}"
+              PACKAGE_VERSION="${PACKAGE_VERSION:-$FINUFFT_RELEASE_VERSION}"
+              export FINUFFT_VERSION="$PACKAGE_VERSION"
+              ;;
+          esac
+
+          echo "FFTW3_VERSION=$FFTW3_VERSION" >> "$GITHUB_ENV"
+          echo "FINUFFT_VERSION=$FINUFFT_VERSION" >> "$GITHUB_ENV"
+          echo "OSKAR_VERSION=$OSKAR_VERSION" >> "$GITHUB_ENV"
+          echo "OSKARPY_VERSION=$OSKARPY_VERSION" >> "$GITHUB_ENV"
           if [[ ${{ inputs.dev }} == "true" ]]
           then
             BUILD_NR="$(($BUILD_NR + 1000))"
@@ -234,6 +287,7 @@ jobs:
 
 
           PKG_KEYS=$(echo '${{ toJSON(env) }}' | jq -r 'keys | .[]')
+          PKG_KEYS="$PKG_KEYS OSKAR_VERSION OSKARPY_VERSION FFTW3_VERSION FINUFFT_VERSION"
           if [[ -n "${{ inputs.versionOverride }}" ]]; then
             export "${{ inputs.packageVersionName }}=$PACKAGE_VERSION"
             echo "${{ inputs.packageVersionName }}=$PACKAGE_VERSION" >> "$GITHUB_ENV"

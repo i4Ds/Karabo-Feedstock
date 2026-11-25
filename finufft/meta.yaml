@@ -1,13 +1,15 @@
 {% set pName = environ.get("PACKAGE_NAME")|lower %}
-{% set pythonVersion = python|replace(".", "") %}
-{% set fileName = pName + "-" + environ.get("FINUFFT_VERSION") + "-cp" + pythonVersion + "-cp" + pythonVersion + "-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" %}
+{% set release = load_file_data("release.json") %}
+{% set fileName = release["wheel"]["filename"] %}
 
 package:
   name: {{ pName }}
   version: {{ FINUFFT_VERSION_ALT }}
 
 source:
-  url: "https://files.pythonhosted.org/packages/cp{{ pythonVersion }}/f/{{ pName }}/{{ fileName }}"
+  url: "{{ release['wheel']['url'] }}"
+  sha256: "{{ release['wheel']['sha256'] }}"
+  fn: "{{ fileName }}"
 
 build:
   script_env:
@@ -25,7 +27,7 @@ requirements:
     - make
     - cmake
     - numpy
-    - fftw
+    - fftw            =={{ FFTW3_VERSION_ALT }}
     
   host:
     - python          {{ python }}
