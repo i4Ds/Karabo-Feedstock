@@ -1,5 +1,5 @@
 {% set pName = environ.get("PACKAGE_NAME")|lower %}
-{% set release = load_file_data("release.json") %}
+{% set release = load_file_data("release.json", from_recipe_dir=True) %}
 {% set fileName = release["wheel"]["filename"] %}
 
 package:
