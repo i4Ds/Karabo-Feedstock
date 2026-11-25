@@ -29,7 +29,7 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
 
     def test_dependency_allowlist(self):
         condition = self.job["if"]
-        self.assertIn('["aotools","idg","everybeam","wsclean","oskar","fftw","finufft"]', condition)
+        self.assertIn('["aotools","idg","everybeam","wsclean","oskar","fftw","finufft","pybdsf"]', condition)
         self.assertIn("needs.verify.outputs.dependency", condition)
         self.assertIn("needs.verify.result == 'success'", condition)
 
@@ -164,6 +164,7 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
                 "oskar/release.json",
                 "fftw/release.json",
                 "finufft/release.json",
+                "pybdsf/release.json",
             },
         )
 

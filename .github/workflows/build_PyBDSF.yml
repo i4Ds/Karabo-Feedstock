@@ -19,6 +19,15 @@ on:
         required: false
         default: false
         
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
+
   workflow_call:
     inputs:
       label:
@@ -36,9 +45,44 @@ on:
         required: false
         default: false
 
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
+
 jobs:
+  resolve-version:
+    name: Resolve PyBDSF version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkoutRef || github.sha }}
+          persist-credentials: false
+      - name: Read PyBDSF release version
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c '
+          import json, re
+          with open("pybdsf/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+          version = data["version"]
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid PyBDSF release version")
+          print(version)
+          ')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
   PyBDSF:
+    needs: resolve-version
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: bdsf
@@ -50,6 +94,8 @@ jobs:
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
       publish: ${{ inputs.publish }}
+      checkoutRef: ${{ inputs.checkoutRef }}
+      versionOverride: ${{ inputs.versionOverride || needs.resolve-version.outputs.version }}
       isNative: true
       buildArm: true
     secrets: inherit

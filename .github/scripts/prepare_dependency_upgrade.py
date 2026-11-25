@@ -698,6 +698,31 @@ def validate_upgrade_paths(
             )
 
 
+def prepare_pybdsf_changes(root, registry, dependency, current, target):
+    """Verify the PyPI source archive and update only release metadata."""
+    if (dependency.id != "pybdsf" or dependency.source_type != "pypi"
+            or dependency.package != "bdsf"
+            or tuple(dependency.version_variables) != ("PYBDSF_VERSION",)
+            or tuple(dependency.recipes) != ("pybdsf/meta.yaml",)
+            or dependency.version_file != "pybdsf/release.json"):
+        raise ScanError("Unsupported PyBDSF upgrade configuration")
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", target):
+        raise ScanError("Unsupported PyBDSF version format")
+    path = root / "pybdsf/release.json"
+    original = path.read_text(encoding="utf-8")
+    updated = json.loads(update_release_metadata(original, target))
+    old = json.loads(original)
+    if old["version"] != current["PYBDSF_VERSION"]:
+        raise ScanError("PyBDSF release metadata/version mismatch")
+    if not isinstance(old.get("sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", old["sha256"]):
+        raise ScanError("Invalid PyBDSF source checksum")
+    recipe = (root / "pybdsf/meta.yaml").read_text(encoding="utf-8")
+    if recipe.count('sha256: {{ release["sha256"] }}') != 1 or recipe.count('{{ PACKAGE_NAME }}-{{ PYBDSF_VERSION }}.tar.gz') != 1:
+        raise ScanError("Unexpected PyBDSF recipe source")
+    _, updated["sha256"] = get_pypi_sdist("bdsf", target, HttpClient(timeout=registry.settings.http_timeout_seconds))
+    return {path: (original, json.dumps(updated, indent=2) + "\n")}
+
+
 def main(
     argv: list[str] | None = None,
     root: Path | None = None,
@@ -733,7 +758,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft"}:
+    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf"}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -752,6 +777,29 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "pybdsf":
+        changes = prepare_pybdsf_changes(
+            root, registry, dependency, current, target.text
+        )
+        validate_upgrade_paths(root, changes)
+
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("PyBDSF source archive: verified")
+
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id == "finufft":
         changes = prepare_finufft_changes(
