@@ -327,6 +327,51 @@ class ProviderTests(unittest.TestCase):
             http.urls[0],
         )
 
+    def test_eidos_uses_exact_release_tags(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[3]
+
+        registry = dependency_scan.load_registry(
+            root / ".github/dependency-scan.toml"
+        )
+
+        dependency = next(
+            item for item in registry.dependencies
+            if item.id == "eidos"
+        )
+
+        self.assertEqual(dependency.source_type, "github-tags")
+        self.assertEqual(
+            dependency.repository,
+            "i4Ds/eidos",
+        )
+        self.assertEqual(
+            dependency.version_file,
+            "eidos/release.json",
+        )
+
+        http = FakeHttp([[
+            {"name": "v1.1.0"},
+            {"name": "v1.2.0"},
+            {"name": "v3.0.0rc1"},
+            {"name": "v9.0"},
+            {"name": "1.3.0"},
+            {"name": "release-9.0.0"},
+            {"name": "v9.0.0.1"},
+        ]])
+
+        latest = dependency_scan.get_latest_version(
+            dependency, http, 1
+        )
+
+        self.assertEqual(latest.text, "1.3.0")
+
+        self.assertIn(
+            "repos/i4Ds/eidos/tags",
+            http.urls[0],
+        )
+
     def test_gitlab_project_path_is_encoded(self) -> None:
         dependency = make_dependency(
             source_type="gitlab-tags",

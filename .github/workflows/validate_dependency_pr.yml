@@ -26,6 +26,7 @@ jobs:
       head: ${{ steps.pr.outputs.head }}
       aotools_version: ${{ steps.aotools_version.outputs.version }}
       idg_version: ${{ steps.idg_version.outputs.version }}
+      eidos_version: ${{ steps.eidos_version.outputs.version }}
       tools21cm_version: ${{ steps.tools21cm_version.outputs.version }}
       ska_telmodel_version: ${{ steps.ska_telmodel_version.outputs.version }}
       ska_sdp_datamodels_version: ${{ steps.ska_sdp_datamodels_version.outputs.version }}
@@ -101,6 +102,34 @@ jobs:
         id: tools21cm_version
         if: ${{ fromJSON(steps.detect.outputs.dependencies).tools21cm }}
         run: python .github/scripts/tools21cm_release.py
+
+      - name: Resolve Eidos version from PR head
+        id: eidos_version
+        if: ${{ fromJSON(steps.detect.outputs.dependencies).eidos }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version=$(python3 -c '
+          import json
+          import re
+
+          with open("eidos/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+
+          version = data["version"]
+
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid Eidos release version")
+
+          if type(data.get("build_number")) is not int or data["build_number"] < 0:
+              raise ValueError("Invalid Eidos build number")
+          if not isinstance(data.get("git_rev"), str) or not re.fullmatch(r"[0-9a-f]{40}", data["git_rev"]):
+              raise ValueError("Invalid Eidos commit")
+          print(version)
+          ')
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Resolve IDG version from PR head
         id: idg_version
@@ -357,6 +386,8 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      versionOverride: ${{ needs.detect-changes.outputs.eidos_version }}
 
   # Validate SKA Telmodel only when its dependency or shared build files change.
   # PR validation must never publish Conda packages.
