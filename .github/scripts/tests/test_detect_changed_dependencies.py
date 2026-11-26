@@ -380,6 +380,30 @@ class DependencyDetectionTests(unittest.TestCase):
         for other in ("idg", "aotools", "tools21cm", "seqfile"):
             self.assertFalse(result[other])
 
+    def test_eidos_release_metadata_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"eidos/release.json"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["eidos"])
+        for other in ("idg", "aotools", "tools21cm", "seqfile"):
+            self.assertFalse(result[other])
+
+    def test_eidos_upgrade_test_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={".github/scripts/tests/test_eidos_upgrade.py"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["eidos"])
+        for other in ("idg", "aotools", "tools21cm", "seqfile"):
+            self.assertFalse(result[other])
+
     def test_eidos_build_workflow_change(self):
         with patch.object(
             detector,

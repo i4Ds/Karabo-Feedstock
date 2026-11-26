@@ -29,7 +29,7 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
 
     def test_dependency_allowlist(self):
         condition = self.job["if"]
-        self.assertIn('["aotools","idg","everybeam","wsclean","oskar","fftw","finufft","pybdsf","tools21cm","ska-telmodel","ska-sdp-datamodels","ska-sdp-func","ska-sdp-func-python"]', condition)
+        self.assertIn('["aotools","idg","everybeam","wsclean","oskar","fftw","finufft","pybdsf","tools21cm","eidos","ska-telmodel","ska-sdp-datamodels","ska-sdp-func","ska-sdp-func-python"]', condition)
         self.assertIn("needs.verify.outputs.dependency", condition)
         self.assertIn("needs.verify.result == 'success'", condition)
 
@@ -167,6 +167,33 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
         )
 
 
+    def test_eidos_release_metadata_allowlist(self):
+        step = self.get_step("Verify changed files")
+        script = step["run"]
+
+        self.assertRegex(
+            script,
+            r"eidos\)\s+expected='eidos/release\.json'",
+        )
+
+        self.assertIn(
+            '[[ "$actual" == "$expected" ]]',
+            script,
+        )
+
+        allowed = set(
+            self.get_step("Create Draft PR")["with"]
+            ["add-paths"].splitlines()
+        )
+
+        self.assertIn("eidos/release.json", allowed)
+        self.assertNotIn("eidos/meta.yaml", allowed)
+        self.assertNotIn(
+            ".github/workflows/build_eidos.yml",
+            allowed,
+        )
+
+
     def test_workflow_modifications_are_blocked(self):
         step = self.get_step("Verify changed files")
         script = step["run"]
@@ -228,6 +255,7 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
                 "finufft/release.json",
                 "pybdsf/release.json",
                 "tools21cm/release.json",
+                "eidos/release.json",
                 "ska-telmodel/release.json",
                 "ska-sdp-datamodels/release.json",
                 "ska-sdp-func/release.json",

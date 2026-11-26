@@ -1,10 +1,12 @@
+{% set release = load_file_data("release.json", from_recipe_dir=True) %}
+
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ EIDOS_VERSION_ALT }}
 
 source:
   git_url: https://github.com/i4Ds/eidos.git
-  git_rev: 74ffe0552079486aef9b413efdf91756096e93e7
+  git_rev: {{ release["git_rev"] }}
 
 build:
   number: {{ build }}

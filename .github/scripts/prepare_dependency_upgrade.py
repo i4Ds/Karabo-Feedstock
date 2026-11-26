@@ -984,6 +984,105 @@ def prepare_tools21cm_changes(root, registry, dependency, current, target):
     return {release_path: (original, updated)}
 
 
+def resolve_eidos_tag(version: str, timeout: int = 20) -> str:
+    """Resolve exact release tags, peeling annotated tags to their commit."""
+    import subprocess
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+        raise ScanError("Invalid Eidos target version")
+    refs = [f"refs/tags/{prefix}{version}" for prefix in ("", "v")]
+    allowed = set(refs + [ref + "^{}" for ref in refs])
+    try:
+        result = subprocess.run(
+            ["git", "ls-remote", "--exit-code", "--tags",
+             "https://github.com/i4Ds/eidos.git", *sorted(allowed)],
+            capture_output=True, text=True, timeout=timeout, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ScanError("Could not verify Eidos tag") from exc
+    if result.returncode != 0:
+        raise ScanError("Eidos tag could not be verified")
+    found = {}
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if (len(fields) != 2 or not re.fullmatch(r"[0-9a-f]{40}", fields[0])
+                or fields[1] not in allowed or fields[1] in found):
+            raise ScanError("Invalid Eidos tag response")
+        found[fields[1]] = fields[0]
+    if any(ref + "^{}" in found and ref not in found for ref in refs):
+        raise ScanError("Invalid peeled Eidos tag")
+    commits = {found.get(ref + "^{}", found[ref]) for ref in refs if ref in found}
+    if len(commits) != 1:
+        raise ScanError("Missing or ambiguous Eidos release tag")
+    return commits.pop()
+
+
+def prepare_eidos_changes(root, registry, dependency, current, target):
+    """Verify upstream source and prepare metadata-only changes."""
+
+    if (
+        dependency.id != "eidos"
+        or dependency.source_type != "github-tags"
+        or dependency.repository != "i4Ds/eidos"
+        or tuple(dependency.version_variables) != ("EIDOS_VERSION",)
+        or tuple(dependency.recipes) != ("eidos/meta.yaml",)
+        or dependency.version_file != "eidos/release.json"
+    ):
+        raise ScanError("Unsupported eidos upgrade configuration")
+
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", target):
+        raise ScanError("Invalid eidos target version")
+
+    recipe = (root / "eidos/meta.yaml").read_text(
+        encoding="utf-8"
+    )
+
+    if recipe.count('{% set release = load_file_data("release.json", from_recipe_dir=True) %}') != 1:
+        raise ScanError("Invalid Eidos recipe metadata loader")
+
+    expected_fields = {
+        "git_url": 'https://github.com/i4Ds/eidos.git',
+        "git_rev": '{{ release["git_rev"] }}',
+        "version": "{{ EIDOS_VERSION_ALT }}",
+    }
+
+    for field, expected in expected_fields.items():
+        matches = re.findall(
+            rf"^[ \t]*{field}:[ \t]*([^\n]+)$",
+            recipe,
+            re.MULTILINE,
+        )
+
+        if len(matches) != 1 or matches[0].strip() != expected:
+            raise ScanError(
+                f"Unexpected eidos recipe field: {field}"
+            )
+
+    release_path = root / "eidos/release.json"
+    original = release_path.read_text(encoding="utf-8")
+
+    try:
+        data = json.loads(original)
+    except json.JSONDecodeError as exc:
+        raise ScanError("Invalid eidos release metadata") from exc
+
+    if (
+        not isinstance(data, dict)
+        or data.get("version") != current.get("EIDOS_VERSION")
+    ):
+        raise ScanError("eidos release metadata/version mismatch")
+
+    # Validate metadata and prepare changes before contacting upstream.
+    updated = update_release_metadata(original, target)
+
+    if not isinstance(data.get("git_rev"), str) or not re.fullmatch(r"[0-9a-f]{40}", data["git_rev"]):
+        raise ScanError("Invalid Eidos source commit")
+    result = json.loads(updated)
+    result["git_rev"] = resolve_eidos_tag(target, registry.settings.http_timeout_seconds)
+    updated = json.dumps(result, indent=2) + "\n"
+
+    return {release_path: (original, updated)}
+
+
 def main(
     argv: list[str] | None = None,
     root: Path | None = None,
@@ -1019,7 +1118,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf", "tools21cm", "ska-sdp-func", *SKA_MODELS}:
+    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf", "tools21cm", "eidos", "ska-sdp-func", *SKA_MODELS}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -1038,6 +1137,29 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "eidos":
+        changes = prepare_eidos_changes(
+            root, registry, dependency, current, target.text
+        )
+        validate_upgrade_paths(root, changes)
+
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("Upstream eidos tag: verified")
+
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id == "tools21cm":
         changes = prepare_tools21cm_changes(

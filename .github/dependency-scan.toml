@@ -246,6 +246,8 @@ recipes = ["eidos/meta.yaml"]
 validation_workflows = [".github/workflows/build_eidos.yml"]
 source_type = "github-tags"
 repository = "i4Ds/eidos"
+version_file = "eidos/release.json"
+tag_pattern = '^v?(?P<version>\d+\.\d+\.\d+)$'
 release_page = "https://github.com/i4Ds/eidos/tags"
 notes = "Track the i4Ds fork used by the recipe rather than an unrelated package source."
 
