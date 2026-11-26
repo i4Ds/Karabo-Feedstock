@@ -274,11 +274,14 @@ notes = "Upstream uses tag v0.1; the Feedstock normalizes it to 0.1.0."
 id = "tools21cm"
 name = "tools21cm"
 version_variables = ["TOOLS_21CM_VERSION"]
+version_file = "tools21cm/release.json"
 recipes = ["tools21cm/meta.yaml"]
 validation_workflows = [".github/workflows/build_tools21cm.yml"]
-source_type = "pypi"
-package = "tools21cm"
-release_page = "https://pypi.org/project/tools21cm/"
+source_type = "github-tags"
+repository = "sambit-giri/tools21cm"
+tag_pattern = '^v(?P<version>\d+\.\d+\.\d+)$'
+release_page = "https://github.com/sambit-giri/tools21cm/tags"
+notes = "Track GitHub tags because the Conda recipe builds from the upstream Git repository."
 
 [[dependencies]]
 id = "aratmospy"

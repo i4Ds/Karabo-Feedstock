@@ -26,6 +26,7 @@ jobs:
       head: ${{ steps.pr.outputs.head }}
       aotools_version: ${{ steps.aotools_version.outputs.version }}
       idg_version: ${{ steps.idg_version.outputs.version }}
+      tools21cm_version: ${{ steps.tools21cm_version.outputs.version }}
       ska_telmodel_version: ${{ steps.ska_telmodel_version.outputs.version }}
       ska_sdp_datamodels_version: ${{ steps.ska_sdp_datamodels_version.outputs.version }}
       pybdsf_version: ${{ steps.pybdsf_version.outputs.version }}
@@ -97,6 +98,7 @@ jobs:
         run: python -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
 
       - name: Validate tools21cm release identity
+        id: tools21cm_version
         if: ${{ fromJSON(steps.detect.outputs.dependencies).tools21cm }}
         run: python .github/scripts/tools21cm_release.py
 
@@ -306,6 +308,8 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      versionOverride: ${{ needs.detect-changes.outputs.tools21cm_version }}
 
   # Validate AOtools only when its dependency or shared build files change.
   # PR validation must never publish Conda packages.

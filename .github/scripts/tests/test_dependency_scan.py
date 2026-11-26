@@ -282,6 +282,51 @@ class ProviderTests(unittest.TestCase):
         self.assertEqual(latest.text, "1.0.0")
         self.assertIn("repos/example/project/tags", http.urls[0])
 
+    def test_tools21cm_uses_exact_release_tags(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[3]
+
+        registry = dependency_scan.load_registry(
+            root / ".github/dependency-scan.toml"
+        )
+
+        dependency = next(
+            item for item in registry.dependencies
+            if item.id == "tools21cm"
+        )
+
+        self.assertEqual(dependency.source_type, "github-tags")
+        self.assertEqual(
+            dependency.repository,
+            "sambit-giri/tools21cm",
+        )
+        self.assertEqual(
+            dependency.version_file,
+            "tools21cm/release.json",
+        )
+
+        http = FakeHttp([[
+            {"name": "v2.4.3"},
+            {"name": "v2.4.4"},
+            {"name": "v3.0.0rc1"},
+            {"name": "v9.0"},
+            {"name": "9.0.0"},
+            {"name": "release-9.0.0"},
+            {"name": "v9.0.0.1"},
+        ]])
+
+        latest = dependency_scan.get_latest_version(
+            dependency, http, 1
+        )
+
+        self.assertEqual(latest.text, "2.4.4")
+
+        self.assertIn(
+            "repos/sambit-giri/tools21cm/tags",
+            http.urls[0],
+        )
+
     def test_gitlab_project_path_is_encoded(self) -> None:
         dependency = make_dependency(
             source_type="gitlab-tags",

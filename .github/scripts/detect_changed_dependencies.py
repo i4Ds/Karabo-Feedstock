@@ -183,6 +183,7 @@ def detect(base: str, head: str) -> dict[str, bool]:
     dependency_validation_files = {
         ".github/scripts/tools21cm_release.py": "tools21cm",
         ".github/scripts/tests/test_tools21cm_release.py": "tools21cm",
+        ".github/scripts/tests/test_tools21cm_upgrade.py": "tools21cm",
         ".github/scripts/aotools_release.py": "aotools",
         ".github/scripts/tests/test_aotools_release.py": "aotools",
     }

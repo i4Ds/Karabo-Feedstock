@@ -875,6 +875,115 @@ def prepare_ska_models_changes(root, registry, dependency, current, target):
     return {path: (original, json.dumps(updated, indent=2) + "\n")}
 
 
+def verify_tools21cm_tag(version: str, timeout: int = 20) -> None:
+    """Verify the exact upstream tools21cm release tag."""
+    import subprocess
+
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+        raise ScanError("Invalid tools21cm target version")
+
+    ref = f"refs/tags/v{version}"
+
+    try:
+        result = subprocess.run(
+            [
+                "git", "ls-remote", "--exit-code", "--refs", "--tags",
+                "https://github.com/sambit-giri/tools21cm.git",
+                ref,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ScanError(
+            f"Could not verify tools21cm tag v{version}: {exc}"
+        ) from exc
+
+    if result.returncode != 0:
+        raise ScanError(
+            f"tools21cm tag v{version} could not be verified upstream"
+        )
+
+    lines = result.stdout.splitlines()
+
+    if len(lines) != 1:
+        raise ScanError("Unexpected tools21cm Git response")
+
+    fields = lines[0].split()
+
+    if (
+        len(fields) != 2
+        or not re.fullmatch(r"[0-9a-fA-F]{40}|[0-9a-fA-F]{64}", fields[0])
+        or fields[1] != ref
+    ):
+        raise ScanError("Invalid tools21cm Git tag response")
+
+
+def prepare_tools21cm_changes(root, registry, dependency, current, target):
+    """Verify upstream source and prepare metadata-only changes."""
+
+    if (
+        dependency.id != "tools21cm"
+        or dependency.source_type != "github-tags"
+        or dependency.repository != "sambit-giri/tools21cm"
+        or tuple(dependency.version_variables) != ("TOOLS_21CM_VERSION",)
+        or tuple(dependency.recipes) != ("tools21cm/meta.yaml",)
+        or dependency.version_file != "tools21cm/release.json"
+    ):
+        raise ScanError("Unsupported tools21cm upgrade configuration")
+
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", target):
+        raise ScanError("Invalid tools21cm target version")
+
+    recipe = (root / "tools21cm/meta.yaml").read_text(
+        encoding="utf-8"
+    )
+
+    expected_fields = {
+        "git_url": '"https://github.com/sambit-giri/tools21cm"',
+        "git_rev": '"v{{ TOOLS_21CM_VERSION }}"',
+        "version": "{{ TOOLS_21CM_VERSION_ALT }}",
+    }
+
+    for field, expected in expected_fields.items():
+        matches = re.findall(
+            rf"^[ \t]*{field}:[ \t]*([^\n]+)$",
+            recipe,
+            re.MULTILINE,
+        )
+
+        if len(matches) != 1 or matches[0].strip() != expected:
+            raise ScanError(
+                f"Unexpected tools21cm recipe field: {field}"
+            )
+
+    release_path = root / "tools21cm/release.json"
+    original = release_path.read_text(encoding="utf-8")
+
+    try:
+        data = json.loads(original)
+    except json.JSONDecodeError as exc:
+        raise ScanError("Invalid tools21cm release metadata") from exc
+
+    if (
+        not isinstance(data, dict)
+        or data.get("version") != current.get("TOOLS_21CM_VERSION")
+    ):
+        raise ScanError("tools21cm release metadata/version mismatch")
+
+    # Validate metadata and prepare changes before contacting upstream.
+    updated = update_release_metadata(original, target)
+
+    verify_tools21cm_tag(
+        target,
+        registry.settings.http_timeout_seconds,
+    )
+
+    return {release_path: (original, updated)}
+
+
 def main(
     argv: list[str] | None = None,
     root: Path | None = None,
@@ -910,7 +1019,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf", "ska-sdp-func", *SKA_MODELS}:
+    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf", "tools21cm", "ska-sdp-func", *SKA_MODELS}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -929,6 +1038,29 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "tools21cm":
+        changes = prepare_tools21cm_changes(
+            root, registry, dependency, current, target.text
+        )
+        validate_upgrade_paths(root, changes)
+
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("Upstream tools21cm tag: verified")
+
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id == "ska-sdp-func":
         changes = prepare_ska_func_changes(

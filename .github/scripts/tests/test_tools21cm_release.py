@@ -98,17 +98,11 @@ class ReleaseTests(unittest.TestCase):
         self.assertGreaterEqual(self.build, 0)
         self.assertTrue(self.variants)
 
-    def test_invalid_build_and_version_mismatch(self):
+    def test_invalid_build_and_version(self):
         # Use temporary files so this test does not modify the real repository.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "tools21cm").mkdir()
-            (root / ".github/workflows").mkdir(parents=True)
-
-            (root / ".github/workflows/build_base.yml").write_text(
-                f"  TOOLS_21CM_VERSION: {self.version}\n"
-            )
-
             # The function checks the build and version before reading variants.
             (root / "tools21cm/conda_build_config.yaml").write_text(
                 "python:\n  - 3.12\n"
@@ -116,7 +110,13 @@ class ReleaseTests(unittest.TestCase):
 
             invalid_configs = [
                 {"version": self.version, "build_number": True},
+                {"version": self.version, "build_number": -1},
+                {"version": self.version, "build_number": "0"},
                 {"version": self.version + ".999", "build_number": self.build},
+                {"version": "invalid", "build_number": 0},
+                {"version": None, "build_number": 0},
+                {"version": 243, "build_number": 0},
+                {"build_number": 0},
             ]
 
             for config in invalid_configs:
@@ -126,6 +126,25 @@ class ReleaseTests(unittest.TestCase):
                     )
                     with self.assertRaises(ValueError):
                         release.release_identity(root)
+
+
+    def test_metadata_is_single_source_of_truth(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "tools21cm").mkdir()
+
+            (root / "tools21cm/conda_build_config.yaml").write_text(
+                "python:\n  - 3.12\n"
+            )
+
+            (root / "tools21cm/release.json").write_text(
+                json.dumps({"version": "9.8.7", "build_number": 2})
+            )
+
+            self.assertEqual(
+                release.release_identity(root),
+                ("9.8.7", 2, {"py312"}),
+            )
 
 
 if __name__ == "__main__":

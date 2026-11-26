@@ -49,7 +49,7 @@ jobs:
     needs: verify
     if: >-
       needs.verify.result == 'success' &&
-      contains(fromJSON('["aotools","idg","everybeam","wsclean","oskar","fftw","finufft","pybdsf","ska-telmodel","ska-sdp-datamodels","ska-sdp-func","ska-sdp-func-python"]'), needs.verify.outputs.dependency)
+      contains(fromJSON('["aotools","idg","everybeam","wsclean","oskar","fftw","finufft","pybdsf","tools21cm","ska-telmodel","ska-sdp-datamodels","ska-sdp-func","ska-sdp-func-python"]'), needs.verify.outputs.dependency)
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -132,6 +132,9 @@ jobs:
             pybdsf)
               expected='pybdsf/release.json'
               ;;
+            tools21cm)
+              expected='tools21cm/release.json'
+              ;;
             finufft)
               expected='finufft/release.json'
               ;;
@@ -178,6 +181,7 @@ jobs:
             fftw/release.json
             finufft/release.json
             pybdsf/release.json
+            tools21cm/release.json
             ska-telmodel/release.json
             ska-sdp-datamodels/release.json
             ska-sdp-func/release.json

@@ -113,6 +113,38 @@ class DependencyDetectionTests(unittest.TestCase):
     def test_aotools_version_change(self):
         self.check_version_change("AOTOOLS_VERSION", "aotools")
 
+    def test_tools21cm_release_metadata_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"tools21cm/release.json"},
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["tools21cm"])
+
+        for dependency, affected in result.items():
+            if dependency != "tools21cm":
+                with self.subTest(dependency=dependency):
+                    self.assertFalse(affected)
+
+    def test_tools21cm_upgrade_test_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={
+                ".github/scripts/tests/test_tools21cm_upgrade.py"
+            },
+        ):
+            result = detector.detect("base", "head")
+
+        self.assertTrue(result["tools21cm"])
+
+        for dependency, affected in result.items():
+            if dependency != "tools21cm":
+                with self.subTest(dependency=dependency):
+                    self.assertFalse(affected)
+
     def test_tools21cm_version_change(self):
         self.check_version_change("TOOLS_21CM_VERSION", "tools21cm")
 
