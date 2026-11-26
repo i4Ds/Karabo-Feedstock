@@ -575,6 +575,45 @@ class DependencyDetectionTests(unittest.TestCase):
             result = detector.detect("base", "head")
 
         self.assertTrue(result["ska-sdp-datamodels"])
+
+    def test_ska_sdp_func_native_release_metadata_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-sdp-func/release.json"},
+        ):
+            result = detector.detect("base", "head")
+
+        affected = {
+            dependency
+            for dependency, changed in result.items()
+            if changed
+        }
+
+        self.assertEqual(
+            affected,
+            {"ska-sdp-func", "ska-sdp-func-python"},
+        )
+
+    def test_ska_sdp_func_python_release_metadata_change(self):
+        with patch.object(
+            detector,
+            "changed_files",
+            return_value={"ska-sdp-func-python/release.json"},
+        ):
+            result = detector.detect("base", "head")
+
+        affected = {
+            dependency
+            for dependency, changed in result.items()
+            if changed
+        }
+
+        self.assertEqual(
+            affected,
+            {"ska-sdp-func-python"},
+        )
+
     def test_ska_sdp_func_version_change(self):
         self.check_version_change(
             "SKA_SDP_FUNC_VERSION", "ska-sdp-func"

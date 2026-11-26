@@ -29,7 +29,7 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
 
     def test_dependency_allowlist(self):
         condition = self.job["if"]
-        self.assertIn('["aotools","idg","everybeam","wsclean","oskar","fftw","finufft","pybdsf","ska-telmodel","ska-sdp-datamodels"]', condition)
+        self.assertIn('["aotools","idg","everybeam","wsclean","oskar","fftw","finufft","pybdsf","ska-telmodel","ska-sdp-datamodels","ska-sdp-func","ska-sdp-func-python"]', condition)
         self.assertIn("needs.verify.outputs.dependency", condition)
         self.assertIn("needs.verify.result == 'success'", condition)
 
@@ -105,6 +105,41 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
             script,
         )
 
+    def test_ska_func_release_metadata_allowlist(self):
+        step = self.get_step("Verify changed files")
+        script = step["run"]
+
+        self.assertRegex(
+            script,
+            r"ska-telmodel\|ska-sdp-datamodels\|"
+            r"ska-sdp-func\|ska-sdp-func-python\)"
+            r'\s+expected="\$DEPENDENCY/release\.json"',
+        )
+
+        self.assertIn(
+            '[[ "$actual" == "$expected" ]]',
+            script,
+        )
+
+        allowed = set(
+            self.get_step("Create Draft PR")["with"]
+            ["add-paths"].splitlines()
+        )
+
+        for dependency in (
+            "ska-sdp-func",
+            "ska-sdp-func-python",
+        ):
+            with self.subTest(dependency=dependency):
+                self.assertIn(
+                    f"{dependency}/release.json",
+                    allowed,
+                )
+                self.assertNotIn(
+                    f"{dependency}/meta.yaml",
+                    allowed,
+                )
+
     def test_workflow_modifications_are_blocked(self):
         step = self.get_step("Verify changed files")
         script = step["run"]
@@ -167,6 +202,8 @@ class TestUpgradeApprovalWorkflow(unittest.TestCase):
                 "pybdsf/release.json",
                 "ska-telmodel/release.json",
                 "ska-sdp-datamodels/release.json",
+                "ska-sdp-func/release.json",
+                "ska-sdp-func-python/release.json",
             },
         )
 

@@ -723,7 +723,96 @@ def prepare_pybdsf_changes(root, registry, dependency, current, target):
     return {path: (original, json.dumps(updated, indent=2) + "\n")}
 
 
+def verify_ska_func_tag(version: str, timeout: int = 20) -> None:
+    """Verify the exact upstream SKA SDP Func Native Git tag."""
+    import subprocess
+
+    ref = f"refs/tags/{version}"
+    repository = "https://gitlab.com/ska-telescope/sdp/ska-sdp-func.git"
+
+    try:
+        result = subprocess.run(
+            [
+                "git", "ls-remote", "--exit-code", "--refs",
+                "--tags", repository, ref,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ScanError(
+            f"Could not verify SKA SDP Func tag {version}: {exc}"
+        ) from exc
+
+    if result.returncode != 0:
+        raise ScanError(
+            f"SKA SDP Func tag {version} not found or inaccessible"
+        )
+
+    lines = result.stdout.splitlines()
+
+    if len(lines) != 1:
+        raise ScanError("Unexpected SKA SDP Func Git response")
+
+    fields = lines[0].split()
+
+    if (
+        len(fields) != 2
+        or not re.fullmatch(r"[0-9a-fA-F]{40}|[0-9a-fA-F]{64}", fields[0])
+        or fields[1] != ref
+    ):
+        raise ScanError("Invalid SKA SDP Func Git tag response")
+
+
+def prepare_ska_func_changes(root, registry, dependency, current, target):
+    """Prepare a metadata-only SKA SDP Func Native upgrade."""
+    variable = "SKA_SDP_FUNC_VERSION"
+    project = "ska-telescope/sdp/ska-sdp-func"
+
+    if (
+        dependency.id != "ska-sdp-func"
+        or dependency.source_type != "gitlab-tags"
+        or dependency.project != project
+        or dependency.base_url != "https://gitlab.com"
+        or tuple(dependency.version_variables) != (variable,)
+        or tuple(dependency.recipes) != ("ska-sdp-func/meta.yaml",)
+        or dependency.version_file != "ska-sdp-func/release.json"
+        or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", target)
+    ):
+        raise ScanError("Unsupported SKA SDP Func upgrade configuration")
+
+    recipe = (root / "ska-sdp-func/meta.yaml").read_text(
+        encoding="utf-8"
+    )
+
+    if (
+        recipe.count(
+            "git_url: https://gitlab.com/ska-telescope/sdp/ska-sdp-func.git"
+        ) != 1
+        or recipe.count("git_tag: {{ SKA_SDP_FUNC_VERSION }}") != 1
+    ):
+        raise ScanError("Unexpected SKA SDP Func recipe source")
+
+    path = root / dependency.version_file
+    original = path.read_text(encoding="utf-8")
+
+    updated = update_release_metadata(original, target)
+    old = json.loads(original)
+
+    if old["version"] != current[variable]:
+        raise ScanError("SKA SDP Func release version mismatch")
+
+    verify_ska_func_tag(
+        target, registry.settings.http_timeout_seconds
+    )
+
+    return {path: (original, updated)}
+
+
 SKA_MODELS = {
+    "ska-sdp-func-python": ("SKA_SDP_FUNC_PY_VERSION", "ska-telescope/sdp/ska-sdp-func-python"),
     "ska-telmodel": ("SKA_TELMODEL_VERSION", "ska-telescope/ska-telmodel"),
     "ska-sdp-datamodels": ("SKA_SDP_DTMDL_VERSION", "ska-telescope/sdp/ska-sdp-datamodels"),
 }
@@ -821,7 +910,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf", *SKA_MODELS}:
+    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf", "ska-sdp-func", *SKA_MODELS}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -840,6 +929,29 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "ska-sdp-func":
+        changes = prepare_ska_func_changes(
+            root, registry, dependency, current, target.text
+        )
+        validate_upgrade_paths(root, changes)
+
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("Upstream SKA SDP Func tag: verified")
+
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id in SKA_MODELS:
         changes = prepare_ska_models_changes(

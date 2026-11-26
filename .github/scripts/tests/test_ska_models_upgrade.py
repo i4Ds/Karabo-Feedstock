@@ -52,12 +52,13 @@ class TestSKAModelsUpgrade(unittest.TestCase):
     def configure(self, package="ska-telmodel"):
         variable, project = planner.SKA_MODELS[package]
 
-        self.current_version = (
-            "1.33.0" if package == "ska-telmodel" else "1.4.1"
-        )
-        self.target = (
-            "1.34.0" if package == "ska-telmodel" else "3.0.0"
-        )
+        versions = {
+            "ska-telmodel": ("1.33.0", "1.34.0"),
+            "ska-sdp-datamodels": ("1.4.1", "3.0.0"),
+            "ska-sdp-func-python": ("1.0.0", "2.0.1"),
+        }
+
+        self.current_version, self.target = versions[package]
 
         self.path = self.root / package / "release.json"
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -101,7 +102,11 @@ class TestSKAModelsUpgrade(unittest.TestCase):
         )
 
     def test_metadata_only(self):
-        for package in ("ska-telmodel", "ska-sdp-datamodels"):
+        for package in (
+            "ska-telmodel",
+            "ska-sdp-datamodels",
+            "ska-sdp-func-python",
+        ):
             with self.subTest(package=package):
                 self.configure(package)
 
@@ -250,6 +255,72 @@ class TestSKAModelsUpgrade(unittest.TestCase):
             planner.validate_upgrade_paths(
                 self.root, {path: ("old", "new")}
             )
+
+
+class TestSKAFuncPythonUpgrade(TestSKAModelsUpgrade):
+
+    def configure(self, package="ska-sdp-func-python"):
+        super().configure(package)
+
+    def test_python_archive_identity(self):
+        self.configure()
+
+        for overrides in (
+            {"metadata_name": "wrong-package"},
+            {"metadata_version": "0.0.1"},
+        ):
+            with self.subTest(overrides=overrides):
+                payload = make_archive(
+                    self.dependency.id,
+                    self.target,
+                    **overrides,
+                )
+
+                with patch(
+                    "subprocess.run",
+                    return_value=self.valid_tag(),
+                ), patch(
+                    "urllib.request.urlopen",
+                    return_value=io.BytesIO(payload),
+                ):
+                    with self.assertRaises(planner.ScanError):
+                        self.prepare()
+
+                self.assertEqual(
+                    self.path.read_text(), self.original
+                )
+
+    def test_python_upgrade_preserves_native_metadata(self):
+        self.configure()
+
+        native = self.root / "ska-sdp-func/release.json"
+        native.parent.mkdir(parents=True)
+
+        original = json.dumps({
+            "version": "1.0.0",
+            "build_number": 1,
+        })
+        native.write_text(original)
+
+        with patch(
+            "subprocess.run",
+            return_value=self.valid_tag(),
+        ), patch(
+            "urllib.request.urlopen",
+            return_value=io.BytesIO(self.payload),
+        ):
+            changes = self.prepare()
+
+        self.assertEqual(set(changes), {self.path})
+
+        planner.validate_upgrade_paths(self.root, changes)
+        planner.apply_changes(changes)
+
+        self.assertEqual(native.read_text(), original)
+        self.assertEqual(
+            json.loads(self.path.read_text())["version"],
+            self.target,
+        )
 
 
 if __name__ == "__main__":

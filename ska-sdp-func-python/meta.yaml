@@ -1,3 +1,4 @@
+{% set release = load_file_data("release.json", from_recipe_dir=True) %}
 {% set uNameAndVers = PACKAGE_NAME|replace("-", "_") + "-" + SKA_SDP_FUNC_PY_VERSION %} # naming convention needs this
 
 package:
@@ -6,6 +7,7 @@ package:
 
 source:
   url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_SDP_FUNC_PY_VERSION }}/{{ uNameAndVers }}.tar.gz
+  sha256: {{ release["sha256"] }}
   folder: {{ uNameAndVers }}    
 
 build:
