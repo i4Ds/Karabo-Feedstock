@@ -1,9 +1,12 @@
+{% set release = load_file_data("release.json", from_recipe_dir=True) %}
+
 package:
   name: "{{ PACKAGE_NAME|lower }}"
   version: "{{ SEQFILE_VERSION_ALT }}"
 
 source:
   url: "https://files.pythonhosted.org/packages/source/{{ PACKAGE_NAME[0] }}/{{ PACKAGE_NAME }}/{{ PACKAGE_NAME }}-{{ SEQFILE_VERSION }}.tar.gz"
+  sha256: {{ release["sha256"] }}
 
 build:
   number: {{ build }}

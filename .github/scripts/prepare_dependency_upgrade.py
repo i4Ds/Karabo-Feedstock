@@ -698,6 +698,31 @@ def validate_upgrade_paths(
             )
 
 
+def prepare_seqfile_changes(root, registry, dependency, current, target):
+    """Verify the PyPI source archive and update only release metadata."""
+    if (dependency.id != "seqfile" or dependency.source_type != "pypi"
+            or dependency.package != "seqfile"
+            or tuple(dependency.version_variables) != ("SEQFILE_VERSION",)
+            or tuple(dependency.recipes) != ("seqfile/meta.yaml",)
+            or dependency.version_file != "seqfile/release.json"):
+        raise ScanError("Unsupported Seqfile upgrade configuration")
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", target):
+        raise ScanError("Unsupported Seqfile version format")
+    path = root / "seqfile/release.json"
+    original = path.read_text(encoding="utf-8")
+    updated = json.loads(update_release_metadata(original, target))
+    old = json.loads(original)
+    if old["version"] != current["SEQFILE_VERSION"]:
+        raise ScanError("Seqfile release metadata/version mismatch")
+    if not isinstance(old.get("sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", old["sha256"]):
+        raise ScanError("Invalid Seqfile source checksum")
+    recipe = (root / "seqfile/meta.yaml").read_text(encoding="utf-8")
+    if recipe.count('{% set release = load_file_data("release.json", from_recipe_dir=True) %}') != 1 or recipe.count('sha256: {{ release["sha256"] }}') != 1 or recipe.count('{{ PACKAGE_NAME }}-{{ SEQFILE_VERSION }}.tar.gz') != 1:
+        raise ScanError("Unexpected Seqfile recipe source")
+    _, updated["sha256"] = get_pypi_sdist("seqfile", target, HttpClient(timeout=registry.settings.http_timeout_seconds))
+    return {path: (original, json.dumps(updated, indent=2) + "\n")}
+
+
 def prepare_pybdsf_changes(root, registry, dependency, current, target):
     """Verify the PyPI source archive and update only release metadata."""
     if (dependency.id != "pybdsf" or dependency.source_type != "pypi"
@@ -1118,7 +1143,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf", "tools21cm", "eidos", "ska-sdp-func", *SKA_MODELS}:
+    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf", "tools21cm", "eidos", "seqfile", "ska-sdp-func", *SKA_MODELS}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -1137,6 +1162,29 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id == "seqfile":
+        changes = prepare_seqfile_changes(
+            root, registry, dependency, current, target.text
+        )
+        validate_upgrade_paths(root, changes)
+
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("Upstream seqfile PyPI source: verified")
+
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id == "eidos":
         changes = prepare_eidos_changes(
