@@ -1,11 +1,14 @@
 {% set uNameAndVers = PACKAGE_NAME|replace("-", "_") + "-" + SKA_TELMODEL_VERSION %}
 
+{% set release = load_file_data("release.json", from_recipe_dir=True) %}
+
 package:
   name: {{ PACKAGE_NAME|lower }}
   version: {{ SKA_TELMODEL_VERSION_ALT }}
 
 source:
   url: https://artefact.skao.int/repository/pypi-internal/packages/{{ PACKAGE_NAME }}/{{ SKA_TELMODEL_VERSION }}/{{ uNameAndVers }}.tar.gz
+  sha256: {{ release["sha256"] }}
 
 build:
   number: {{ build }}

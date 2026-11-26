@@ -26,6 +26,8 @@ jobs:
       head: ${{ steps.pr.outputs.head }}
       aotools_version: ${{ steps.aotools_version.outputs.version }}
       idg_version: ${{ steps.idg_version.outputs.version }}
+      ska_telmodel_version: ${{ steps.ska_telmodel_version.outputs.version }}
+      ska_sdp_datamodels_version: ${{ steps.ska_sdp_datamodels_version.outputs.version }}
       pybdsf_version: ${{ steps.pybdsf_version.outputs.version }}
       everybeam_version: ${{ steps.everybeam_version.outputs.version }}
       wsclean_version: ${{ steps.wsclean_version.outputs.version }}
@@ -120,6 +122,40 @@ jobs:
           print(version)
           ')
 
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve SKA_Telmodel version from PR head
+        id: ska_telmodel_version
+        if: ${{ fromJSON(steps.detect.outputs.dependencies)['ska-telmodel'] }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c '
+          import json, re
+          with open("ska-telmodel/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+          version = data["version"]
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid SKA_Telmodel release version")
+          print(version)
+          ')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve SKA_SDP_Datamodel version from PR head
+        id: ska_sdp_datamodels_version
+        if: ${{ fromJSON(steps.detect.outputs.dependencies)['ska-sdp-datamodels'] }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c '
+          import json, re
+          with open("ska-sdp-datamodels/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+          version = data["version"]
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid SKA_SDP_Datamodel release version")
+          print(version)
+          ')
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Resolve PyBDSF version from PR head
@@ -332,6 +368,8 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      versionOverride: ${{ needs.detect-changes.outputs.ska_telmodel_version }}
 
   # Validate PyBDSF only when its dependency or shared build files change.
   # PR validation must never publish Conda packages.
@@ -399,6 +437,8 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      versionOverride: ${{ needs.detect-changes.outputs.ska_sdp_datamodels_version }}
 
   # Validate SKA SDP Func Native when its files or shared infrastructure change.
   # PR validation must never publish packages.
