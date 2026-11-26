@@ -236,6 +236,7 @@ recipes = ["seqfile/meta.yaml"]
 validation_workflows = [".github/workflows/build_seqfile.yml"]
 source_type = "pypi"
 package = "seqfile"
+version_file = "seqfile/release.json"
 release_page = "https://pypi.org/project/seqfile/"
 
 [[dependencies]]

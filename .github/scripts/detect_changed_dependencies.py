@@ -185,6 +185,7 @@ def detect(base: str, head: str) -> dict[str, bool]:
         ".github/scripts/tests/test_tools21cm_release.py": "tools21cm",
         ".github/scripts/tests/test_tools21cm_upgrade.py": "tools21cm",
         ".github/scripts/tests/test_eidos_upgrade.py": "eidos",
+        ".github/scripts/tests/test_seqfile_upgrade.py": "seqfile",
         ".github/scripts/aotools_release.py": "aotools",
         ".github/scripts/tests/test_aotools_release.py": "aotools",
     }
