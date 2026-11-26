@@ -723,6 +723,69 @@ def prepare_pybdsf_changes(root, registry, dependency, current, target):
     return {path: (original, json.dumps(updated, indent=2) + "\n")}
 
 
+SKA_MODELS = {
+    "ska-telmodel": ("SKA_TELMODEL_VERSION", "ska-telescope/ska-telmodel"),
+    "ska-sdp-datamodels": ("SKA_SDP_DTMDL_VERSION", "ska-telescope/sdp/ska-sdp-datamodels"),
+}
+
+
+def ska_archive_digest(payload, package, version):
+    import hashlib
+    import io
+    import tarfile
+    from email.parser import BytesParser
+    from packaging.utils import canonicalize_name
+    try:
+        with tarfile.open(fileobj=io.BytesIO(payload), mode="r:gz") as archive:
+            name = f"{package.replace('-', '_')}-{version}/PKG-INFO"
+            members = [m for m in archive.getmembers() if m.name == name]
+            if len(members) != 1 or not members[0].isfile() or members[0].size > 1024 * 1024:
+                raise ScanError("Missing or invalid SKAO package metadata")
+            metadata = BytesParser().parsebytes(archive.extractfile(members[0]).read())
+            if (canonicalize_name(metadata.get("Name", "")) != package
+                    or metadata.get("Version") != version):
+                raise ScanError("SKAO archive identity mismatch")
+    except (tarfile.TarError, OSError, EOFError) as exc:
+        raise ScanError("Invalid SKAO source archive") from exc
+    return hashlib.sha256(payload).hexdigest()
+
+
+def prepare_ska_models_changes(root, registry, dependency, current, target):
+    import subprocess
+    from urllib.request import urlopen
+    variable, project = SKA_MODELS[dependency.id]
+    package = dependency.id
+    if (dependency.source_type != "gitlab-tags" or dependency.project != project
+            or dependency.base_url != "https://gitlab.com"
+            or tuple(dependency.version_variables) != (variable,)
+            or tuple(dependency.recipes) != (f"{package}/meta.yaml",)
+            or dependency.version_file != f"{package}/release.json"
+            or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", target)):
+        raise ScanError("Unsupported SKAO upgrade configuration")
+    path = root / dependency.version_file
+    original = path.read_text(encoding="utf-8")
+    old = json.loads(original)
+    updated = json.loads(update_release_metadata(original, target))
+    if old["version"] != current[variable] or not re.fullmatch(r"[0-9a-f]{64}", str(old.get("sha256"))):
+        raise ScanError("Invalid SKAO release metadata")
+    timeout = registry.settings.http_timeout_seconds
+    ref = f"refs/tags/{target}"
+    try:
+        result = subprocess.run(["git", "ls-remote", "--exit-code", "--refs", "--tags", f"https://gitlab.com/{project}.git", ref], capture_output=True, text=True, timeout=timeout, check=True)
+        if not any(line.split()[1:] == [ref] for line in result.stdout.splitlines()):
+            raise ScanError("Exact SKAO tag not found")
+        filename = f"{package.replace('-', '_')}-{target}.tar.gz"
+        url = f"https://artefact.skao.int/repository/pypi-internal/packages/{package}/{target}/{filename}"
+        with urlopen(url, timeout=timeout) as response:
+            payload = response.read(32 * 1024 * 1024 + 1)
+        if len(payload) > 32 * 1024 * 1024:
+            raise ScanError("SKAO archive exceeds size limit")
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ScanError(f"SKAO upstream verification failed: {exc}") from exc
+    updated["sha256"] = ska_archive_digest(payload, package, target)
+    return {path: (original, json.dumps(updated, indent=2) + "\n")}
+
+
 def main(
     argv: list[str] | None = None,
     root: Path | None = None,
@@ -758,7 +821,7 @@ def main(
     if dependency is None:
         raise ScanError("Unknown dependency")
 
-    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf"}:
+    if dependency.id not in {"aotools", "idg", "everybeam", "wsclean", "oskar", "fftw", "finufft", "pybdsf", *SKA_MODELS}:
         raise ScanError(
             "No safe upgrade preparation strategy for this dependency"
         )
@@ -777,6 +840,29 @@ def main(
         raise ScanError(
             "Target version must be newer than the configured version"
         )
+
+    if dependency.id in SKA_MODELS:
+        changes = prepare_ska_models_changes(
+            root, registry, dependency, current, target.text
+        )
+        validate_upgrade_paths(root, changes)
+
+        for path, (original, updated) in changes.items():
+            show_diff(path.relative_to(root), original, updated)
+
+        print(f"Dependency: {dependency.name}")
+        print(f"Current versions: {current}")
+        print(f"Target version: {target.text}")
+        print("SKAO source archive: verified")
+
+        if args.write:
+            apply_changes(changes)
+            print("Mode: write")
+            print("All prepared changes were applied.")
+        else:
+            print("Mode: read-only planning")
+            print("No files were modified.")
+        return
 
     if dependency.id == "pybdsf":
         changes = prepare_pybdsf_changes(

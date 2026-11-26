@@ -19,6 +19,15 @@ on:
         required: false
         default: false
 
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
+
   workflow_call:
     inputs:
       label:
@@ -35,9 +44,45 @@ on:
         type: boolean
         required: false
         default: false
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
+
 jobs:
+  resolve-version:
+    name: Resolve SKA_SDP_Datamodel version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkoutRef || github.sha }}
+          persist-credentials: false
+      - name: Read SKA_SDP_Datamodel release version
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c '
+          import json, re
+          with open("ska-sdp-datamodels/release.json", encoding="utf-8") as f:
+              data = json.load(f)
+          version = data["version"]
+          if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise ValueError("Invalid SKA_SDP_Datamodel release version")
+          print(version)
+          ')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
 
   SKA_SDP_Datamodel:
+    needs: resolve-version
     uses: ./.github/workflows/build_base.yml
     with:
       packageName: ska-sdp-datamodels
@@ -48,5 +93,7 @@ jobs:
       dev: ${{ inputs.dev }}
       buildNumber: ${{ inputs.buildNumber }}
       publish: ${{ inputs.publish }}
+      checkoutRef: ${{ inputs.checkoutRef }}
+      versionOverride: ${{ inputs.versionOverride || needs.resolve-version.outputs.version }}
       isNative: false
     secrets: inherit
