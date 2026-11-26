@@ -11,6 +11,14 @@ on:
         type: boolean
         required: false
         default: false
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
       buildNumber:
         type: string
         required: true
@@ -31,6 +39,14 @@ on:
         type: boolean
         required: false
         default: false
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
       buildNumber:
         type: string
         required: true
@@ -49,6 +65,8 @@ jobs:
       packageVersionName: TOOLS_21CM_VERSION
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      checkoutRef: ${{ inputs.checkoutRef }}
+      versionOverride: ${{ inputs.versionOverride }}
       buildNumber: ${{ inputs.buildNumber }}
       pythonCall: import tools21cm
       isNative: true

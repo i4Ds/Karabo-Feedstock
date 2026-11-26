@@ -16,18 +16,15 @@ def release_identity(root=ROOT):
     build = release['build_number']
     if type(build) is not int or build < 0:
         raise ValueError('build_number must be a non-negative integer')
-    workflow = (root / '.github/workflows/build_base.yml').read_text()
-    versions = re.findall(r'^  TOOLS_21CM_VERSION:\s*([0-9]+(?:\.[0-9]+){2})\s*(?:#.*)?$', workflow, re.M)
-    if len(versions) != 1:
-        raise ValueError('Expected exactly one TOOLS_21CM_VERSION')
-    if release.get('version') != versions[0]:
-        raise ValueError('release.json version must match TOOLS_21CM_VERSION')
+    version = release.get('version')
+    if not isinstance(version, str) or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version):
+        raise ValueError('Invalid tools21cm release version')
     config = (root / 'tools21cm/conda_build_config.yaml').read_text()
     m = re.search(r'^python:\s*\n((?:[ \t]+[^\n]*\n|\n)*)', config, re.M)
     variants = re.findall(r'^\s+-\s+[\'"]?(3\.\d+)[\'"]?\s*$', m[1], re.M) if m else []
     if not variants or len(set(variants)) != len(variants):
         raise ValueError('Missing or duplicate Python variants')
-    return versions[0], build, {'py' + v.replace('.', '') for v in variants}
+    return version, build, {'py' + v.replace('.', '') for v in variants}
 
 
 def publication_state(files, version, build, variants):
