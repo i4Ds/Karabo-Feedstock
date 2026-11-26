@@ -11,6 +11,14 @@ on:
         type: boolean
         required: false
         default: false
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
       buildNumber:
         type: string
         required: true
@@ -28,6 +36,14 @@ on:
         type: boolean
         required: false
         default: false
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
       buildNumber:
         type: string
         required: true
@@ -50,6 +66,8 @@ jobs:
       buildArm: true
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
+      checkoutRef: ${{ inputs.checkoutRef }}
+      versionOverride: ${{ inputs.versionOverride }}
       buildNumber: ${{ inputs.buildNumber }}
       publish: ${{ inputs.publish }}
     secrets: inherit

@@ -15,6 +15,18 @@ on:
         type: string
         required: false
         default: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
+      dependencyArtifact:
+        type: string
+        required: false
+        default: ""
       buildNumber:
         type: string
         required: true
@@ -36,6 +48,18 @@ on:
         type: string
         required: false
         default: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
+      checkoutRef:
+        type: string
+        required: false
+        default: ""
+      versionOverride:
+        type: string
+        required: false
+        default: ""
+      dependencyArtifact:
+        type: string
+        required: false
+        default: ""
       buildNumber:
         type: string
         required: true
@@ -56,6 +80,9 @@ jobs:
       label: ${{ inputs.label }}
       dev: ${{ inputs.dev }}
       devDeps: ${{ inputs.devDeps }}
+      checkoutRef: ${{ inputs.checkoutRef }}
+      versionOverride: ${{ inputs.versionOverride }}
+      dependencyArtifact: ${{ inputs.dependencyArtifact }}
       buildNumber: ${{ inputs.buildNumber }}
       publish: ${{ inputs.publish }}
       isNative: false

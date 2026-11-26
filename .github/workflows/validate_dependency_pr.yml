@@ -454,13 +454,27 @@ jobs:
       dev: false
       buildNumber: "0"
       publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
 
-  # Validate SKA SDP Func Python when its dependency or shared files change.
+  # Validate the Python wrapper against local Native artifacts when
+  # Native changes, otherwise use the published Native package.
   # PR validation must never publish Conda packages.
   validate-ska-sdp-func-python:
     name: Validate SKA SDP Func Python
-    needs: detect-changes
-    if: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-func-python'] }}
+    needs: [detect-changes, validate-ska-sdp-func]
+    if: >-
+      ${{
+        !cancelled() &&
+        needs.detect-changes.result == 'success' &&
+        fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-func-python'] &&
+        (
+          needs.validate-ska-sdp-func.result == 'success' ||
+          (
+            !fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-func'] &&
+            needs.validate-ska-sdp-func.result == 'skipped'
+          )
+        )
+      }}
     permissions:
       contents: read
     uses: ./.github/workflows/build_SKA_SDP_Func_Python.yml
@@ -470,6 +484,8 @@ jobs:
       devDeps: "SKA_SDP_DTMDL_VERSION, SKA_SDP_FUNC_VERSION"
       buildNumber: "0"
       publish: false
+      checkoutRef: ${{ needs.detect-changes.outputs.head }}
+      dependencyArtifact: ${{ fromJSON(needs.detect-changes.outputs.dependencies)['ska-sdp-func'] && 'ska-sdp-func' || '' }}
 
   # Validate ARatmospy when its dependency or shared files change.
   # PR validation must never publish Conda packages.
